@@ -3,14 +3,15 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { Home, Settings, LogOut, type LucideIcon } from "lucide-react";
+import { BookOpen, Home, Settings, LogOut, type LucideIcon } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Toaster } from "@/components/toast";
+import { OutboxStatus } from "@/components/offline/outbox-status";
 import { cn } from "@/lib/utils";
 import { NAV, type NavKey } from "./nav";
 import { switchBusiness } from "./actions";
 
-const ICONS: Record<NavKey, LucideIcon> = { today: Home, settings: Settings };
+const ICONS: Record<NavKey, LucideIcon> = { today: Home, records: BookOpen, settings: Settings };
 
 type Props = {
   businessId: string;
@@ -70,7 +71,14 @@ export function AppShell({ businessId, businessName, businesses, children }: Pro
             </Link>
           ))}
         </nav>
-        <form action="/auth/signout" method="post">
+        <form
+          action="/auth/signout"
+          method="post"
+          onSubmit={() => {
+            // Cached pages hold business data; clear them on shared phones.
+            if ("caches" in window) caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)));
+          }}
+        >
           <button className="flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
             <LogOut className="size-4" aria-hidden /> Sign out
           </button>
@@ -87,6 +95,7 @@ export function AppShell({ businessId, businessName, businesses, children }: Pro
         </main>
       </div>
 
+      <div className="fixed left-1/2 top-3 z-40 -translate-x-1/2"><OutboxStatus /></div>
       <Toaster />
       <nav
         aria-label="Main"

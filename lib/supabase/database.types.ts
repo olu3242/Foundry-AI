@@ -420,6 +420,11 @@ isOneToOne: false
             "add_member":
 { Args: { "p_business_id": string,"p_contact": string,"p_role": Database["public"]['Enums']["business_role"] }; Returns: string
                            },
+"business_summary":
+{ Args: { "p_business_id": string,"p_from": string,"p_to": string }; Returns: {
+              "collected_minor": number,"customers_served": number,"expenses_minor": number,"net_minor": number,"receivable_minor": number,"sales_count": number,"sales_minor": number
+            }[]
+                           },
 "claim_jobs":
 { Args: { "p_job_id"?: string,"p_limit"?: number,"p_types"?: (string)[],"p_worker": string }; Returns: {
               "attempts": number,
@@ -470,8 +475,14 @@ isOneToOne: false
 "reap_stale_jobs":
 { Args: { "p_timeout"?: string }; Returns: number
                            },
+"record_entry":
+{ Args: { "p_business_id": string,"p_fields": Json,"p_kind": Database["public"]['Enums']["record_kind"] }; Returns: string
+                           },
 "reject_draft":
 { Args: { "p_draft_id": string }; Returns: undefined
+                           },
+"void_record":
+{ Args: { "p_id": string,"p_kind": Database["public"]['Enums']["record_kind"],"p_reason"?: string }; Returns: undefined
                            }
           }
           Enums: {

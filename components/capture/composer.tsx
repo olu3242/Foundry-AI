@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { FormMessage } from "@/components/form-message";
 import { createCapture } from "@/app/b/[bid]/capture/actions";
+import { addToOutbox } from "@/lib/offline/outbox";
+import { toast } from "@/components/toast";
 
 type Recognition = {
   lang: string;
@@ -75,7 +77,17 @@ export function CaptureComposer({ businessId, locale = "en-NG" }: { businessId: 
   return (
     <form
       action={async (fd) => {
-        if (photo) fd.set("photo", await shrink(photo));
+        const small = photo ? await shrink(photo) : null;
+        if (!navigator.onLine) {
+          // Offline: keep it on the device; OutboxStatus sends it when the network returns.
+          await addToOutbox({ clientRef, businessId, channel: small ? "photo" : channel, text, photo: small ?? undefined });
+          toast("Saved on this phone. It will send when you're back online.");
+          setText("");
+          setPhoto(null);
+          setClientRef(crypto.randomUUID());
+          return;
+        }
+        if (small) fd.set("photo", small);
         return action(fd);
       }}
       className="glass space-y-3 p-4"
