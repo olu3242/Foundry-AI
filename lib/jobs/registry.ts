@@ -15,6 +15,11 @@ export const handlers: Record<string, JobHandler> = {
   "growth.recommend": growthJob,
   "market.match": marketMatchJob,
   "pilot.baseline": baselineJob,
+  "metrics.rollup": async ({ admin }) => {
+    const { data, error } = await admin.rpc("rollup_metrics");
+    if (error) throw error;
+    return { keys: data };
+  },
   "learning.snapshot": async ({ admin }) => {
     const { data, error } = await admin.rpc("take_eval_snapshot");
     if (error) throw error;

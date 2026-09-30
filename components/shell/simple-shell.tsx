@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/logo";
 
 /** Chrome for pages outside a single business: programs and partner portfolio. */
-export function SimpleShell({ children }: { children: React.ReactNode }) {
+export function SimpleShell({ children, admin }: { children: React.ReactNode; admin?: boolean }) {
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-xl">
@@ -13,6 +13,7 @@ export function SimpleShell({ children }: { children: React.ReactNode }) {
             <Link href="/partner" className="hover:text-foreground">Portfolio</Link>
             <Link href="/programs" className="hover:text-foreground">Programs</Link>
             <Link href="/providers" className="hover:text-foreground">Providers</Link>
+            {admin && <Link href="/admin/scale" className="hover:text-foreground">Admin</Link>}
             <form action="/auth/signout" method="post"><button className="hover:text-foreground">Sign out</button></form>
           </nav>
         </div>

@@ -42,6 +42,17 @@ export async function POST(request: NextRequest) {
           subscription_status: "active",
         }).eq("id", programId);
       }
+    } else if (event.type === "invoice.paid") {
+      // B20: revenue for unit economics.
+      const inv = event.data.object;
+      const subId = inv.parent?.subscription_details?.subscription;
+      const { data: program } = subId
+        ? await admin.from("programs").select("id").eq("stripe_subscription_id", typeof subId === "string" ? subId : subId.id).maybeSingle()
+        : { data: null };
+      await admin.from("revenue_events").upsert({
+        source: "stripe", external_id: inv.id, program_id: program?.id ?? null, amount_minor: inv.amount_paid,
+        currency: inv.currency.toUpperCase(), occurred_at: new Date((inv.status_transitions?.paid_at ?? inv.created) * 1000).toISOString(),
+      }, { onConflict: "external_id" });
     } else if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted" || event.type === "customer.subscription.created") {
       const sub = event.data.object;
       const programId = sub.metadata?.program_id;

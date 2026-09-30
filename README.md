@@ -24,6 +24,23 @@ Next.js 15 (App Router, server actions) · TypeScript (strict) · Tailwind + sha
 | Market, Growth, autonomy | `…0700_market_autonomy.sql`, `lib/market`, `lib/growth`, `lib/autonomy` | Autonomy levels L0–L5 per action, inbox of agent actions, WhatsApp-ready reminders, explainable matching |
 | Programs and partners | `…0800_programs.sql`, `app/programs`, `app/partner` | Join by code with explicit consent; leaving revokes access immediately; Stripe seats |
 
+Extensions B11–B20 build on the above (each migration's header lists what it reuses):
+
+| Batch | Where | Adds |
+| --- | --- | --- |
+| B11 Pilot activation | `…0900_pilot.sql`, `app/b/[bid]/progress` | Baselines on joining, activation milestones, Pulse feedback, plans (interventions) with measured outcomes that only a partner or program can verify; verified results appear on the Passport |
+| B12 Operator scale | `…1000_operator.sql`, `app/partner` | Exception queue across a portfolio, snoozes, resolution tracking, workload metrics, safe batch nudges, daily brief |
+| B13 Solution effectiveness | `…1100_solutions.sql`, `app/admin/solutions` | Versioned solution catalogue; per-version funnel (activated → completed → improved → verified), failure reasons, deprecation |
+| B14 Benchmarking | `…1200_benchmarks.sql` | Cohorts (country/sector/activity), minimum sample 10, quality-weighted, confidence; no rankings |
+| B15 Distribution | `…1300_distribution.sql`, `app/join/[code]` | Program builder, bulk invites, first-touch attribution (partner-sourced), aggregate sponsor report + CSV, consent visibility |
+| B16 Financial opportunity | `…1400_finance.sql`, `app/b/[bid]/finance` | Partner-defined eligibility (pass/fail per rule, never a score), consented frozen evidence packages with SHA-256, decisions, withdrawal |
+| B17 Solution marketplace | `…1500_marketplace.sql`, `app/providers` | Provider onboarding, submit → review → live, pricing metadata, consented provider-led engagements, progress updates |
+| B18 Network learning | `…1600_learning.sql`, `app/admin/learning` | Model/prompt lineage, recommendation → outcome evaluation, extraction edit rates, Pulse calibration, drift snapshots, evidence-ranked solutions |
+| B19 Multi-market | `…1700_markets.sql`, `app/admin/markets` | Markets as configuration: currency, timezone, language, identifiers, jurisdiction, connectors, data residency; en/fr UI |
+| B20 Scale + funding readiness | `…1800_scale.sql`, `app/admin/scale`, `/api/admin/evidence` | Product/ops/solutions/economics/impact (VEI)/distribution/data-moat metrics, cohort retention, cost inputs, security + integrity certification, evidence pack |
+
+Platform admins (solution review, learning, markets, scale) are granted in SQL: `insert into platform_admins (user_id) values ('<uuid>');`
+
 ## Local development
 
 Requires Node 20+, Docker, and the Supabase CLI (installed as a dev dependency).
@@ -65,7 +82,7 @@ Server variables are validated with zod on first use (`lib/env.ts`), so `next bu
 
 ```bash
 npm run check        # eslint + tsc + vitest (pure logic: money, dates, pulse, matching, autonomy, extraction mapping)
-npm run db:test      # pgTAP: 99 assertions on RLS, grants, queue semantics, confirm flow, consent
+npm run db:test      # pgTAP: 201 assertions incl. security/performance certification (RLS everywhere, no anon access, pinned search_path, business_id indexes)
 npm run e2e          # Playwright against the local stack (set PW_CHROMIUM_PATH to use a preinstalled Chromium)
 ```
 
@@ -95,6 +112,12 @@ CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests and a productio
 - Money is stored as integers in the currency's minor unit (`lib/money.ts` handles zero-decimal currencies such as XOF and RWF).
 
 ## MVP shortcuts and known debt
+
+- **Pilot proof.** The full loop (join → capture → confirm → Pulse → plan → outcome → partner verification → Passport) is proven end to end against a local stack with a test business and the dev extractor. Proving it with a real low-data business needs a deployed environment, an `ANTHROPIC_API_KEY`, and a real pilot cohort.
+- **FX rates** in `fx_rates` are indicative seeds; connect a rate feed before reporting USD impact externally.
+- **Benchmarks, matching and portfolio loading** iterate in SQL/TypeScript per business; fine for pilots, move to set-based jobs beyond a few thousand businesses.
+- **i18n** covers the shell and capture in English and French; other strings are English. Adding a language is adding a catalogue.
+- **Data residency** is enforced at business creation against `app.data_region` (`alter database postgres set app.data_region = 'af-south'`); running one deployment per region is an infrastructure step.
 
 - **Voice** uses the browser's speech recognition, which needs Chrome/Android and a connection. Offline voice and server-side transcription (and local languages) are next.
 - **Payment reminders** open WhatsApp for the owner to send; no automatic sending channel yet, so reminders are capped at L2 (draft for approval).

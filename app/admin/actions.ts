@@ -50,3 +50,15 @@ export async function saveMarket(_: unknown, formData: FormData) {
   revalidatePath("/admin/markets");
   return { ok: true as const, message: `Saved ${f.name}.` };
 }
+
+export async function addCost(_: unknown, formData: FormData) {
+  await requireUser("/admin");
+  const p = z.object({ month: z.string().regex(/^\d{4}-\d{2}$/), category: z.enum(["infrastructure", "operator", "other"]),
+    amount: z.coerce.number().min(0), note: z.string().max(200).optional() }).safeParse(Object.fromEntries(formData));
+  if (!p.success) return { ok: false as const, error: "Please check the cost entry." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("add_cost_input", { p_month: `${p.data.month}-01`, p_category: p.data.category, p_amount_usd: p.data.amount, p_note: p.data.note });
+  if (error) return { ok: false as const, error: error.message };
+  revalidatePath("/admin/scale");
+  return { ok: true as const, message: "Cost recorded." };
+}

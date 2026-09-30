@@ -98,6 +98,19 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"ai_prices": {
+                  Row: {
+                    "model": string,"usd_per_mtok_in": number,"usd_per_mtok_out": number
+                  }
+                  Insert: {
+                    "model": string,"usd_per_mtok_in": number,"usd_per_mtok_out": number
+                  }
+                  Update: {
+                    "model"?: string,"usd_per_mtok_in"?: number,"usd_per_mtok_out"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"audit_log": {
                   Row: {
                     "action": string,"actor_id": string | null,"business_id": string | null,"changed_at": string,"id": number,"new_row": Json | null,"old_row": Json | null,"row_id": string | null,"table_name": string
@@ -236,6 +249,19 @@ isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
     }
+                  ]
+                },"cost_inputs": {
+                  Row: {
+                    "amount_usd": number,"category": string,"created_at": string,"id": string,"month": string,"note": string | null
+                  }
+                  Insert: {
+                    "amount_usd": number,"category": string,"created_at"?: string,"id"?: string,"month": string,"note"?: string | null
+                  }
+                  Update: {
+                    "amount_usd"?: number,"category"?: string,"created_at"?: string,"id"?: string,"month"?: string,"note"?: string | null
+                  }
+                  Relationships: [
+                    
                   ]
                 },"customers": {
                   Row: {
@@ -424,6 +450,19 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"fx_rates": {
+                  Row: {
+                    "as_of": string,"currency": string,"minor_units": number,"source": string,"usd_per_unit": number
+                  }
+                  Insert: {
+                    "as_of"?: string,"currency": string,"minor_units"?: number,"source"?: string,"usd_per_unit": number
+                  }
+                  Update: {
+                    "as_of"?: string,"currency"?: string,"minor_units"?: number,"source"?: string,"usd_per_unit"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"idempotency_keys": {
                   Row: {
                     "created_at": string,"expires_at": string,"key": string,"request_hash": string,"response": Json | null,"scope": string,"status": string
@@ -530,6 +569,19 @@ isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
     }
+                  ]
+                },"metrics_daily": {
+                  Row: {
+                    "day": string,"key": string,"value": number | null
+                  }
+                  Insert: {
+                    "day": string,"key": string,"value"?: number | null
+                  }
+                  Update: {
+                    "day"?: string,"key"?: string,"value"?: number | null
+                  }
+                  Relationships: [
+                    
                   ]
                 },"operator_item_log": {
                   Row: {
@@ -1025,6 +1077,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"revenue_events": {
+                  Row: {
+                    "amount_minor": number,"currency": string,"external_id": string | null,"id": string,"occurred_at": string,"program_id": string | null,"source": string
+                  }
+                  Insert: {
+                    "amount_minor": number,"currency": string,"external_id"?: string | null,"id"?: string,"occurred_at"?: string,"program_id"?: string | null,"source"?: string
+                  }
+                  Update: {
+                    "amount_minor"?: number,"currency"?: string,"external_id"?: string | null,"id"?: string,"occurred_at"?: string,"program_id"?: string | null,"source"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "revenue_events_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"sale_items": {
                   Row: {
                     "business_id": string,"description": string,"id": string,"line_total_minor": number,"product_id": string | null,"quantity": number,"sale_id": string,"unit_price_minor": number
@@ -1279,6 +1350,9 @@ isOneToOne: false
 "activation_status":
 { Args: { "p_business_id": string }; Returns: Json
                            },
+"add_cost_input":
+{ Args: { "p_amount_usd": number,"p_category": string,"p_month": string,"p_note"?: string }; Returns: undefined
+                           },
 "add_member":
 { Args: { "p_business_id": string,"p_contact": string,"p_role": Database["public"]['Enums']["business_role"] }; Returns: string
                            },
@@ -1336,6 +1410,11 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"cohort_retention":
+{ Args: { "p_months"?: number }; Returns: {
+              "active": number,"cohort": string,"month_offset": number,"rate": number,"size": number
+            }[]
+                           },
 "complete_intervention":
 { Args: { "p_intervention_id": string }; Returns: undefined
                            },
@@ -1382,6 +1461,9 @@ isOneToOne: false
                            },
 "hit_rate_limit":
 { Args: { "p_key": string,"p_limit": number,"p_window_seconds": number }; Returns: boolean
+                           },
+"integrity_report":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "join_program":
 { Args: { "p_business_id": string,"p_consent": boolean,"p_join_code": string }; Returns: string
@@ -1461,6 +1543,15 @@ isOneToOne: false
                            },
 "review_solution":
 { Args: { "p_decision": string,"p_note"?: string,"p_solution_id": string }; Returns: undefined
+                           },
+"rollup_metrics":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"scale_metrics":
+{ Args: { "p_from"?: string,"p_to"?: string }; Returns: Json
+                           },
+"security_report":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "set_business_identifier":
 { Args: { "p_business_id": string,"p_type": string,"p_value": string }; Returns: undefined
