@@ -29,6 +29,11 @@ const DESCRIBE: Record<string, (p: Payload) => string> = {
   "passport.shared": (p) => `Passport shared with ${str(p.label)}`,
   "passport.revoked": (p) => `Passport link for ${str(p.label)} switched off`,
   "passport.viewed": (p) => `${str(p.label)} viewed your Passport`,
+  "agent.proposed": (p) => `Foundry left ${Number(p.count ?? 0)} suggestion(s) in your inbox`,
+  "agent.notified": (p) => str(p.title),
+  "action.executed": (p) => `Done: ${str(p.title)}`,
+  "action.rejected": (p) => `Set aside: ${str(p.title)}`,
+  "market.interested": (p) => `You showed interest in “${str(p.title)}”`,
   "job.dead": (p) => `Background task ${str(p.type)} failed and needs attention`,
 };
 

@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/page-header";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AddMemberForm, BusinessForm } from "./forms";
+import { AutonomySettings } from "@/components/agent/autonomy-settings";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -18,6 +19,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ bid: 
     .eq("business_id", bid)
     .order("created_at");
   const isOwner = role === "owner";
+  const { data: policies } = await supabase.from("autonomy_policies").select("action_type, level").eq("business_id", bid);
 
   return (
     <>
@@ -47,6 +49,15 @@ export default async function SettingsPage({ params }: { params: Promise<{ bid: 
             })}
           </ul>
           {isOwner && <AddMemberForm businessId={bid} />}
+        </Card>
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>How much Foundry does on its own</CardTitle>
+            <CardDescription>
+              From L0 (off) to L5 (acts within limits). Some levels aren&apos;t available yet: Foundry never writes to your books or messages a customer without you.
+            </CardDescription>
+          </CardHeader>
+          <AutonomySettings businessId={bid} canEdit={isOwner} policies={Object.fromEntries((policies ?? []).map((p) => [p.action_type, p.level]))} />
         </Card>
       </div>
     </>

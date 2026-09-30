@@ -62,3 +62,9 @@ export async function runJobNow(jobId: string) {
   if (error || !jobs?.[0]) return null;
   return execute(jobs[0], worker);
 }
+
+/** For explicit user requests: pull a queued (possibly debounced) job forward, then run it. */
+export async function runQueuedNow(jobId: string) {
+  await createAdminClient().from("jobs").update({ run_at: new Date().toISOString() }).eq("id", jobId).eq("status", "queued");
+  return runJobNow(jobId);
+}

@@ -1,6 +1,7 @@
 import "server-only";
 import { PermanentJobError, type JobHandler } from "@/lib/jobs/types";
 import { computePulse, type Metrics } from "./score";
+import { enqueue } from "@/lib/jobs/queue";
 
 export const computePulseJob: JobHandler = async ({ job, admin }) => {
   const businessId = job.business_id;
@@ -32,5 +33,10 @@ export const computePulseJob: JobHandler = async ({ job, admin }) => {
     business_id: businessId, type: "pulse.computed", actor_type: "system", entity_type: "pulse",
     payload: { attention, computed_on: computedOn },
   });
+  // Downstream agents react to the fresh Pulse.
+  await Promise.all([
+    enqueue("growth.recommend", { businessId, dedupeKey: `growth:${businessId}` }),
+    enqueue("market.match", { businessId, dedupeKey: `match-business:${businessId}` }),
+  ]);
   return { computed_on: computedOn, attention };
 };

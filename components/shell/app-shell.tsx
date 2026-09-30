@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { Activity, BookOpen, Home, Settings, ShieldCheck, LogOut, type LucideIcon } from "lucide-react";
+import { Activity, BookOpen, Home, Inbox, Settings, ShieldCheck, Store, LogOut, type LucideIcon } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Toaster } from "@/components/toast";
 import { OutboxStatus } from "@/components/offline/outbox-status";
@@ -11,16 +11,17 @@ import { cn } from "@/lib/utils";
 import { NAV, type NavKey } from "./nav";
 import { switchBusiness } from "./actions";
 
-const ICONS: Record<NavKey, LucideIcon> = { today: Home, records: BookOpen, pulse: Activity, passport: ShieldCheck, settings: Settings };
+const ICONS: Record<NavKey, LucideIcon> = { today: Home, records: BookOpen, pulse: Activity, passport: ShieldCheck, market: Store, inbox: Inbox, settings: Settings };
 
 type Props = {
   businessId: string;
   businessName: string;
   businesses: { id: string; name: string }[];
+  inboxCount: number;
   children: React.ReactNode;
 };
 
-export function AppShell({ businessId, businessName, businesses, children }: Props) {
+export function AppShell({ businessId, businessName, businesses, inboxCount, children }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -28,9 +29,9 @@ export function AppShell({ businessId, businessName, businesses, children }: Pro
   const isActive = (segment: string) =>
     segment === "" ? pathname === base : pathname === base + segment || pathname.startsWith(`${base + segment}/`);
 
-  const links = NAV.map(({ key, label, segment }) => {
+  const links = NAV.map(({ key, label, segment, mobile }) => {
     const Icon = ICONS[key];
-    return { key, label, href: base + segment, Icon, active: isActive(segment) };
+    return { key, label, href: base + segment, Icon, mobile, active: isActive(segment), count: key === "inbox" ? inboxCount : 0 };
   });
 
   return (
@@ -57,7 +58,7 @@ export function AppShell({ businessId, businessName, businesses, children }: Pro
         </select>
         <Link href="/onboarding" className="-mt-4 text-xs text-muted-foreground hover:text-foreground">+ Add a business</Link>
         <nav aria-label="Main" className="flex flex-1 flex-col gap-1">
-          {links.map(({ key, label, href, Icon, active }) => (
+          {links.map(({ key, label, href, Icon, active, count }) => (
             <Link
               key={key}
               href={href}
@@ -68,6 +69,7 @@ export function AppShell({ businessId, businessName, businesses, children }: Pro
               )}
             >
               <Icon className="size-4" aria-hidden /> {label}
+              {count > 0 && <span className="ml-auto rounded-full bg-insight px-2 text-[11px] font-semibold text-white">{count}</span>}
             </Link>
           ))}
         </nav>
@@ -88,7 +90,13 @@ export function AppShell({ businessId, businessName, businesses, children }: Pro
       <div className="flex min-h-dvh flex-col pb-20 md:pb-0">
         <header className="sticky top-0 z-20 flex items-center justify-between border-b bg-background/70 px-4 py-3 backdrop-blur-xl md:hidden">
           <Logo />
-          <span className="max-w-[50%] truncate text-sm font-medium">{businessName}</span>
+          <span className="flex-1 truncate px-3 text-right text-sm font-medium">{businessName}</span>
+          {links.filter((l) => !l.mobile).map(({ key, label, href, Icon, count }) => (
+            <Link key={key} href={href} aria-label={count ? `${label} (${count})` : label} className="relative p-2 text-muted-foreground">
+              <Icon className="size-5" aria-hidden />
+              {count > 0 && <span className="absolute right-1 top-1 size-2 rounded-full bg-insight" aria-hidden />}
+            </Link>
+          ))}
         </header>
         <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 md:px-8 md:py-10">
           {children}
@@ -100,9 +108,9 @@ export function AppShell({ businessId, businessName, businesses, children }: Pro
       <nav
         aria-label="Main"
         className="fixed inset-x-0 bottom-0 z-30 grid border-t bg-background/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
-        style={{ gridTemplateColumns: `repeat(${links.length}, minmax(0, 1fr))` }}
+        style={{ gridTemplateColumns: `repeat(${links.filter((l) => l.mobile).length}, minmax(0, 1fr))` }}
       >
-        {links.map(({ key, label, href, Icon, active }) => (
+        {links.filter((l) => l.mobile).map(({ key, label, href, Icon, active }) => (
           <Link
             key={key}
             href={href}

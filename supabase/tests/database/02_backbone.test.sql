@@ -30,12 +30,12 @@ reset role;
 set local role service_role;
 select public.enqueue_job('test.noop', :'bid', '{"n":1}', 'dedupe-1') as job1 \gset
 select is(public.enqueue_job('test.noop', :'bid', '{"n":2}', 'dedupe-1'), :'job1'::uuid, 'dedupe key returns the active job');
-select is((select count(*)::int from public.claim_jobs('w1', 10)), 1, 'claim returns the ready job');
-select is((select count(*)::int from public.claim_jobs('w2', 10)), 0, 'a claimed job is not claimed twice');
+select is((select count(*)::int from public.claim_jobs('w1', 10, array['test.noop'])), 1, 'claim returns the ready job');
+select is((select count(*)::int from public.claim_jobs('w2', 10, array['test.noop'])), 0, 'a claimed job is not claimed twice');
 select is(public.fail_job(:'job1', 'boom')::text, 'queued', 'failed job is requeued while attempts remain');
 select ok((select run_at > now() from public.jobs where id = :'job1'), 'requeued job is delayed by backoff');
 update public.jobs set run_at = now(), attempts = max_attempts - 1 where id = :'job1';
-select is((select count(*)::int from public.claim_jobs('w1', 10)), 1, 'retry is claimable once due');
+select is((select count(*)::int from public.claim_jobs('w1', 10, array['test.noop'])), 1, 'retry is claimable once due');
 select is(public.fail_job(:'job1', 'boom again')::text, 'dead', 'job is dead-lettered after max attempts');
 select is((select count(*)::int from public.events where type = 'job.dead' and entity_id = :'job1'), 1, 'dead jobs emit job.dead');
 
