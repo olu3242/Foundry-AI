@@ -5,7 +5,44 @@ export type Database = {
   
   "public": {
           Tables: {
-            "agent_actions": {
+            "acquisition_attributions": {
+                  Row: {
+                    "attributed_at": string,"business_id": string,"channel": string,"invitation_id": string | null,"program_id": string | null,"source_partner_user_id": string | null
+                  }
+                  Insert: {
+                    "attributed_at"?: string,"business_id": string,"channel": string,"invitation_id"?: string | null,"program_id"?: string | null,"source_partner_user_id"?: string | null
+                  }
+                  Update: {
+                    "attributed_at"?: string,"business_id"?: string,"channel"?: string,"invitation_id"?: string | null,"program_id"?: string | null,"source_partner_user_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "acquisition_attributions_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: true
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "acquisition_attributions_invitation_id_fkey"
+      columns: ["invitation_id"]
+isOneToOne: false
+      referencedRelation: "program_invitations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "acquisition_attributions_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "acquisition_attributions_source_partner_user_id_fkey"
+      columns: ["source_partner_user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"agent_actions": {
                   Row: {
                     "action_type": string,"agent_run_id": string | null,"autonomy_level": number,"body": string | null,"business_id": string,"created_at": string,"decided_at": string | null,"decided_by": string | null,"dedupe_key": string | null,"executed_at": string | null,"expires_at": string | null,"id": string,"payload": NonNullable<Json>,"result": Json | null,"source": string | null,"status": Database["public"]['Enums']["action_status"],"title": string
                   }
@@ -638,6 +675,43 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"program_invitations": {
+                  Row: {
+                    "accepted_at": string | null,"business_id": string | null,"contact": string,"id": string,"invited_at": string,"invited_by": string,"program_id": string,"source_partner_user_id": string | null,"status": string
+                  }
+                  Insert: {
+                    "accepted_at"?: string | null,"business_id"?: string | null,"contact": string,"id"?: string,"invited_at"?: string,"invited_by"?: string,"program_id": string,"source_partner_user_id"?: string | null,"status"?: string
+                  }
+                  Update: {
+                    "accepted_at"?: string | null,"business_id"?: string | null,"contact"?: string,"id"?: string,"invited_at"?: string,"invited_by"?: string,"program_id"?: string,"source_partner_user_id"?: string | null,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "program_invitations_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "program_invitations_invited_by_fkey"
+      columns: ["invited_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "program_invitations_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "program_invitations_source_partner_user_id_fkey"
+      columns: ["source_partner_user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"program_members": {
                   Row: {
                     "created_at": string,"program_id": string,"role": Database["public"]['Enums']["program_role"],"user_id": string
@@ -665,13 +739,13 @@ isOneToOne: false
                   ]
                 },"programs": {
                   Row: {
-                    "created_at": string,"created_by": string,"current_period_end": string | null,"description": string | null,"ends_on": string | null,"id": string,"join_code": string,"name": string,"phase": string,"pilot_seats": number,"seats": number,"sponsor_name": string | null,"starts_on": string | null,"status": string,"stripe_customer_id": string | null,"stripe_subscription_id": string | null,"subscription_status": string | null,"updated_at": string
+                    "countries": (string)[],"created_at": string,"created_by": string,"current_period_end": string | null,"description": string | null,"ends_on": string | null,"goals": string | null,"id": string,"join_code": string,"kind": string,"name": string,"phase": string,"pilot_seats": number,"seats": number,"sectors": (string)[],"sponsor_name": string | null,"starts_on": string | null,"status": string,"stripe_customer_id": string | null,"stripe_subscription_id": string | null,"subscription_status": string | null,"target_businesses": number | null,"updated_at": string
                   }
                   Insert: {
-                    "created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"id"?: string,"join_code"?: string,"name": string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sponsor_name"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"updated_at"?: string
+                    "countries"?: (string)[],"created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"goals"?: string | null,"id"?: string,"join_code"?: string,"kind"?: string,"name": string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sectors"?: (string)[],"sponsor_name"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"target_businesses"?: number | null,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"id"?: string,"join_code"?: string,"name"?: string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sponsor_name"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"updated_at"?: string
+                    "countries"?: (string)[],"created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"goals"?: string | null,"id"?: string,"join_code"?: string,"kind"?: string,"name"?: string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sectors"?: (string)[],"sponsor_name"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"target_businesses"?: number | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -986,6 +1060,9 @@ isOneToOne: false
 "batch_nudge":
 { Args: { "p_business_ids": (string)[],"p_message": string }; Returns: number
                            },
+"bulk_invite":
+{ Args: { "p_contacts": (string)[],"p_program_id": string }; Returns: number
+                           },
 "business_benchmark":
 { Args: { "p_business_id": string }; Returns: {
               "avg_quality": number,"cohort": string,"confidence": string,"level": string,"metric": string,"n": number,"p25": number,"p50": number,"p75": number,"period_end": string,"placement": string,"value": number
@@ -1077,6 +1154,14 @@ isOneToOne: false
                            },
 "passport_facts":
 { Args: { "p_business_id": string }; Returns: Json
+                           },
+"program_access_for_business":
+{ Args: { "p_business_id": string }; Returns: {
+              "admins": number,"assigned_partners": (string)[],"consented_at": string,"program_id": string,"program_name": string,"sponsor_name": string
+            }[]
+                           },
+"program_report":
+{ Args: { "p_program_id": string }; Returns: Json
                            },
 "publish_solution_version":
 { Args: { "p_playbook": Json,"p_solution_id": string }; Returns: string

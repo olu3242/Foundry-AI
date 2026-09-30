@@ -51,13 +51,13 @@ export function AddMemberForm({ businessId }: { businessId: string }) {
   );
 }
 
-export function JoinProgramForm({ businessId }: { businessId: string }) {
+export function JoinProgramForm({ businessId, code }: { businessId: string; code?: string }) {
   const [state, action, pending] = useActionState(joinProgram, null);
   return (
     <form action={action} className="space-y-3">
       <input type="hidden" name="businessId" value={businessId} />
       <Label className="block space-y-1.5"><span className="text-xs text-muted-foreground">Program code</span>
-        <Input name="code" required placeholder="e.g. 7K3PQ2ZA" className="font-mono uppercase" /></Label>
+        <Input name="code" required placeholder="e.g. 7K3PQ2ZA" defaultValue={code} className="font-mono uppercase" /></Label>
       <label className="flex items-start gap-2 text-sm">
         <input type="checkbox" name="consent" required className="mt-1 size-4" />
         <span>I agree to share this business&apos;s records, Pulse and Passport with the program team and the partner they assign. I can leave at any time, which stops sharing immediately.</span>

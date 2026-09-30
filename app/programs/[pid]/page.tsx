@@ -9,7 +9,9 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
-import { AddMemberForm } from "@/components/programs/forms";
+import { AddMemberForm, InviteForm, ProgramSettingsForm } from "@/components/programs/forms";
+import { ProgramReport, type Report } from "@/components/programs/program-report";
+import { publicEnv } from "@/lib/env";
 import { PortfolioTable } from "@/components/programs/portfolio-table";
 import { loadPortfolio } from "@/lib/programs/portfolio";
 import { billingConfigured } from "@/lib/billing/stripe";
@@ -35,6 +37,7 @@ export default async function ProgramPage({ params, searchParams }: { params: Pr
     isAdmin ? supabase.from("program_members").select("user_id, role, profiles(full_name, email, phone)").eq("program_id", pid) : Promise.resolve({ data: [] }),
     supabase.from("partner_assignments").select("partner_user_id, business_id").eq("program_id", pid),
   ]);
+  const { data: report } = isAdmin ? await supabase.rpc("program_report", { p_program_id: pid }) : { data: null };
   const since = Object.fromEntries((enrollments ?? []).map((e) => [e.business_id, e.enrolled_at]));
   const rows = await loadPortfolio(supabase, Object.keys(since), since);
   const partners = (members ?? []).filter((m) => m.role === "partner");
@@ -44,6 +47,11 @@ export default async function ProgramPage({ params, searchParams }: { params: Pr
   return (
     <SimpleShell>
       <PageHeader eyebrow={program.sponsor_name ?? "Program"} title={program.name} description={program.description ?? undefined} />
+      {isAdmin && report && (
+        <Card className="mb-6"><CardHeader><CardTitle>Program report</CardTitle><CardDescription>What a sponsor sees: totals only, never individual businesses.</CardDescription></CardHeader>
+          <ProgramReport programId={pid} report={report as unknown as Report} />
+        </Card>
+      )}
       <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
         <Card className="p-0">
           <CardHeader className="p-5 pb-0">
@@ -70,7 +78,9 @@ export default async function ProgramPage({ params, searchParams }: { params: Pr
           <Card>
             <CardHeader><CardTitle>Join code</CardTitle><CardDescription>Business owners enter this in their Settings to join and consent to sharing.</CardDescription></CardHeader>
             <p className="rounded-xl bg-muted py-3 text-center font-mono text-2xl tracking-[0.3em]" data-testid="join-code">{program.join_code}</p>
+            <p className="mt-2 break-all text-xs text-muted-foreground">Invite link: <span data-testid="join-link">{new URL(`/join/${program.join_code}`, publicEnv.NEXT_PUBLIC_SITE_URL).toString()}</span></p>
           </Card>
+          <Card><CardHeader><CardTitle>Invite businesses</CardTitle><CardDescription>Invites from a business partner are credited to them.</CardDescription></CardHeader><InviteForm programId={pid} /></Card>
           {isAdmin && (
             <Card>
               <CardHeader><CardTitle>Seats and billing</CardTitle>
@@ -87,6 +97,9 @@ export default async function ProgramPage({ params, searchParams }: { params: Pr
                 )}
               </div>
             </Card>
+          )}
+          {isAdmin && (
+            <Card><CardHeader><CardTitle>Program settings</CardTitle></CardHeader><ProgramSettingsForm program={program} /></Card>
           )}
           {isAdmin && (
             <Card>

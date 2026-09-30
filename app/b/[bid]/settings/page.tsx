@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { requireBusiness } from "@/lib/auth/guards";
+import { requireBusiness, WRITER_ROLES } from "@/lib/auth/guards";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +22,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ bid: 
   const isOwner = role === "owner";
   const [{ data: policies }, { data: enrollments }] = await Promise.all([
     supabase.from("autonomy_policies").select("action_type, level").eq("business_id", bid),
-    supabase.from("program_enrollments").select("program_id, enrolled_at, programs(name, sponsor_name)").eq("business_id", bid).eq("status", "active"),
+    WRITER_ROLES.includes(role) ? supabase.rpc("program_access_for_business", { p_business_id: bid }) : Promise.resolve({ data: [] }),
   ]);
 
   return (
@@ -63,7 +63,12 @@ export default async function SettingsPage({ params }: { params: Promise<{ bid: 
             <ul className="mb-4 divide-y text-sm">
               {enrollments.map((e) => (
                 <li key={e.program_id} className="flex items-center gap-3 py-2">
-                  <span className="flex-1">{e.programs?.name}<span className="block text-xs text-muted-foreground">{e.programs?.sponsor_name}</span></span>
+                  <span className="flex-1">{e.program_name}
+                    <span className="block text-xs text-muted-foreground">
+                      Sharing since {new Date(e.consented_at).toLocaleDateString("en", { dateStyle: "medium" })} · seen by {e.admins} program admin(s)
+                      {e.assigned_partners.length ? ` and ${e.assigned_partners.join(", ")}` : ""}
+                    </span>
+                  </span>
                   {isOwner && (
                     <form action={leaveProgram}>
                       <input type="hidden" name="businessId" value={bid} /><input type="hidden" name="programId" value={e.program_id} />

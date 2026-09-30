@@ -62,3 +62,36 @@ export async function startCheckout(formData: FormData) {
   }, { idempotencyKey: `checkout:${program.id}:${program.seats}:${new Date().toISOString().slice(0, 13)}` });
   redirect(session.url!);
 }
+
+export async function inviteBusinesses(_: ActionState, formData: FormData): Promise<ActionState> {
+  const programId = z.uuid().parse(formData.get("programId"));
+  await requireUser(`/programs/${programId}`);
+  const contacts = String(formData.get("contacts") ?? "").split(/[\s,;]+/).map((c) => c.trim()).filter(Boolean);
+  if (!contacts.length) return fail("Paste phone numbers or emails, one per line.");
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("bulk_invite", { p_program_id: programId, p_contacts: contacts });
+  if (error) return fail(friendlyDbError(error));
+  revalidatePath(`/programs/${programId}`);
+  return { ok: true, message: `${data ?? 0} new invitation(s). Share the join link with them.` };
+}
+
+export async function updateProgram(_: ActionState, formData: FormData): Promise<ActionState> {
+  const parsed = z.object({
+    programId: z.uuid(), kind: z.enum(["accelerator", "lender", "agency", "supplier", "other"]),
+    phase: z.enum(["setup", "recruiting", "active", "completed"]),
+    countries: z.string().optional(), sectors: z.string().optional(), goals: z.string().max(2000).optional(),
+    target: z.coerce.number().int().min(1).optional(),
+  }).safeParse(Object.fromEntries([...formData.entries()].filter(([, v]) => v !== "")));
+  if (!parsed.success) return fail("Please check the program settings.");
+  const p = parsed.data;
+  await requireUser(`/programs/${p.programId}`);
+  const supabase = await createClient();
+  const list = (v?: string) => (v ?? "").split(",").map((x) => x.trim()).filter(Boolean);
+  const { error } = await supabase.from("programs").update({
+    kind: p.kind, phase: p.phase, countries: list(p.countries).map((c) => c.toUpperCase()), sectors: list(p.sectors),
+    goals: p.goals ?? null, target_businesses: p.target ?? null,
+  }).eq("id", p.programId);
+  if (error) return fail(friendlyDbError(error));
+  revalidatePath(`/programs/${p.programId}`);
+  return { ok: true, message: "Saved." };
+}
