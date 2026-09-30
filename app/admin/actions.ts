@@ -80,3 +80,10 @@ export async function settleCharge(formData: FormData) {
   await supabase.rpc("settle_billable_event", { p_id: id, p_method: method, p_reference: reference });
   revalidatePath("/admin/commercial");
 }
+
+export async function scanRetention() {
+  await requireUser("/admin");
+  const supabase = await createClient();
+  await supabase.rpc("scan_retention");
+  revalidatePath("/admin/retention");
+}

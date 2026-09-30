@@ -31,6 +31,11 @@ export const handlers: Record<string, JobHandler> = {
     return { cohorts: data };
   },
   "outcome.measure": measureOutcomeJob,
+  "retention.scan": async ({ admin }) => {
+    const { data, error } = await admin.rpc("scan_retention");
+    if (error) throw error;
+    return data;
+  },
   "system.ping": async ({ job }) => ({ pong: true, at: new Date().toISOString(), payload: job.payload }),
 };
 

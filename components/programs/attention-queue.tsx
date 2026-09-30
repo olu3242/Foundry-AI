@@ -15,7 +15,7 @@ const tone = (s: number) => (s >= 65 ? "border-l-orange" : s >= 50 ? "border-l-g
 
 export function AttentionQueue({ items }: { items: QueueItem[] }) {
   const [state, action, pending] = useActionState(batchAction, null);
-  const [op, setOp] = useState<"snooze" | "nudge">("snooze");
+  const [op, setOp] = useState<"snooze" | "nudge" | "done">("snooze");
   if (!items.length) return <p className="p-6 text-sm text-muted-foreground">Nothing needs you right now.</p>;
   return (
     <form action={action}>
@@ -32,14 +32,15 @@ export function AttentionQueue({ items }: { items: QueueItem[] }) {
         ))}
       </ul>
       <div className="flex flex-wrap items-center gap-2 border-t p-4">
-        <Select name="op" aria-label="Batch action" value={op} onChange={(e) => setOp(e.target.value as "snooze" | "nudge")} className="h-9 w-44 text-xs">
+        <Select name="op" aria-label="Batch action" value={op} onChange={(e) => setOp(e.target.value as "snooze" | "nudge" | "done")} className="h-9 w-44 text-xs">
           <option value="snooze">Snooze selected</option>
           <option value="nudge">Send a note to owners</option>
+          <option value="done">Mark recovery done</option>
         </Select>
         {op === "snooze" ? (
           <Select name="days" aria-label="Snooze days" className="h-9 w-28 text-xs" defaultValue="3"><option value="1">1 day</option><option value="3">3 days</option><option value="7">7 days</option></Select>
         ) : (
-          <Input name="message" aria-label="Note to owners" placeholder="e.g. Remember to record today's sales" className="h-9 flex-1 text-xs" />
+          <Input name="message" aria-label={op === "done" ? "What you did" : "Note to owners"} placeholder={op === "done" ? "e.g. Called the owner, helped enter last week" : "e.g. Remember to record today's sales"} className="h-9 flex-1 text-xs" />
         )}
         <Button size="sm" variant="outline" disabled={pending}>{op === "snooze" ? <BellOff /> : <Send />} Apply</Button>
         <div className="w-full"><FormMessage state={state} /></div>

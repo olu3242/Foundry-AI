@@ -10,10 +10,21 @@ import { fail, friendlyDbError, type ActionState } from "@/lib/actions";
 export async function batchAction(_: ActionState, formData: FormData): Promise<ActionState> {
   await requireUser("/partner");
   const items = formData.getAll("item").map(String);
-  const parsed = z.object({ op: z.enum(["snooze", "nudge"]), days: z.coerce.number().int().min(1).max(30).default(3), message: z.string().optional() })
+  const parsed = z.object({ op: z.enum(["snooze", "nudge", "done"]), days: z.coerce.number().int().min(1).max(30).default(3), message: z.string().optional() })
     .safeParse(Object.fromEntries(formData));
   if (!parsed.success || !items.length) return fail("Select at least one item.");
   const supabase = await createClient();
+  if (parsed.data.op === "done") {
+    // B22: operator confirms the recovery step was taken; the scan marks it recovered once activity resumes.
+    const ids = items.map((i) => i.split("|")[0]!).filter((k) => k.startsWith("recover:")).map((k) => k.slice("recover:".length));
+    if (!ids.length) return fail("Select at least one recovery item.");
+    for (const id of ids) {
+      const { error } = await supabase.rpc("close_recovery_action", { p_id: id, p_status: "done", p_note: parsed.data.message || undefined });
+      if (error) return fail(friendlyDbError(error));
+    }
+    revalidatePath("/partner");
+    return { ok: true, message: `Marked ${ids.length} recovery step(s) done.` };
+  }
   if (parsed.data.op === "snooze") {
     const keys = items.map((i) => i.split("|")[0]!);
     const { error } = await supabase.rpc("snooze_items", { p_item_keys: keys, p_days: parsed.data.days });

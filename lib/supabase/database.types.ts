@@ -249,6 +249,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"business_health": {
+                  Row: {
+                    "active_days_30": number,"active_days_prev_30": number,"business_id": string,"computed_at": string,"continuation": string,"last_activity_at": string | null,"reasons": NonNullable<Json>,"risk": string,"stage": string,"value": NonNullable<Json>
+                  }
+                  Insert: {
+                    "active_days_30": number,"active_days_prev_30": number,"business_id": string,"computed_at"?: string,"continuation": string,"last_activity_at"?: string | null,"reasons"?: NonNullable<Json>,"risk": string,"stage": string,"value": NonNullable<Json>
+                  }
+                  Update: {
+                    "active_days_30"?: number,"active_days_prev_30"?: number,"business_id"?: string,"computed_at"?: string,"continuation"?: string,"last_activity_at"?: string | null,"reasons"?: NonNullable<Json>,"risk"?: string,"stage"?: string,"value"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "business_health_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: true
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"business_identifiers": {
                   Row: {
                     "business_id": string,"created_at": string,"type": string,"value": string,"verified": boolean
@@ -1188,6 +1207,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"recovery_actions": {
+                  Row: {
+                    "action_type": string,"business_id": string,"closed_at": string | null,"closed_by": string | null,"created_at": string,"evidence": NonNullable<Json>,"id": string,"note": string | null,"reason": string,"status": string
+                  }
+                  Insert: {
+                    "action_type": string,"business_id": string,"closed_at"?: string | null,"closed_by"?: string | null,"created_at"?: string,"evidence": NonNullable<Json>,"id"?: string,"note"?: string | null,"reason": string,"status"?: string
+                  }
+                  Update: {
+                    "action_type"?: string,"business_id"?: string,"closed_at"?: string | null,"closed_by"?: string | null,"created_at"?: string,"evidence"?: NonNullable<Json>,"id"?: string,"note"?: string | null,"reason"?: string,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "recovery_actions_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "recovery_actions_closed_by_fkey"
+      columns: ["closed_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"revenue_events": {
                   Row: {
                     "amount_minor": number,"billable_event_id": string | null,"business_id": string | null,"currency": string,"external_id": string | null,"id": string,"occurred_at": string,"program_id": string | null,"source": string
@@ -1561,6 +1605,9 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"close_recovery_action":
+{ Args: { "p_id": string,"p_note"?: string,"p_status": string }; Returns: undefined
+                           },
 "cohort_retention":
 { Args: { "p_months"?: number }; Returns: {
               "active": number,"cohort": string,"month_offset": number,"rate": number,"size": number
@@ -1707,6 +1754,9 @@ isOneToOne: false
 "reject_draft":
 { Args: { "p_draft_id": string }; Returns: undefined
                            },
+"retention_overview":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "review_provider":
 { Args: { "p_provider_id": string,"p_status": string }; Returns: undefined
                            },
@@ -1718,6 +1768,9 @@ isOneToOne: false
                            },
 "scale_metrics":
 { Args: { "p_from"?: string,"p_to"?: string }; Returns: Json
+                           },
+"scan_retention":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "security_report":
 { Args: Record<PropertyKey, never>; Returns: Json
