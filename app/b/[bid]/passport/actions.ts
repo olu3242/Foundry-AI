@@ -95,3 +95,33 @@ export async function vouch(_: ActionState, formData: FormData): Promise<ActionS
   revalidatePath(`/b/${businessId}/passport`);
   return { ok: true, message: "Verification recorded." };
 }
+
+// ─── B24 trust network ────────────────────────────────────────────────────────
+export async function requestVerification(_: ActionState, formData: FormData): Promise<ActionState> {
+  const parsed = z.object({
+    businessId: z.uuid(), verifierId: z.uuid(), claimType: z.enum(["sales_total_period", "registration"]),
+    months: z.coerce.number().int().min(1).max(12).default(3), identifierType: z.string().max(40).optional(), consent: z.literal("on"),
+  }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return fail("Choose a verifier and what to check, and tick the consent box.");
+  const p = parsed.data;
+  const { supabase } = await requireBusiness(p.businessId, ["owner"]);
+  const end = new Date();
+  const start = new Date(end);
+  start.setMonth(start.getMonth() - p.months);
+  const params = p.claimType === "sales_total_period"
+    ? { period_start: start.toISOString().slice(0, 10), period_end: end.toISOString().slice(0, 10) }
+    : { type: p.identifierType ?? "" };
+  const { error } = await supabase.rpc("request_verification", {
+    p_business_id: p.businessId, p_verifier_id: p.verifierId, p_claim_type: p.claimType, p_params: params, p_consent: true,
+  });
+  if (error) return fail(friendlyDbError(error));
+  revalidatePath(`/b/${p.businessId}/passport`);
+  return { ok: true, message: "Sent. The verifier sees only the records listed for this claim, for 30 days." };
+}
+
+export async function disputeAttestation(formData: FormData) {
+  const { businessId, id, reason } = z.object({ businessId: z.uuid(), id: z.uuid(), reason: z.string().trim().min(5).max(1000) }).parse(Object.fromEntries(formData));
+  const { supabase } = await requireBusiness(businessId, ["owner"]);
+  await supabase.rpc("dispute_attestation", { p_attestation_id: id, p_reason: reason });
+  revalidatePath(`/b/${businessId}/passport`);
+}

@@ -94,3 +94,20 @@ export async function runRoutineOps() {
   await supabase.rpc("run_routine_ops", {});
   revalidatePath("/admin/retention");
 }
+
+// ─── B24 trust ────────────────────────────────────────────────────────────────
+export async function reviewVerifier(formData: FormData) {
+  const { id, status } = z.object({ id: z.uuid(), status: z.enum(["approved", "suspended"]) }).parse(Object.fromEntries(formData));
+  await requireUser("/admin");
+  const supabase = await createClient();
+  await supabase.rpc("review_verifier", { p_verifier_id: id, p_status: status });
+  revalidatePath("/admin/trust");
+}
+
+export async function resolveDispute(formData: FormData) {
+  const { id, decision, resolution } = z.object({ id: z.uuid(), decision: z.enum(["upheld", "rejected"]), resolution: z.string().trim().min(3).max(1000) }).parse(Object.fromEntries(formData));
+  await requireUser("/admin");
+  const supabase = await createClient();
+  await supabase.rpc("resolve_dispute", { p_dispute_id: id, p_decision: decision, p_resolution: resolution });
+  revalidatePath("/admin/trust");
+}

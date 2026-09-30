@@ -111,6 +111,86 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"attestation_disputes": {
+                  Row: {
+                    "attestation_id": string,"business_id": string,"created_at": string,"id": string,"raised_by": string,"reason": string,"resolution": string | null,"resolved_at": string | null,"resolved_by": string | null,"status": string
+                  }
+                  Insert: {
+                    "attestation_id": string,"business_id": string,"created_at"?: string,"id"?: string,"raised_by"?: string,"reason": string,"resolution"?: string | null,"resolved_at"?: string | null,"resolved_by"?: string | null,"status"?: string
+                  }
+                  Update: {
+                    "attestation_id"?: string,"business_id"?: string,"created_at"?: string,"id"?: string,"raised_by"?: string,"reason"?: string,"resolution"?: string | null,"resolved_at"?: string | null,"resolved_by"?: string | null,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "attestation_disputes_attestation_id_fkey"
+      columns: ["attestation_id"]
+isOneToOne: false
+      referencedRelation: "attestations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "attestation_disputes_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "attestation_disputes_raised_by_fkey"
+      columns: ["raised_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "attestation_disputes_resolved_by_fkey"
+      columns: ["resolved_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"attestations": {
+                  Row: {
+                    "attested_at": string,"attested_by": string,"business_id": string,"claim": NonNullable<Json>,"claim_type": string,"id": string,"method": string,"note": string | null,"request_id": string,"result": string,"status": string,"supersedes": string | null,"valid_until": string,"verifier_id": string
+                  }
+                  Insert: {
+                    "attested_at"?: string,"attested_by"?: string,"business_id": string,"claim": NonNullable<Json>,"claim_type": string,"id"?: string,"method": string,"note"?: string | null,"request_id": string,"result": string,"status"?: string,"supersedes"?: string | null,"valid_until"?: string,"verifier_id": string
+                  }
+                  Update: {
+                    "attested_at"?: string,"attested_by"?: string,"business_id"?: string,"claim"?: NonNullable<Json>,"claim_type"?: string,"id"?: string,"method"?: string,"note"?: string | null,"request_id"?: string,"result"?: string,"status"?: string,"supersedes"?: string | null,"valid_until"?: string,"verifier_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "attestations_attested_by_fkey"
+      columns: ["attested_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "attestations_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "attestations_request_id_fkey"
+      columns: ["request_id"]
+isOneToOne: false
+      referencedRelation: "verification_requests"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "attestations_supersedes_fkey"
+      columns: ["supersedes"]
+isOneToOne: false
+      referencedRelation: "attestations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "attestations_verifier_id_fkey"
+      columns: ["verifier_id"]
+isOneToOne: false
+      referencedRelation: "verifiers"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"audit_log": {
                   Row: {
                     "action": string,"actor_id": string | null,"business_id": string | null,"changed_at": string,"id": number,"new_row": Json | null,"old_row": Json | null,"row_id": string | null,"table_name": string
@@ -1542,6 +1622,37 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"verification_requests": {
+                  Row: {
+                    "access_expires_at": string,"business_id": string,"claim": NonNullable<Json>,"claim_type": string,"consented_by": string,"created_at": string,"id": string,"scope": NonNullable<Json>,"status": string,"verifier_id": string
+                  }
+                  Insert: {
+                    "access_expires_at"?: string,"business_id": string,"claim": NonNullable<Json>,"claim_type": string,"consented_by"?: string,"created_at"?: string,"id"?: string,"scope": NonNullable<Json>,"status"?: string,"verifier_id": string
+                  }
+                  Update: {
+                    "access_expires_at"?: string,"business_id"?: string,"claim"?: NonNullable<Json>,"claim_type"?: string,"consented_by"?: string,"created_at"?: string,"id"?: string,"scope"?: NonNullable<Json>,"status"?: string,"verifier_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "verification_requests_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "verification_requests_consented_by_fkey"
+      columns: ["consented_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "verification_requests_verifier_id_fkey"
+      columns: ["verifier_id"]
+isOneToOne: false
+      referencedRelation: "verifiers"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"verifications": {
                   Row: {
                     "business_id": string,"created_at": string,"evidence_path": string | null,"id": string,"level": Database["public"]['Enums']["provenance"],"method": string,"note": string | null,"period_end": string | null,"period_start": string | null,"subject_id": string | null,"subject_type": Database["public"]['Enums']["verification_subject"],"verified_by": string,"verifier_role": Database["public"]['Enums']["business_role"]
@@ -1564,6 +1675,62 @@ isOneToOne: false
       columns: ["verified_by"]
 isOneToOne: false
       referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"verifier_members": {
+                  Row: {
+                    "user_id": string,"verifier_id": string
+                  }
+                  Insert: {
+                    "user_id": string,"verifier_id": string
+                  }
+                  Update: {
+                    "user_id"?: string,"verifier_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "verifier_members_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "verifier_members_verifier_id_fkey"
+      columns: ["verifier_id"]
+isOneToOne: false
+      referencedRelation: "verifiers"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"verifiers": {
+                  Row: {
+                    "accreditation": string | null,"allowed_claims": (string)[],"created_at": string,"created_by": string,"id": string,"kind": string,"name": string,"program_id": string | null,"provider_id": string | null,"status": string
+                  }
+                  Insert: {
+                    "accreditation"?: string | null,"allowed_claims": (string)[],"created_at"?: string,"created_by"?: string,"id"?: string,"kind": string,"name": string,"program_id"?: string | null,"provider_id"?: string | null,"status"?: string
+                  }
+                  Update: {
+                    "accreditation"?: string | null,"allowed_claims"?: (string)[],"created_at"?: string,"created_by"?: string,"id"?: string,"kind"?: string,"name"?: string,"program_id"?: string | null,"provider_id"?: string | null,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "verifiers_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "verifiers_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "verifiers_provider_id_fkey"
+      columns: ["provider_id"]
+isOneToOne: false
+      referencedRelation: "providers"
       referencedColumns: ["id"]
     }
                   ]
@@ -1596,6 +1763,9 @@ isOneToOne: false
                            },
 "assign_partner":
 { Args: { "p_business_id": string,"p_partner_user_id": string,"p_program_id": string }; Returns: undefined
+                           },
+"attest_claim":
+{ Args: { "p_method": string,"p_note"?: string,"p_request_id": string,"p_result": string }; Returns: string
                            },
 "automation_overview":
 { Args: { "p_days"?: number }; Returns: Json
@@ -1674,6 +1844,9 @@ isOneToOne: false
 "consume_entitlement":
 { Args: { "p_business_id": string,"p_correlation_id": string,"p_feature": string }; Returns: boolean
                            },
+"correct_attestation":
+{ Args: { "p_attestation_id": string,"p_note": string,"p_result": string }; Returns: string
+                           },
 "create_business":
 { Args: { "p_country_code"?: string,"p_currency"?: string,"p_name": string,"p_sector"?: string,"p_timezone"?: string }; Returns: string
                            },
@@ -1691,6 +1864,9 @@ isOneToOne: false
                            },
 "deprecate_solution_version":
 { Args: { "p_reason": string,"p_version_id": string }; Returns: undefined
+                           },
+"dispute_attestation":
+{ Args: { "p_attestation_id": string,"p_reason": string }; Returns: string
                            },
 "enqueue_job":
 { Args: { "p_business_id"?: string,"p_dedupe_key"?: string,"p_max_attempts"?: number,"p_payload"?: Json,"p_run_at"?: string,"p_type": string }; Returns: string
@@ -1791,8 +1967,17 @@ isOneToOne: false
 "register_provider":
 { Args: { "p_contact": string,"p_description"?: string,"p_kind": string,"p_name": string }; Returns: string
                            },
+"register_verifier":
+{ Args: { "p_accreditation"?: string,"p_allowed_claims": (string)[],"p_kind": string,"p_name": string,"p_program_id"?: string,"p_provider_id"?: string }; Returns: string
+                           },
 "reject_draft":
 { Args: { "p_draft_id": string }; Returns: undefined
+                           },
+"request_verification":
+{ Args: { "p_business_id": string,"p_claim_type": string,"p_consent": boolean,"p_params": Json,"p_verifier_id": string }; Returns: string
+                           },
+"resolve_dispute":
+{ Args: { "p_decision": string,"p_dispute_id": string,"p_resolution": string }; Returns: undefined
                            },
 "resolve_escalation":
 { Args: { "p_id": string }; Returns: undefined
@@ -1808,6 +1993,9 @@ isOneToOne: false
                            },
 "review_solution":
 { Args: { "p_decision": string,"p_note"?: string,"p_solution_id": string }; Returns: undefined
+                           },
+"review_verifier":
+{ Args: { "p_status": string,"p_verifier_id": string }; Returns: undefined
                            },
 "rollup_metrics":
 { Args: Record<PropertyKey, never>; Returns: number
@@ -1867,6 +2055,17 @@ isOneToOne: false
 "upsert_market":
 { Args: { "p_market": Json }; Returns: undefined
                            },
+"verification_history":
+{ Args: { "p_business_id": string }; Returns: Json
+                           },
+"verification_request_evidence":
+{ Args: { "p_request_id": string }; Returns: Json
+                           },
+"verifier_attestations":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "attested_at": string,"business_name": string,"claim_type": string,"id": string,"result": string,"status": string
+            }[]
+                           },
 "verify_outcome":
 { Args: { "p_note"?: string,"p_outcome_id": string,"p_verdict": string }; Returns: undefined
                            },
@@ -1878,6 +2077,9 @@ isOneToOne: false
                            },
 "withdraw_evidence_package":
 { Args: { "p_package_id": string }; Returns: undefined
+                           },
+"withdraw_verification_request":
+{ Args: { "p_request_id": string }; Returns: undefined
                            }
           }
           Enums: {
