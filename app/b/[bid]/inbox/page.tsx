@@ -33,8 +33,8 @@ export default async function InboxPage({ params }: { params: Promise<{ bid: str
         {!proposed?.length && <p className="glass p-6 text-sm text-muted-foreground">You&apos;re all caught up.</p>}
         {proposed?.map((a) => {
           const Icon = ICON[a.action_type] ?? Bot;
-          const payload = a.payload as { message?: string; phone?: string | null; dimension?: string };
-          const planMetric = payload.dimension ? DIMENSION_METRIC[payload.dimension] : undefined;
+          const payload = a.payload as { message?: string; phone?: string | null; dimension?: string; metric?: string; solution_version_id?: string; window_days?: number; plan_title?: string };
+          const planMetric = payload.metric ?? (payload.dimension ? DIMENSION_METRIC[payload.dimension] : undefined);
           const meta = ACTION_TYPES[a.action_type as ActionType];
           return (
             <article key={a.id} className="glass space-y-3 p-4" aria-label={a.title}>
@@ -55,7 +55,8 @@ export default async function InboxPage({ params }: { params: Promise<{ bid: str
                       <Button size="sm" variant="outline" className="ml-2"><Check /> Mark as sent</Button>
                     </form>
                   ) : planMetric ? (
-                    <StartPlanForm compact businessId={bid} defaults={{ title: a.title, metric: planMetric, sourceActionId: a.id }} />
+                    <StartPlanForm compact businessId={bid} defaults={{ title: payload.plan_title ?? a.title, metric: planMetric, sourceActionId: a.id,
+                      solutionVersionId: payload.solution_version_id, windowDays: payload.window_days }} />
                   ) : (
                     <form action={decideAction}>
                       <input type="hidden" name="businessId" value={bid} /><input type="hidden" name="actionId" value={a.id} /><input type="hidden" name="decision" value="executed" />

@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { publicEnv } from "@/lib/env";
 
-const PROTECTED = ["/app", "/b/", "/onboarding", "/partner", "/programs"];
+const PROTECTED = ["/app", "/b/", "/onboarding", "/partner", "/programs", "/admin"];
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });

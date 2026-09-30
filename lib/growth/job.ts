@@ -38,7 +38,22 @@ export const growthJob: JobHandler = async ({ job, admin }) => {
     .map((p) => ({ product_id: p.id, name: p.name, qty: Number(p.stock_qty), reorder_level: p.reorder_level === null ? null : Number(p.reorder_level) }))
     .filter((p) => p.qty < 0 || (p.reorder_level !== null && p.qty <= p.reorder_level));
 
+  // B13: attach the current version of the catalogue solution for each Pulse dimension.
+  const { data: solutions } = await admin.from("solutions")
+    .select("key, name, summary, target_dimension, target_metric, default_window_days, solution_versions(id, version, status)").eq("status", "active");
+  const byDimension = new Map((solutions ?? []).map((s) => {
+    const v = s.solution_versions.filter((x) => x.status === "active").sort((a, b) => b.version - a.version)[0];
+    return [s.target_dimension, v ? { ...s, version_id: v.id } : null] as const;
+  }));
+
   const drafts = growthActions({ businessName: business.name, currency: business.currency, pulse: pulse ?? [], debtors: [...debtors.values()], stock });
+  for (const d of drafts) {
+    const sol = d.action_type === "growth.recommend" ? byDimension.get(String(d.payload.dimension)) : null;
+    if (sol) {
+      d.payload = { ...d.payload, solution_key: sol.key, solution_version_id: sol.version_id, metric: sol.target_metric, window_days: sol.default_window_days, plan_title: sol.name };
+      d.body = `${d.body} Suggested plan: ${sol.name}. ${sol.summary}`;
+    }
+  }
   const levelOf = new Map((policies ?? []).map((p) => [p.action_type, p.level]));
   // Skip anything already waiting in the inbox, or already actioned this week.
   const seen = new Set((open ?? []).map((a) => `${a.action_type}|${a.dedupe_key}`));

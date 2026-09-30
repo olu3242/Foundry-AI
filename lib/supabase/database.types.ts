@@ -280,6 +280,12 @@ isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "interventions_solution_version_fk"
+      columns: ["solution_version_id"]
+isOneToOne: false
+      referencedRelation: "solution_versions"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "interventions_source_action_id_fkey"
       columns: ["source_action_id"]
 isOneToOne: false
@@ -534,6 +540,25 @@ isOneToOne: false
       columns: ["share_id"]
 isOneToOne: false
       referencedRelation: "passport_shares"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"platform_admins": {
+                  Row: {
+                    "created_at": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "platform_admins_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "profiles"
       referencedColumns: ["id"]
     }
                   ]
@@ -799,6 +824,38 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"solution_versions": {
+                  Row: {
+                    "created_at": string,"deprecated_reason": string | null,"id": string,"playbook": NonNullable<Json>,"solution_id": string,"status": string,"version": number
+                  }
+                  Insert: {
+                    "created_at"?: string,"deprecated_reason"?: string | null,"id"?: string,"playbook"?: NonNullable<Json>,"solution_id": string,"status"?: string,"version": number
+                  }
+                  Update: {
+                    "created_at"?: string,"deprecated_reason"?: string | null,"id"?: string,"playbook"?: NonNullable<Json>,"solution_id"?: string,"status"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "solution_versions_solution_id_fkey"
+      columns: ["solution_id"]
+isOneToOne: false
+      referencedRelation: "solutions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"solutions": {
+                  Row: {
+                    "created_at": string,"default_window_days": number,"id": string,"key": string,"name": string,"status": Database["public"]['Enums']["solution_status"],"summary": string,"target_dimension": string | null,"target_metric": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"default_window_days"?: number,"id"?: string,"key": string,"name": string,"status"?: Database["public"]['Enums']["solution_status"],"summary": string,"target_dimension"?: string | null,"target_metric": string
+                  }
+                  Update: {
+                    "created_at"?: string,"default_window_days"?: number,"id"?: string,"key"?: string,"name"?: string,"status"?: Database["public"]['Enums']["solution_status"],"summary"?: string,"target_dimension"?: string | null,"target_metric"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"stock_movements": {
                   Row: {
                     "business_id": string,"created_at": string,"created_by": string | null,"id": string,"notes": string | null,"occurred_at": string,"product_id": string,"provenance": Database["public"]['Enums']["provenance"],"quantity_delta": number,"reason": Database["public"]['Enums']["stock_reason"],"sale_id": string | null,"source_capture_id": string | null,"source_draft_id": string | null,"unit_cost_minor": number | null
@@ -907,6 +964,9 @@ isOneToOne: false
 "add_verification":
 { Args: { "p_business_id": string,"p_evidence_path"?: string,"p_level": Database["public"]['Enums']["provenance"],"p_method": string,"p_note"?: string,"p_period_end"?: string,"p_period_start"?: string,"p_subject_id"?: string,"p_subject_type": Database["public"]['Enums']["verification_subject"] }; Returns: string
                            },
+"am_platform_admin":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
 "assign_partner":
 { Args: { "p_business_id": string,"p_partner_user_id": string,"p_program_id": string }; Returns: undefined
                            },
@@ -962,6 +1022,9 @@ isOneToOne: false
 "decide_action":
 { Args: { "p_action_id": string,"p_decision": string,"p_result"?: Json }; Returns: undefined
                            },
+"deprecate_solution_version":
+{ Args: { "p_reason": string,"p_version_id": string }; Returns: undefined
+                           },
 "enqueue_job":
 { Args: { "p_business_id"?: string,"p_dedupe_key"?: string,"p_max_attempts"?: number,"p_payload"?: Json,"p_run_at"?: string,"p_type": string }; Returns: string
                            },
@@ -994,6 +1057,9 @@ isOneToOne: false
 "passport_facts":
 { Args: { "p_business_id": string }; Returns: Json
                            },
+"publish_solution_version":
+{ Args: { "p_playbook": Json,"p_solution_id": string }; Returns: string
+                           },
 "pulse_metrics":
 { Args: { "p_as_of"?: string,"p_business_id": string }; Returns: Json
                            },
@@ -1012,6 +1078,11 @@ isOneToOne: false
 "snooze_items":
 { Args: { "p_days": number,"p_item_keys": (string)[] }; Returns: undefined
                            },
+"solution_effectiveness":
+{ Args: { "p_solution_id"?: string }; Returns: {
+              "abandoned": number,"activated": number,"completed": number,"completion_rate": number,"failure_reasons": Json,"improved": number,"improvement_rate": number,"median_change_pct": number,"sample_ok": boolean,"solution_id": string,"solution_key": string,"solution_name": string,"verified": number,"verified_rate": number,"version": number,"version_id": string,"version_status": string
+            }[]
+                           },
 "start_intervention":
 { Args: { "p_business_id": string,"p_metric": string,"p_solution_version_id"?: string,"p_source_action_id"?: string,"p_title": string,"p_window_days"?: number }; Returns: string
                            },
@@ -1023,7 +1094,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "action_status": "proposed"|"approved"|"rejected"|"executed"|"failed"|"expired","actor_type": "user"|"agent"|"system","business_role": "owner"|"staff"|"partner"|"program_admin","capture_channel": "text"|"voice"|"photo"|"forward","capture_status": "received"|"processing"|"drafted"|"resolved"|"failed","draft_status": "proposed"|"confirmed"|"rejected","intervention_status": "active"|"completed"|"abandoned","job_status": "queued"|"running"|"succeeded"|"failed"|"dead","outcome_status": "observed"|"verified"|"disputed","payment_method": "cash"|"transfer"|"mobile_money"|"card"|"credit"|"other","program_role": "admin"|"partner","provenance": "self_reported"|"document_backed"|"third_party_verified"|"institution_verified","pulse_state": "strong"|"steady"|"watch"|"at_risk"|"insufficient_data","pulse_trend": "up"|"flat"|"down"|"unknown","record_kind": "sale"|"expense"|"stock_movement"|"customer","stock_reason": "purchase"|"sale"|"adjustment"|"waste"|"return","verification_subject": "business"|"sale"|"expense"|"stock_movement"
+            "action_status": "proposed"|"approved"|"rejected"|"executed"|"failed"|"expired","actor_type": "user"|"agent"|"system","business_role": "owner"|"staff"|"partner"|"program_admin","capture_channel": "text"|"voice"|"photo"|"forward","capture_status": "received"|"processing"|"drafted"|"resolved"|"failed","draft_status": "proposed"|"confirmed"|"rejected","intervention_status": "active"|"completed"|"abandoned","job_status": "queued"|"running"|"succeeded"|"failed"|"dead","outcome_status": "observed"|"verified"|"disputed","payment_method": "cash"|"transfer"|"mobile_money"|"card"|"credit"|"other","program_role": "admin"|"partner","provenance": "self_reported"|"document_backed"|"third_party_verified"|"institution_verified","pulse_state": "strong"|"steady"|"watch"|"at_risk"|"insufficient_data","pulse_trend": "up"|"flat"|"down"|"unknown","record_kind": "sale"|"expense"|"stock_movement"|"customer","solution_status": "draft"|"submitted"|"approved"|"active"|"rejected"|"deprecated","stock_reason": "purchase"|"sale"|"adjustment"|"waste"|"return","verification_subject": "business"|"sale"|"expense"|"stock_movement"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1139,7 +1210,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "action_status": ["proposed", "approved", "rejected", "executed", "failed", "expired"],"actor_type": ["user", "agent", "system"],"business_role": ["owner", "staff", "partner", "program_admin"],"capture_channel": ["text", "voice", "photo", "forward"],"capture_status": ["received", "processing", "drafted", "resolved", "failed"],"draft_status": ["proposed", "confirmed", "rejected"],"intervention_status": ["active", "completed", "abandoned"],"job_status": ["queued", "running", "succeeded", "failed", "dead"],"outcome_status": ["observed", "verified", "disputed"],"payment_method": ["cash", "transfer", "mobile_money", "card", "credit", "other"],"program_role": ["admin", "partner"],"provenance": ["self_reported", "document_backed", "third_party_verified", "institution_verified"],"pulse_state": ["strong", "steady", "watch", "at_risk", "insufficient_data"],"pulse_trend": ["up", "flat", "down", "unknown"],"record_kind": ["sale", "expense", "stock_movement", "customer"],"stock_reason": ["purchase", "sale", "adjustment", "waste", "return"],"verification_subject": ["business", "sale", "expense", "stock_movement"]
+            "action_status": ["proposed", "approved", "rejected", "executed", "failed", "expired"],"actor_type": ["user", "agent", "system"],"business_role": ["owner", "staff", "partner", "program_admin"],"capture_channel": ["text", "voice", "photo", "forward"],"capture_status": ["received", "processing", "drafted", "resolved", "failed"],"draft_status": ["proposed", "confirmed", "rejected"],"intervention_status": ["active", "completed", "abandoned"],"job_status": ["queued", "running", "succeeded", "failed", "dead"],"outcome_status": ["observed", "verified", "disputed"],"payment_method": ["cash", "transfer", "mobile_money", "card", "credit", "other"],"program_role": ["admin", "partner"],"provenance": ["self_reported", "document_backed", "third_party_verified", "institution_verified"],"pulse_state": ["strong", "steady", "watch", "at_risk", "insufficient_data"],"pulse_trend": ["up", "flat", "down", "unknown"],"record_kind": ["sale", "expense", "stock_movement", "customer"],"solution_status": ["draft", "submitted", "approved", "active", "rejected", "deprecated"],"stock_reason": ["purchase", "sale", "adjustment", "waste", "return"],"verification_subject": ["business", "sale", "expense", "stock_movement"]
           }
         }
 } as const

@@ -53,8 +53,9 @@ export async function service(path: string, init: RequestInit = {}) {
     ...init,
     headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, "Content-Type": "application/json", Prefer: "return=representation", ...init.headers },
   });
-  if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
-  return res.json();
+  const text = await res.text();
+  if (!res.ok) throw new Error(`${res.status} ${text}`);
+  return text ? JSON.parse(text) : null;
 }
 
 /** Makes queued jobs matching a dedupe-key prefix due now (time travel for multi-day windows). */
@@ -62,4 +63,11 @@ export async function fastForwardJobs(dedupePrefix: string) {
   await service(`jobs?dedupe_key=like.${encodeURIComponent(dedupePrefix)}*&status=eq.queued`, {
     method: "PATCH", body: JSON.stringify({ run_at: new Date(Date.now() - 1000).toISOString() }),
   });
+}
+
+export async function makePlatformAdmin(phone: string) {
+  const users = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?per_page=200`, { headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` } }).then((r) => r.json());
+  const user = (users.users as { id: string; phone: string }[]).find((u) => u.phone === phone);
+  if (!user) throw new Error(`no user for ${phone}`);
+  await service("platform_admins?on_conflict=user_id", { method: "POST", headers: { Prefer: "resolution=ignore-duplicates" }, body: JSON.stringify({ user_id: user.id }) });
 }

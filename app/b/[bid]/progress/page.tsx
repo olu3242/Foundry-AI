@@ -10,6 +10,8 @@ import { StartPlanForm } from "@/components/progress/start-plan-form";
 import { METRICS, formatMetric, type MetricKey } from "@/lib/interventions/catalog";
 import { formatDate } from "@/lib/utils";
 import { abandonPlan, completePlan, verifyResult } from "./actions";
+import { SolutionList } from "@/components/progress/solution-list";
+import { loadSolutions } from "@/lib/solutions";
 
 export const metadata: Metadata = { title: "Progress" };
 
@@ -29,7 +31,8 @@ export default async function ProgressPage({ params }: { params: Promise<{ bid: 
   const { bid } = await params;
   const { business, role, supabase } = await requireBusiness(bid);
   const isVerifier = role === "partner" || role === "program_admin";
-  const [{ data: activation }, { data: plans }] = await Promise.all([
+  const [solutions, { data: activation }, { data: plans }] = await Promise.all([
+    loadSolutions(supabase),
     supabase.rpc("activation_status", { p_business_id: bid }),
     supabase.from("interventions").select("*, outcomes(*)").eq("business_id", bid).order("started_at", { ascending: false }).limit(30),
   ]);
@@ -47,6 +50,10 @@ export default async function ProgressPage({ params }: { params: Promise<{ bid: 
             <CardHeader><CardTitle>Start a plan</CardTitle><CardDescription>Pick one thing to change. Foundry records today&apos;s number and measures it again when the plan ends.</CardDescription></CardHeader>
             <StartPlanForm businessId={bid} />
           </Card>
+          <Card>
+            <CardHeader><CardTitle>Plans that have worked for others</CardTitle><CardDescription>Counts come from businesses that ran each plan. An improvement after a plan isn&apos;t proof the plan caused it.</CardDescription></CardHeader>
+            <SolutionList businessId={bid} rows={solutions} canStart />
+          </Card>
           {plans?.map((p) => {
             const o = Array.isArray(p.outcomes) ? p.outcomes[0] : p.outcomes;
             const metric = METRICS[p.target_metric as MetricKey];
@@ -54,6 +61,7 @@ export default async function ProgressPage({ params }: { params: Promise<{ bid: 
               <article key={p.id} className="glass space-y-3 p-4" aria-label={p.title}>
                 <header className="flex flex-wrap items-center gap-2">
                   <h2 className="font-semibold">{p.title}</h2>
+                  {p.solution_version_id && <Badge tone="insight">Proven plan</Badge>}
                   <Badge tone={p.status === "active" ? "opportunity" : p.status === "completed" ? "brand" : "neutral"}>{p.status}</Badge>
                   <span className="ml-auto text-xs text-muted-foreground">Started {formatDate(p.started_at)} · ends {formatDate(p.due_at)}</span>
                 </header>
