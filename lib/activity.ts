@@ -19,6 +19,12 @@ const DESCRIBE: Record<string, (p: Payload) => string> = {
   "stock.moved": (p) => `Stock of ${str(p.product)} changed by ${String(p.delta)}`,
   "customer.added": (p) => `${str(p.name)} was added as a customer`,
   "draft.rejected": (p) => `A ${str(p.kind).replace("_", " ")} draft was discarded`,
+  "pulse.computed": (p) => {
+    const n = Array.isArray(p.attention) ? p.attention.length : 0;
+    return n ? `Pulse updated: ${n} area(s) need attention` : "Pulse updated: everything looks steady";
+  },
+  "sale.voided": () => "A sale was voided",
+  "expense.voided": () => "An expense was voided",
   "job.dead": (p) => `Background task ${str(p.type)} failed and needs attention`,
 };
 

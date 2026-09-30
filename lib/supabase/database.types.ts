@@ -251,6 +251,25 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"pulse_snapshots": {
+                  Row: {
+                    "action": string | null,"business_id": string,"computed_at": string,"computed_on": string,"dimension": string,"evidence": NonNullable<Json>,"id": string,"score": number | null,"state": Database["public"]['Enums']["pulse_state"],"trend": Database["public"]['Enums']["pulse_trend"],"why": string
+                  }
+                  Insert: {
+                    "action"?: string | null,"business_id": string,"computed_at"?: string,"computed_on": string,"dimension": string,"evidence"?: NonNullable<Json>,"id"?: string,"score"?: number | null,"state": Database["public"]['Enums']["pulse_state"],"trend"?: Database["public"]['Enums']["pulse_trend"],"why": string
+                  }
+                  Update: {
+                    "action"?: string | null,"business_id"?: string,"computed_at"?: string,"computed_on"?: string,"dimension"?: string,"evidence"?: NonNullable<Json>,"id"?: string,"score"?: number | null,"state"?: Database["public"]['Enums']["pulse_state"],"trend"?: Database["public"]['Enums']["pulse_trend"],"why"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pulse_snapshots_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"record_drafts": {
                   Row: {
                     "agent_run_id": string | null,"business_id": string,"capture_id": string,"confidence": number,"confirmed_at": string | null,"confirmed_by": string | null,"created_at": string,"evidence": NonNullable<Json>,"explanation": string | null,"fields": NonNullable<Json>,"id": string,"kind": Database["public"]['Enums']["record_kind"],"record_id": string | null,"status": Database["public"]['Enums']["draft_status"]
@@ -469,6 +488,9 @@ isOneToOne: false
 "hit_rate_limit":
 { Args: { "p_key": string,"p_limit": number,"p_window_seconds": number }; Returns: boolean
                            },
+"pulse_metrics":
+{ Args: { "p_as_of"?: string,"p_business_id": string }; Returns: Json
+                           },
 "purge_expired_ops":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -486,7 +508,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "actor_type": "user"|"agent"|"system","business_role": "owner"|"staff"|"partner"|"program_admin","capture_channel": "text"|"voice"|"photo"|"forward","capture_status": "received"|"processing"|"drafted"|"resolved"|"failed","draft_status": "proposed"|"confirmed"|"rejected","job_status": "queued"|"running"|"succeeded"|"failed"|"dead","payment_method": "cash"|"transfer"|"mobile_money"|"card"|"credit"|"other","provenance": "self_reported"|"document_backed"|"third_party_verified"|"institution_verified","record_kind": "sale"|"expense"|"stock_movement"|"customer","stock_reason": "purchase"|"sale"|"adjustment"|"waste"|"return"
+            "actor_type": "user"|"agent"|"system","business_role": "owner"|"staff"|"partner"|"program_admin","capture_channel": "text"|"voice"|"photo"|"forward","capture_status": "received"|"processing"|"drafted"|"resolved"|"failed","draft_status": "proposed"|"confirmed"|"rejected","job_status": "queued"|"running"|"succeeded"|"failed"|"dead","payment_method": "cash"|"transfer"|"mobile_money"|"card"|"credit"|"other","provenance": "self_reported"|"document_backed"|"third_party_verified"|"institution_verified","pulse_state": "strong"|"steady"|"watch"|"at_risk"|"insufficient_data","pulse_trend": "up"|"flat"|"down"|"unknown","record_kind": "sale"|"expense"|"stock_movement"|"customer","stock_reason": "purchase"|"sale"|"adjustment"|"waste"|"return"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -602,7 +624,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "actor_type": ["user", "agent", "system"],"business_role": ["owner", "staff", "partner", "program_admin"],"capture_channel": ["text", "voice", "photo", "forward"],"capture_status": ["received", "processing", "drafted", "resolved", "failed"],"draft_status": ["proposed", "confirmed", "rejected"],"job_status": ["queued", "running", "succeeded", "failed", "dead"],"payment_method": ["cash", "transfer", "mobile_money", "card", "credit", "other"],"provenance": ["self_reported", "document_backed", "third_party_verified", "institution_verified"],"record_kind": ["sale", "expense", "stock_movement", "customer"],"stock_reason": ["purchase", "sale", "adjustment", "waste", "return"]
+            "actor_type": ["user", "agent", "system"],"business_role": ["owner", "staff", "partner", "program_admin"],"capture_channel": ["text", "voice", "photo", "forward"],"capture_status": ["received", "processing", "drafted", "resolved", "failed"],"draft_status": ["proposed", "confirmed", "rejected"],"job_status": ["queued", "running", "succeeded", "failed", "dead"],"payment_method": ["cash", "transfer", "mobile_money", "card", "credit", "other"],"provenance": ["self_reported", "document_backed", "third_party_verified", "institution_verified"],"pulse_state": ["strong", "steady", "watch", "at_risk", "insufficient_data"],"pulse_trend": ["up", "flat", "down", "unknown"],"record_kind": ["sale", "expense", "stock_movement", "customer"],"stock_reason": ["purchase", "sale", "adjustment", "waste", "return"]
           }
         }
 } as const
