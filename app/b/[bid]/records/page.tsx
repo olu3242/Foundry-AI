@@ -11,6 +11,7 @@ import { monthRange } from "@/lib/dates";
 import { PAYMENT_LABEL } from "@/lib/records/schemas";
 import { cn, formatDate } from "@/lib/utils";
 import { voidRecord } from "./actions";
+import { correctRecord } from "../quality/actions";
 
 export const metadata: Metadata = { title: "Records" };
 
@@ -36,6 +37,7 @@ export default async function RecordsPage({ params, searchParams }: { params: Pr
   return (
     <>
       <PageHeader eyebrow="Records" title="Your books" description="Everything recorded, with where each record came from." />
+      <Link href={`/b/${bid}/quality`} className="mb-2 inline-block text-sm font-medium text-primary hover:underline">Data health →</Link>
       {summary && <Kpis summary={summary} currency={cur} period="this month" />}
       <nav aria-label="Record types" className="my-6 flex gap-1 overflow-x-auto rounded-full bg-muted p-1">
         {TABS.map((t) => (
@@ -73,6 +75,20 @@ function VoidButton({ bid, kind, id }: { bid: string; kind: "sale" | "expense"; 
   );
 }
 
+function CorrectForm({ bid, kind, id }: { bid: string; kind: "sale" | "expense"; id: string }) {
+  return (
+    <details className="text-xs">
+      <summary className="cursor-pointer text-muted-foreground hover:text-foreground">Correct</summary>
+      <form action={correctRecord} className="mt-1 flex gap-1">
+        <input type="hidden" name="businessId" value={bid} /><input type="hidden" name="kind" value={kind} /><input type="hidden" name="id" value={id} />
+        <input name="amount" type="number" step="any" min="0" required aria-label="Correct amount" className="h-8 w-20 rounded-md border bg-transparent px-2" />
+        <input name="reason" required minLength={3} aria-label="Why" placeholder="Why" className="h-8 w-24 rounded-md border bg-transparent px-2" />
+        <button className="rounded-md border px-2">Save</button>
+      </form>
+    </details>
+  );
+}
+
 const Empty = ({ what }: { what: string }) => <p className="p-6 text-sm text-muted-foreground">No {what} yet.</p>;
 
 async function SalesList({ bid, cur, canWrite, supabase }: { bid: string; cur: string; canWrite: boolean; supabase: Sb }) {
@@ -92,6 +108,7 @@ async function SalesList({ bid, cur, canWrite, supabase }: { bid: string; cur: s
         <p className="font-semibold">{formatMoney(s.total_minor, cur)}</p>
         {s.amount_paid_minor < s.total_minor && <p className="text-xs text-gold-ink">owes {formatMoney(s.total_minor - s.amount_paid_minor, cur)}</p>}
       </div>
+      {canWrite && !s.voided_at && !s.sale_items.length && <CorrectForm bid={bid} kind="sale" id={s.id} />}
       {canWrite && !s.voided_at && <VoidButton bid={bid} kind="sale" id={s.id} />}
     </div>
   ));
@@ -110,6 +127,7 @@ async function ExpensesList({ bid, cur, canWrite, supabase }: { bid: string; cur
       </div>
       <Source draftId={e.source_draft_id} />
       <p className="font-semibold tabular-nums">{formatMoney(e.amount_minor, cur)}</p>
+      {canWrite && !e.voided_at && <CorrectForm bid={bid} kind="expense" id={e.id} />}
       {canWrite && !e.voided_at && <VoidButton bid={bid} kind="expense" id={e.id} />}
     </div>
   ));
