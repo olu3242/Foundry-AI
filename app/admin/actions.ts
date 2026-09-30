@@ -142,3 +142,48 @@ export async function activatePolicy(formData: FormData) {
   await supabase.rpc(op === "activate" ? "activate_policy" : "retire_policy", { p_policy_id: id });
   revalidatePath("/admin/policies");
 }
+
+// ─── B29 experiments ──────────────────────────────────────────────────────────
+export async function publishVariant(formData: FormData) {
+  const { solutionId, steps } = z.object({ solutionId: z.uuid(), steps: z.string().trim().min(3).max(4000) }).parse(Object.fromEntries(formData));
+  await requireUser("/admin");
+  const supabase = await createClient();
+  await supabase.rpc("publish_solution_version", { p_solution_id: solutionId, p_playbook: steps.split("\n").map((s) => s.trim()).filter(Boolean) });
+  revalidatePath("/admin/experiments");
+}
+
+export async function createExperiment(_: unknown, formData: FormData) {
+  await requireUser("/admin");
+  const f = z.object({
+    key: z.string().regex(/^[a-z0-9_]{3,60}$/), name: z.string().trim().min(3).max(120), hypothesis: z.string().trim().min(10).max(1000),
+    solutionId: z.uuid(), control: z.uuid(), treatment: z.uuid(), controlWeight: z.coerce.number().int().min(0).max(100),
+    metric: z.enum(["improved_rate", "completion_rate"]), minPerArm: z.coerce.number().int().min(5).max(10000),
+    maxDays: z.coerce.number().int().min(7).max(365), abandonMax: z.coerce.number().min(0).max(1),
+  }).safeParse(Object.fromEntries(formData));
+  if (!f.success) return { ok: false as const, error: "Check the experiment fields (key: lowercase letters, digits, underscores)." };
+  const d = f.data;
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("create_experiment", {
+    p_key: d.key, p_name: d.name, p_hypothesis: d.hypothesis, p_surface: "solution_variant", p_solution_id: d.solutionId,
+    p_arms: [{ key: "control", weight: d.controlWeight, solution_version_id: d.control }, { key: "treatment", weight: 100 - d.controlWeight, solution_version_id: d.treatment }],
+    p_primary_metric: d.metric, p_min_per_arm: d.minPerArm, p_max_duration_days: d.maxDays, p_guardrails: [{ metric: "abandon_rate", max: d.abandonMax }],
+  });
+  if (error) return { ok: false as const, error: error.message };
+  revalidatePath("/admin/experiments");
+  return { ok: true as const, message: "Created as a draft." };
+}
+
+export async function setExperimentStatus(formData: FormData) {
+  const { id, status } = z.object({ id: z.uuid(), status: z.enum(["running", "stopped"]) }).parse(Object.fromEntries(formData));
+  await requireUser("/admin");
+  const supabase = await createClient();
+  await supabase.rpc("set_experiment_status", { p_id: id, p_status: status });
+  revalidatePath("/admin/experiments");
+}
+
+export async function evaluateExperiments() {
+  await requireUser("/admin");
+  const supabase = await createClient();
+  await supabase.rpc("evaluate_experiments");
+  revalidatePath("/admin/experiments");
+}

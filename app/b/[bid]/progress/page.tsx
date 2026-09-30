@@ -32,7 +32,7 @@ export default async function ProgressPage({ params }: { params: Promise<{ bid: 
   const { business, role, supabase } = await requireBusiness(bid);
   const isVerifier = role === "partner" || role === "program_admin";
   const [solutions, { data: activation }, { data: plans }] = await Promise.all([
-    loadSolutions(supabase),
+    loadSolutions(supabase, bid),
     supabase.rpc("activation_status", { p_business_id: bid }),
     supabase.from("interventions").select("*, outcomes(*), solution_engagements(id, providers(name), engagement_updates(note, created_at))").eq("business_id", bid).order("started_at", { ascending: false }).limit(30),
   ]);

@@ -4,13 +4,17 @@ import type { SolutionRow } from "@/components/progress/solution-list";
 import { formatMoney } from "@/lib/money";
 
 /** Active solutions with their latest active version and funnel (B13). */
-export async function loadSolutions(supabase: ServerSupabase): Promise<SolutionRow[]> {
-  const [{ data: solutions }, { data: stats }] = await Promise.all([
+export async function loadSolutions(supabase: ServerSupabase, businessId?: string): Promise<SolutionRow[]> {
+  const [{ data: solutions }, { data: stats }, { data: experiments }] = await Promise.all([
     supabase.from("solutions").select("id, key, name, summary, target_metric, default_window_days, delivery, pricing_model, price_minor, currency, providers(name), solution_versions(id, version, status)").eq("status", "active").order("name"),
     supabase.rpc("solution_effectiveness", {}),
+    // B29: while an experiment runs, the business sees its assigned arm's version.
+    businessId ? supabase.rpc("experiment_versions_for", { p_business_id: businessId }) : Promise.resolve({ data: [] }),
   ]);
   return (solutions ?? []).flatMap((s) => {
-    const v = s.solution_versions.filter((x) => x.status === "active").sort((a, b) => b.version - a.version)[0];
+    const assigned = experiments?.find((e) => e.solution_id === s.id)?.solution_version_id;
+    const v = s.solution_versions.find((x) => x.id === assigned)
+      ?? s.solution_versions.filter((x) => x.status === "active").sort((a, b) => b.version - a.version)[0];
     if (!v) return [];
     const st = stats?.find((r) => r.version_id === v.id);
     return [{

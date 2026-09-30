@@ -703,6 +703,75 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"experiment_assignments": {
+                  Row: {
+                    "arm": string,"assigned_at": string,"business_id": string,"experiment_id": string
+                  }
+                  Insert: {
+                    "arm": string,"assigned_at"?: string,"business_id": string,"experiment_id": string
+                  }
+                  Update: {
+                    "arm"?: string,"assigned_at"?: string,"business_id"?: string,"experiment_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "experiment_assignments_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "experiment_assignments_experiment_id_fkey"
+      columns: ["experiment_id"]
+isOneToOne: false
+      referencedRelation: "experiments"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"experiment_snapshots": {
+                  Row: {
+                    "decision": string,"experiment_id": string,"id": number,"results": NonNullable<Json>,"taken_at": string
+                  }
+                  Insert: {
+                    "decision": string,"experiment_id": string,"id"?: never,"results": NonNullable<Json>,"taken_at"?: string
+                  }
+                  Update: {
+                    "decision"?: string,"experiment_id"?: string,"id"?: never,"results"?: NonNullable<Json>,"taken_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "experiment_snapshots_experiment_id_fkey"
+      columns: ["experiment_id"]
+isOneToOne: false
+      referencedRelation: "experiments"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"experiments": {
+                  Row: {
+                    "arms": NonNullable<Json>,"conclusion": string | null,"created_at": string,"created_by": string | null,"eligibility": Json | null,"ended_at": string | null,"guardrails": NonNullable<Json>,"hypothesis": string,"id": string,"key": string,"max_duration_days": number,"min_per_arm": number,"name": string,"primary_metric": string,"solution_id": string | null,"started_at": string | null,"status": string,"surface": string
+                  }
+                  Insert: {
+                    "arms": NonNullable<Json>,"conclusion"?: string | null,"created_at"?: string,"created_by"?: string | null,"eligibility"?: Json | null,"ended_at"?: string | null,"guardrails"?: NonNullable<Json>,"hypothesis": string,"id"?: string,"key": string,"max_duration_days"?: number,"min_per_arm"?: number,"name": string,"primary_metric"?: string,"solution_id"?: string | null,"started_at"?: string | null,"status"?: string,"surface": string
+                  }
+                  Update: {
+                    "arms"?: NonNullable<Json>,"conclusion"?: string | null,"created_at"?: string,"created_by"?: string | null,"eligibility"?: Json | null,"ended_at"?: string | null,"guardrails"?: NonNullable<Json>,"hypothesis"?: string,"id"?: string,"key"?: string,"max_duration_days"?: number,"min_per_arm"?: number,"name"?: string,"primary_metric"?: string,"solution_id"?: string | null,"started_at"?: string | null,"status"?: string,"surface"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "experiments_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "experiments_solution_id_fkey"
+      columns: ["solution_id"]
+isOneToOne: false
+      referencedRelation: "solutions"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"financial_products": {
                   Row: {
                     "created_at": string,"currency": string,"description": string | null,"eligibility": NonNullable<Json>,"id": string,"max_amount_minor": number | null,"min_amount_minor": number | null,"name": string,"product_type": string,"program_id": string,"required_sections": (string)[],"status": string
@@ -2130,6 +2199,9 @@ isOneToOne: false
 "create_business":
 { Args: { "p_country_code"?: string,"p_currency"?: string,"p_name": string,"p_sector"?: string,"p_timezone"?: string }; Returns: string
                            },
+"create_experiment":
+{ Args: { "p_arms": Json,"p_eligibility"?: Json,"p_guardrails"?: Json,"p_hypothesis": string,"p_key": string,"p_max_duration_days"?: number,"p_min_per_arm"?: number,"p_name": string,"p_primary_metric"?: string,"p_solution_id": string,"p_surface": string }; Returns: string
+                           },
 "create_financial_product":
 { Args: { "p_currency": string,"p_description"?: string,"p_eligibility": Json,"p_max": number,"p_min": number,"p_name": string,"p_product_type": string,"p_program_id": string }; Returns: string
                            },
@@ -2165,6 +2237,17 @@ isOneToOne: false
                            },
 "entitlement_status":
 { Args: { "p_business_id": string }; Returns: Json
+                           },
+"evaluate_experiments":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"experiment_report":
+{ Args: { "p_id": string }; Returns: Json
+                           },
+"experiment_versions_for":
+{ Args: { "p_business_id": string }; Returns: {
+              "solution_id": string,"solution_version_id": string
+            }[]
                            },
 "extraction_eval":
 { Args: { "p_days"?: number }; Returns: {
@@ -2355,6 +2438,9 @@ isOneToOne: false
 "set_business_identifier":
 { Args: { "p_business_id": string,"p_type": string,"p_value": string }; Returns: undefined
                            },
+"set_experiment_status":
+{ Args: { "p_id": string,"p_reason"?: string,"p_status": string }; Returns: undefined
+                           },
 "set_program_auto_route":
 { Args: { "p_on": boolean,"p_program_id": string }; Returns: undefined
                            },
@@ -2376,6 +2462,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "completed": number,"solution_version_id": string,"target_dimension": string,"verified_improved": number
             }[]
+                           },
+"solution_version_for":
+{ Args: { "p_business_id": string,"p_solution_id": string }; Returns: string
                            },
 "sponsor_plan":
 { Args: { "p_plan_key": string,"p_program_id": string }; Returns: number
