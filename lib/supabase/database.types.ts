@@ -331,6 +331,50 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"operator_item_log": {
+                  Row: {
+                    "business_id": string,"first_seen": string,"item_key": string,"kind": string,"resolved_at": string | null,"user_id": string
+                  }
+                  Insert: {
+                    "business_id": string,"first_seen"?: string,"item_key": string,"kind": string,"resolved_at"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "business_id"?: string,"first_seen"?: string,"item_key"?: string,"kind"?: string,"resolved_at"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "operator_item_log_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "operator_item_log_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"operator_snoozes": {
+                  Row: {
+                    "item_key": string,"until": string,"user_id": string
+                  }
+                  Insert: {
+                    "item_key": string,"until": string,"user_id"?: string
+                  }
+                  Update: {
+                    "item_key"?: string,"until"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "operator_snoozes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"opportunities": {
                   Row: {
                     "budget_max_minor": number | null,"budget_min_minor": number | null,"category": string,"contact": string | null,"countries": (string)[],"created_at": string,"created_by": string | null,"currency": string | null,"deadline": string | null,"description": string,"id": string,"is_sample": boolean,"min_months_records": number,"min_proof_level": Database["public"]['Enums']["provenance"],"posted_by_business_id": string | null,"sectors": (string)[],"status": string,"title": string
@@ -866,6 +910,9 @@ isOneToOne: false
 "assign_partner":
 { Args: { "p_business_id": string,"p_partner_user_id": string,"p_program_id": string }; Returns: undefined
                            },
+"batch_nudge":
+{ Args: { "p_business_ids": (string)[],"p_message": string }; Returns: number
+                           },
 "business_summary":
 { Args: { "p_business_id": string,"p_from": string,"p_to": string }; Returns: {
               "collected_minor": number,"customers_served": number,"expenses_minor": number,"net_minor": number,"receivable_minor": number,"sales_count": number,"sales_minor": number
@@ -936,6 +983,14 @@ isOneToOne: false
 "my_business_role":
 { Args: { "p_business_id": string }; Returns: Database["public"]['Enums']["business_role"]
                            },
+"operator_metrics":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"operator_queue":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "business_id": string,"business_name": string,"detail": string,"item_key": string,"kind": string,"link": string,"severity": number,"since": string,"title": string
+            }[]
+                           },
 "passport_facts":
 { Args: { "p_business_id": string }; Returns: Json
                            },
@@ -953,6 +1008,9 @@ isOneToOne: false
                            },
 "reject_draft":
 { Args: { "p_draft_id": string }; Returns: undefined
+                           },
+"snooze_items":
+{ Args: { "p_days": number,"p_item_keys": (string)[] }; Returns: undefined
                            },
 "start_intervention":
 { Args: { "p_business_id": string,"p_metric": string,"p_solution_version_id"?: string,"p_source_action_id"?: string,"p_title": string,"p_window_days"?: number }; Returns: string
