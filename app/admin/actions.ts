@@ -111,3 +111,34 @@ export async function resolveDispute(formData: FormData) {
   await supabase.rpc("resolve_dispute", { p_dispute_id: id, p_decision: decision, p_resolution: resolution });
   revalidatePath("/admin/trust");
 }
+
+// ─── B28 policies ─────────────────────────────────────────────────────────────
+export async function savePolicy(_: unknown, formData: FormData) {
+  await requireUser("/admin");
+  const f = z.object({
+    key: z.enum(["finance.evidence_share", "solution.start", "ai.autonomy", "escalation.record_requests", "partner.verify_outcome"]),
+    scopeType: z.enum(["global", "market", "program", "provider", "solution"]), scopeId: z.string().max(64).optional(),
+    definition: z.string().max(10_000), note: z.string().max(300).optional(), activate: z.literal("on").optional(),
+  }).safeParse(Object.fromEntries(formData));
+  if (!f.success) return { ok: false as const, error: "Choose a policy key and scope." };
+  let definition: Json;
+  try {
+    definition = JSON.parse(f.data.definition) as Json;
+  } catch {
+    return { ok: false as const, error: "The definition must be valid JSON." };
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("save_policy", { p_key: f.data.key, p_scope_type: f.data.scopeType, p_scope_id: f.data.scopeId ?? "", p_definition: definition, p_note: f.data.note || undefined });
+  if (error) return { ok: false as const, error: error.message };
+  if (f.data.activate && data) await supabase.rpc("activate_policy", { p_policy_id: data });
+  revalidatePath("/admin/policies");
+  return { ok: true as const, message: f.data.activate ? "Saved and activated." : "Saved as draft." };
+}
+
+export async function activatePolicy(formData: FormData) {
+  const { id, op } = z.object({ id: z.uuid(), op: z.enum(["activate", "retire"]) }).parse(Object.fromEntries(formData));
+  await requireUser("/admin");
+  const supabase = await createClient();
+  await supabase.rpc(op === "activate" ? "activate_policy" : "retire_policy", { p_policy_id: id });
+  revalidatePath("/admin/policies");
+}

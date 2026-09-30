@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { policyDenial } from "@/lib/policy";
 import { requireBusiness } from "@/lib/auth/guards";
 import { fail, friendlyDbError, type ActionState } from "@/lib/actions";
 import { METRICS, type MetricKey } from "@/lib/interventions/catalog";
@@ -18,6 +19,10 @@ export async function startPlan(_: ActionState, formData: FormData): Promise<Act
   if (!parsed.success) return fail("Please check the plan details.");
   const p = parsed.data;
   const { supabase } = await requireBusiness(p.businessId);
+  if (p.solutionVersionId) {
+    const denied = await policyDenial(supabase, "solution.start", p.businessId, { solution_version_id: p.solutionVersionId });
+    if (denied) return fail(denied);
+  }
   const { error } = await supabase.rpc("start_intervention", {
     p_business_id: p.businessId, p_title: p.title, p_metric: p.metric, p_window_days: p.windowDays,
     p_source_action_id: p.sourceActionId, p_solution_version_id: p.solutionVersionId,
@@ -52,6 +57,8 @@ export async function abandonPlan(formData: FormData) {
 export async function verifyResult(formData: FormData) {
   const { businessId, id, verdict } = idSchema.extend({ verdict: z.enum(["verified", "disputed"]) }).parse(Object.fromEntries(formData));
   const { supabase } = await requireBusiness(businessId, ["partner", "program_admin"]);
+  // Records the policy decision (a denial is then enforced by the outcomes trigger).
+  if (verdict === "verified") await policyDenial(supabase, "partner.verify_outcome", businessId);
   await supabase.rpc("verify_outcome", { p_outcome_id: id, p_verdict: verdict });
   revalidatePath(`/b/${businessId}`, "layout");
 }
@@ -69,6 +76,8 @@ export async function startProviderSolution(_: ActionState, formData: FormData):
   const parsed = z.object({ businessId: z.uuid(), versionId: z.uuid(), consent: z.literal("on") }).safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail("Tick the box to agree to work with this provider.");
   const { supabase } = await requireBusiness(parsed.data.businessId, ["owner", "staff"]);
+  const denied = await policyDenial(supabase, "solution.start", parsed.data.businessId, { solution_version_id: parsed.data.versionId });
+  if (denied) return fail(denied);
   const { error } = await supabase.rpc("start_provider_solution", { p_business_id: parsed.data.businessId, p_solution_version_id: parsed.data.versionId, p_consent: true });
   if (error) return fail(friendlyDbError(error));
   revalidatePath(`/b/${parsed.data.businessId}`, "layout");

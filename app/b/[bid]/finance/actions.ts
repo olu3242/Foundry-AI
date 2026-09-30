@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { policyDenial } from "@/lib/policy";
 import { requireBusiness } from "@/lib/auth/guards";
 import { fail, friendlyDbError, type ActionState } from "@/lib/actions";
 import { toMinor } from "@/lib/money";
@@ -14,6 +15,8 @@ export async function sharePackage(_: ActionState, formData: FormData): Promise<
   if (!parsed.success) return fail("Add an amount, a purpose, and tick the consent box.");
   const p = parsed.data;
   const { business, supabase } = await requireBusiness(p.businessId, ["owner"]);
+  const denied = await policyDenial(supabase, "finance.evidence_share", p.businessId, { product_id: p.productId, amount_minor: toMinor(p.amount, business.currency) });
+  if (denied) return fail(denied);
   const sections = formData.getAll("sections").map(String);
   const { error } = await supabase.rpc("submit_evidence_package", {
     p_business_id: p.businessId, p_product_id: p.productId, p_sections: sections,

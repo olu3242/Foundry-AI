@@ -24,6 +24,7 @@ export function StartPlanForm({ businessId, defaults, compact }: Props) {
           <input type="hidden" name="metric" value={defaults?.metric} />
           <input type="hidden" name="windowDays" value={defaults?.windowDays ?? 30} />
           <Button size="sm" disabled={pending}><Target /> Start this plan</Button>
+          {state && !state.ok && <div className="mt-2 max-w-xs"><FormMessage state={state} /></div>}
         </>
       ) : (
         <>

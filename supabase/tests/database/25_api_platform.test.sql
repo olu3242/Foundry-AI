@@ -51,7 +51,7 @@ select public.start_intervention(:'b_in', 'Promo', 'sales_30', 7);
 select public.start_intervention(:'b_out', 'Promo', 'sales_30', 7);
 reset role;
 select is((select count(*)::int from public.webhook_deliveries where event_type = 'intervention.started'), 1, 'only the enrolled business event is delivered');
-select is((select count(*)::int from public.jobs where type = 'webhook.deliver'), 1, 'delivery is queued with retries');
+select is((select count(*)::int from public.jobs j join public.webhook_deliveries d on j.payload ->> 'delivery_id' = d.id::text where j.type = 'webhook.deliver' and d.event_type = 'intervention.started'), 1, 'delivery is queued with retries');
 
 set local role authenticated;
 select pg_temp.login('00000000-0000-0000-0000-00000000c027');

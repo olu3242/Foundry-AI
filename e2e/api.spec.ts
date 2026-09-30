@@ -79,7 +79,7 @@ test("B27 an approved external system completes a bounded integration through go
       await request.get("/api/cron/jobs", { headers: CRON_HEADERS });
       return received.length;
     }, { timeout: 20_000 }).toBe(1);
-    const [{ body, sig }] = received;
+    const { body, sig } = received[0]!;
     const t = sig.match(/t=(\d+)/)![1];
     expect(sig).toBe(`t=${t},v1=${createHmac("sha256", secret).update(`${t}.${body}`).digest("hex")}`);
     expect(JSON.parse(body).type).toBe("sandbox.ping");

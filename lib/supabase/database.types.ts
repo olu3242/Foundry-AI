@@ -1149,6 +1149,50 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
+                },"policies": {
+                  Row: {
+                    "activated_at": string | null,"created_at": string,"created_by": string | null,"definition": NonNullable<Json>,"id": string,"key": string,"note": string | null,"scope_id": string,"scope_type": string,"status": string,"version": number
+                  }
+                  Insert: {
+                    "activated_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"definition": NonNullable<Json>,"id"?: string,"key": string,"note"?: string | null,"scope_id"?: string,"scope_type": string,"status"?: string,"version": number
+                  }
+                  Update: {
+                    "activated_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"definition"?: NonNullable<Json>,"id"?: string,"key"?: string,"note"?: string | null,"scope_id"?: string,"scope_type"?: string,"status"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "policies_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"policy_decisions": {
+                  Row: {
+                    "business_id": string | null,"decided_at": string,"id": number,"input": NonNullable<Json>,"policy_id": string,"policy_key": string,"reason": string | null,"result": string,"scope": string,"version": number
+                  }
+                  Insert: {
+                    "business_id"?: string | null,"decided_at"?: string,"id"?: never,"input": NonNullable<Json>,"policy_id": string,"policy_key": string,"reason"?: string | null,"result": string,"scope": string,"version": number
+                  }
+                  Update: {
+                    "business_id"?: string | null,"decided_at"?: string,"id"?: never,"input"?: NonNullable<Json>,"policy_id"?: string,"policy_key"?: string,"reason"?: string | null,"result"?: string,"scope"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "policy_decisions_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "policy_decisions_policy_id_fkey"
+      columns: ["policy_id"]
+isOneToOne: false
+      referencedRelation: "policies"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"products": {
                   Row: {
                     "business_id": string,"created_at": string,"id": string,"name": string,"reorder_level": number | null,"stock_qty": number,"unit": string | null,"unit_price_minor": number | null,"updated_at": string
@@ -1943,6 +1987,9 @@ isOneToOne: false
             "abandon_intervention":
 { Args: { "p_intervention_id": string,"p_reason": string }; Returns: undefined
                            },
+"activate_policy":
+{ Args: { "p_policy_id": string }; Returns: undefined
+                           },
 "activation_status":
 { Args: { "p_business_id": string }; Returns: Json
                            },
@@ -2006,6 +2053,9 @@ isOneToOne: false
 { Args: { "p_business_id": string,"p_from": string,"p_to": string }; Returns: {
               "collected_minor": number,"customers_served": number,"expenses_minor": number,"net_minor": number,"receivable_minor": number,"sales_count": number,"sales_minor": number
             }[]
+                           },
+"check_policy":
+{ Args: { "p_business_id": string,"p_key": string,"p_params"?: Json }; Returns: Json
                            },
 "choose_plan":
 { Args: { "p_business_id": string,"p_plan_key": string }; Returns: string
@@ -2263,6 +2313,9 @@ isOneToOne: false
 "retention_overview":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"retire_policy":
+{ Args: { "p_policy_id": string }; Returns: undefined
+                           },
 "revert_ops_action":
 { Args: { "p_action_id": string }; Returns: undefined
                            },
@@ -2284,6 +2337,9 @@ isOneToOne: false
 "run_routine_ops":
 { Args: { "p_business_id"?: string }; Returns: Json
                            },
+"save_policy":
+{ Args: { "p_definition": Json,"p_key": string,"p_note"?: string,"p_scope_id": string,"p_scope_type": string }; Returns: string
+                           },
 "scale_metrics":
 { Args: { "p_from"?: string,"p_to"?: string }; Returns: Json
                            },
@@ -2304,6 +2360,9 @@ isOneToOne: false
                            },
 "settle_billable_event":
 { Args: { "p_id": string,"p_method": string,"p_reference": string }; Returns: string
+                           },
+"simulate_policy":
+{ Args: { "p_context": Json,"p_key": string }; Returns: Json
                            },
 "snooze_items":
 { Args: { "p_days": number,"p_item_keys": (string)[] }; Returns: undefined
