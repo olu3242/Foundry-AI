@@ -79,3 +79,19 @@ export async function addProof(_: ActionState, formData: FormData): Promise<Acti
   revalidatePath(`/b/${businessId}/passport`);
   return { ok: true, message: "Proof added to your Passport." };
 }
+
+export async function vouch(_: ActionState, formData: FormData): Promise<ActionState> {
+  const parsed = z.object({
+    businessId: z.uuid(), method: z.enum(["site_visit", "program_review"]), note: z.string().trim().max(500).optional(),
+  }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return fail("Please check the form.");
+  const { businessId, method, note } = parsed.data;
+  const { role, supabase } = await requireBusiness(businessId, ["partner", "program_admin"]);
+  const { error } = await supabase.rpc("add_verification", {
+    p_business_id: businessId, p_subject_type: "business", p_method: method, p_note: note || undefined,
+    p_level: method === "program_review" && role === "program_admin" ? "institution_verified" : "third_party_verified",
+  });
+  if (error) return fail(friendlyDbError(error));
+  revalidatePath(`/b/${businessId}/passport`);
+  return { ok: true, message: "Verification recorded." };
+}

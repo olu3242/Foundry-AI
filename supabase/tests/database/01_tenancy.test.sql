@@ -4,8 +4,8 @@ select plan(14);
 
 -- Fixtures: two owners, one staff member, one outsider.
 insert into auth.users (id, email, phone, aud, role) values
-  ('00000000-0000-0000-0000-00000000000a', 'ama@example.com', '233200000001', 'authenticated', 'authenticated'),
-  ('00000000-0000-0000-0000-00000000000b', 'kola@example.com', '234800000002', 'authenticated', 'authenticated'),
+  ('00000000-0000-0000-0000-00000000000a', 'ama@example.com', '233209990001', 'authenticated', 'authenticated'),
+  ('00000000-0000-0000-0000-00000000000b', 'kola@example.com', '234809990002', 'authenticated', 'authenticated'),
   ('00000000-0000-0000-0000-00000000000c', 'staff@example.com', null, 'authenticated', 'authenticated'),
   ('00000000-0000-0000-0000-00000000000d', 'outsider@example.com', null, 'authenticated', 'authenticated');
 

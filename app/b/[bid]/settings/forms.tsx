@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
 import { FormMessage } from "@/components/form-message";
 import { SECTORS } from "@/lib/auth/current-business";
-import { addMember, updateBusiness } from "./actions";
+import { addMember, joinProgram, updateBusiness } from "./actions";
 
 export function BusinessForm({ businessId, name, sector, canEdit }: { businessId: string; name: string; sector: string | null; canEdit: boolean }) {
   const [state, action, pending] = useActionState(updateBusiness, null);
@@ -47,6 +47,23 @@ export function AddMemberForm({ businessId }: { businessId: string }) {
       </Select>
       <Button size="sm" disabled={pending}>Add</Button>
       <div className="sm:col-span-3"><FormMessage state={state} /></div>
+    </form>
+  );
+}
+
+export function JoinProgramForm({ businessId }: { businessId: string }) {
+  const [state, action, pending] = useActionState(joinProgram, null);
+  return (
+    <form action={action} className="space-y-3">
+      <input type="hidden" name="businessId" value={businessId} />
+      <Label className="block space-y-1.5"><span className="text-xs text-muted-foreground">Program code</span>
+        <Input name="code" required placeholder="e.g. 7K3PQ2ZA" className="font-mono uppercase" /></Label>
+      <label className="flex items-start gap-2 text-sm">
+        <input type="checkbox" name="consent" required className="mt-1 size-4" />
+        <span>I agree to share this business&apos;s records, Pulse and Passport with the program team and the partner they assign. I can leave at any time, which stops sharing immediately.</span>
+      </label>
+      <Button size="sm" disabled={pending}>Join program</Button>
+      <FormMessage state={state} />
     </form>
   );
 }

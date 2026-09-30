@@ -19,17 +19,18 @@ export async function requireUser(next = "/app") {
   return user;
 }
 
-/** Loads a business the current user belongs to. 404s (not 403s) to avoid leaking existence. */
+/** Loads a business the current user can access. 404s (not 403s) to avoid leaking existence. */
 export const requireBusiness = cache(async (businessId: string, roles?: BusinessRole[]) => {
   const user = await requireUser(`/b/${businessId}`);
   const supabase = await createClient();
-  const [{ data: business }, { data: membership }] = await Promise.all([
+  // Role comes from direct membership or, failing that, consented program access (partner/program_admin).
+  const [{ data: business }, { data: role }] = await Promise.all([
     supabase.from("businesses").select("*").eq("id", businessId).maybeSingle(),
-    supabase.from("memberships").select("role").eq("business_id", businessId).eq("user_id", user.id).maybeSingle(),
+    supabase.rpc("my_business_role", { p_business_id: businessId }),
   ]);
-  if (!business || !membership) notFound();
-  if (roles && !roles.includes(membership.role)) notFound();
-  return { user, business, role: membership.role, supabase };
+  if (!business || !role) notFound();
+  if (roles && !roles.includes(role)) notFound();
+  return { user, business, role, supabase };
 });
 
 export function safeNext(next: string | null | undefined, fallback = "/app") {

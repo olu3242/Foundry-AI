@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { PassportView } from "@/components/passport/passport-view";
 import { ShareForm } from "@/components/passport/share-form";
 import { ProofForm } from "@/components/passport/proof-form";
+import { VouchForm } from "@/components/passport/vouch-form";
 import { loadPassport, PASSPORT_SECTIONS, SECTION_LABEL, type PassportSection } from "@/lib/passport/facts";
 import { formatDate } from "@/lib/utils";
 import { revokeShare } from "./actions";
@@ -33,6 +34,12 @@ export default async function PassportPage({ params }: { params: Promise<{ bid: 
             <Card>
               <CardHeader><CardTitle>Add proof</CardTitle><CardDescription>Statements, invoices or registration move you up the ladder. Documents stay private; share links only show that proof exists.</CardDescription></CardHeader>
               <ProofForm businessId={bid} />
+            </Card>
+          )}
+          {(role === "partner" || role === "program_admin") && (
+            <Card>
+              <CardHeader><CardTitle>Vouch for this business</CardTitle><CardDescription>Your verification appears on its Passport with your role, never your personal details.</CardDescription></CardHeader>
+              <VouchForm businessId={bid} isProgramAdmin={role === "program_admin"} />
             </Card>
           )}
           {isOwner && (

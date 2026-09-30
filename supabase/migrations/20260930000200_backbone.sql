@@ -189,7 +189,7 @@ begin
   if not found then
     return null;
   end if;
-  next_status := case when p_retryable and j.attempts < j.max_attempts then 'queued' else 'dead' end;
+  next_status := case when p_retryable and j.attempts < j.max_attempts then 'queued'::public.job_status else 'dead'::public.job_status end;
   update public.jobs
   set status = next_status,
       last_error = left(p_error, 2000),

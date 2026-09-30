@@ -325,6 +325,37 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"partner_assignments": {
+                  Row: {
+                    "business_id": string,"created_at": string,"partner_user_id": string,"program_id": string
+                  }
+                  Insert: {
+                    "business_id": string,"created_at"?: string,"partner_user_id": string,"program_id": string
+                  }
+                  Update: {
+                    "business_id"?: string,"created_at"?: string,"partner_user_id"?: string,"program_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "partner_assignments_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "partner_assignments_partner_user_id_fkey"
+      columns: ["partner_user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "partner_assignments_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"passport_shares": {
                   Row: {
                     "business_id": string,"created_at": string,"created_by": string,"expires_at": string,"id": string,"label": string,"last_viewed_at": string | null,"revoked_at": string | null,"sections": (string)[],"token_hash": string,"view_count": number
@@ -406,6 +437,81 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"program_enrollments": {
+                  Row: {
+                    "business_id": string,"consent_scope": (string)[],"consented_at": string | null,"consented_by": string | null,"enrolled_at": string,"left_at": string | null,"program_id": string,"status": string
+                  }
+                  Insert: {
+                    "business_id": string,"consent_scope"?: (string)[],"consented_at"?: string | null,"consented_by"?: string | null,"enrolled_at"?: string,"left_at"?: string | null,"program_id": string,"status"?: string
+                  }
+                  Update: {
+                    "business_id"?: string,"consent_scope"?: (string)[],"consented_at"?: string | null,"consented_by"?: string | null,"enrolled_at"?: string,"left_at"?: string | null,"program_id"?: string,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "program_enrollments_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "program_enrollments_consented_by_fkey"
+      columns: ["consented_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "program_enrollments_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"program_members": {
+                  Row: {
+                    "created_at": string,"program_id": string,"role": Database["public"]['Enums']["program_role"],"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"program_id": string,"role": Database["public"]['Enums']["program_role"],"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"program_id"?: string,"role"?: Database["public"]['Enums']["program_role"],"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "program_members_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "program_members_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"programs": {
+                  Row: {
+                    "created_at": string,"created_by": string,"current_period_end": string | null,"description": string | null,"id": string,"join_code": string,"name": string,"pilot_seats": number,"seats": number,"sponsor_name": string | null,"status": string,"stripe_customer_id": string | null,"stripe_subscription_id": string | null,"subscription_status": string | null,"updated_at": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"id"?: string,"join_code"?: string,"name": string,"pilot_seats"?: number,"seats"?: number,"sponsor_name"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"id"?: string,"join_code"?: string,"name"?: string,"pilot_seats"?: number,"seats"?: number,"sponsor_name"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "programs_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"pulse_snapshots": {
                   Row: {
@@ -586,6 +692,19 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"stripe_events": {
+                  Row: {
+                    "id": string,"processed_at": string,"program_id": string | null,"type": string
+                  }
+                  Insert: {
+                    "id": string,"processed_at"?: string,"program_id"?: string | null,"type": string
+                  }
+                  Update: {
+                    "id"?: string,"processed_at"?: string,"program_id"?: string | null,"type"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"verifications": {
                   Row: {
                     "business_id": string,"created_at": string,"evidence_path": string | null,"id": string,"level": Database["public"]['Enums']["provenance"],"method": string,"note": string | null,"period_end": string | null,"period_start": string | null,"subject_id": string | null,"subject_type": Database["public"]['Enums']["verification_subject"],"verified_by": string,"verifier_role": Database["public"]['Enums']["business_role"]
@@ -620,8 +739,14 @@ isOneToOne: false
             "add_member":
 { Args: { "p_business_id": string,"p_contact": string,"p_role": Database["public"]['Enums']["business_role"] }; Returns: string
                            },
+"add_program_member":
+{ Args: { "p_contact": string,"p_program_id": string,"p_role": Database["public"]['Enums']["program_role"] }; Returns: string
+                           },
 "add_verification":
 { Args: { "p_business_id": string,"p_evidence_path"?: string,"p_level": Database["public"]['Enums']["provenance"],"p_method": string,"p_note"?: string,"p_period_end"?: string,"p_period_start"?: string,"p_subject_id"?: string,"p_subject_type": Database["public"]['Enums']["verification_subject"] }; Returns: string
+                           },
+"assign_partner":
+{ Args: { "p_business_id": string,"p_partner_user_id": string,"p_program_id": string }; Returns: undefined
                            },
 "business_summary":
 { Args: { "p_business_id": string,"p_from": string,"p_to": string }; Returns: {
@@ -663,6 +788,9 @@ isOneToOne: false
 "create_business":
 { Args: { "p_country_code"?: string,"p_currency"?: string,"p_name": string,"p_sector"?: string,"p_timezone"?: string }; Returns: string
                            },
+"create_program":
+{ Args: { "p_description"?: string,"p_name": string,"p_sponsor_name"?: string }; Returns: string
+                           },
 "decide_action":
 { Args: { "p_action_id": string,"p_decision": string,"p_result"?: Json }; Returns: undefined
                            },
@@ -674,6 +802,15 @@ isOneToOne: false
                            },
 "hit_rate_limit":
 { Args: { "p_key": string,"p_limit": number,"p_window_seconds": number }; Returns: boolean
+                           },
+"join_program":
+{ Args: { "p_business_id": string,"p_consent": boolean,"p_join_code": string }; Returns: string
+                           },
+"leave_program":
+{ Args: { "p_business_id": string,"p_program_id": string }; Returns: undefined
+                           },
+"my_business_role":
+{ Args: { "p_business_id": string }; Returns: Database["public"]['Enums']["business_role"]
                            },
 "passport_facts":
 { Args: { "p_business_id": string }; Returns: Json
@@ -698,7 +835,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "action_status": "proposed"|"approved"|"rejected"|"executed"|"failed"|"expired","actor_type": "user"|"agent"|"system","business_role": "owner"|"staff"|"partner"|"program_admin","capture_channel": "text"|"voice"|"photo"|"forward","capture_status": "received"|"processing"|"drafted"|"resolved"|"failed","draft_status": "proposed"|"confirmed"|"rejected","job_status": "queued"|"running"|"succeeded"|"failed"|"dead","payment_method": "cash"|"transfer"|"mobile_money"|"card"|"credit"|"other","provenance": "self_reported"|"document_backed"|"third_party_verified"|"institution_verified","pulse_state": "strong"|"steady"|"watch"|"at_risk"|"insufficient_data","pulse_trend": "up"|"flat"|"down"|"unknown","record_kind": "sale"|"expense"|"stock_movement"|"customer","stock_reason": "purchase"|"sale"|"adjustment"|"waste"|"return","verification_subject": "business"|"sale"|"expense"|"stock_movement"
+            "action_status": "proposed"|"approved"|"rejected"|"executed"|"failed"|"expired","actor_type": "user"|"agent"|"system","business_role": "owner"|"staff"|"partner"|"program_admin","capture_channel": "text"|"voice"|"photo"|"forward","capture_status": "received"|"processing"|"drafted"|"resolved"|"failed","draft_status": "proposed"|"confirmed"|"rejected","job_status": "queued"|"running"|"succeeded"|"failed"|"dead","payment_method": "cash"|"transfer"|"mobile_money"|"card"|"credit"|"other","program_role": "admin"|"partner","provenance": "self_reported"|"document_backed"|"third_party_verified"|"institution_verified","pulse_state": "strong"|"steady"|"watch"|"at_risk"|"insufficient_data","pulse_trend": "up"|"flat"|"down"|"unknown","record_kind": "sale"|"expense"|"stock_movement"|"customer","stock_reason": "purchase"|"sale"|"adjustment"|"waste"|"return","verification_subject": "business"|"sale"|"expense"|"stock_movement"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -814,7 +951,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "action_status": ["proposed", "approved", "rejected", "executed", "failed", "expired"],"actor_type": ["user", "agent", "system"],"business_role": ["owner", "staff", "partner", "program_admin"],"capture_channel": ["text", "voice", "photo", "forward"],"capture_status": ["received", "processing", "drafted", "resolved", "failed"],"draft_status": ["proposed", "confirmed", "rejected"],"job_status": ["queued", "running", "succeeded", "failed", "dead"],"payment_method": ["cash", "transfer", "mobile_money", "card", "credit", "other"],"provenance": ["self_reported", "document_backed", "third_party_verified", "institution_verified"],"pulse_state": ["strong", "steady", "watch", "at_risk", "insufficient_data"],"pulse_trend": ["up", "flat", "down", "unknown"],"record_kind": ["sale", "expense", "stock_movement", "customer"],"stock_reason": ["purchase", "sale", "adjustment", "waste", "return"],"verification_subject": ["business", "sale", "expense", "stock_movement"]
+            "action_status": ["proposed", "approved", "rejected", "executed", "failed", "expired"],"actor_type": ["user", "agent", "system"],"business_role": ["owner", "staff", "partner", "program_admin"],"capture_channel": ["text", "voice", "photo", "forward"],"capture_status": ["received", "processing", "drafted", "resolved", "failed"],"draft_status": ["proposed", "confirmed", "rejected"],"job_status": ["queued", "running", "succeeded", "failed", "dead"],"payment_method": ["cash", "transfer", "mobile_money", "card", "credit", "other"],"program_role": ["admin", "partner"],"provenance": ["self_reported", "document_backed", "third_party_verified", "institution_verified"],"pulse_state": ["strong", "steady", "watch", "at_risk", "insufficient_data"],"pulse_trend": ["up", "flat", "down", "unknown"],"record_kind": ["sale", "expense", "stock_movement", "customer"],"stock_reason": ["purchase", "sale", "adjustment", "waste", "return"],"verification_subject": ["business", "sale", "expense", "stock_movement"]
           }
         }
 } as const

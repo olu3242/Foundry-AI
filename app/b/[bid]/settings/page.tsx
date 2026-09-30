@@ -3,7 +3,8 @@ import { requireBusiness } from "@/lib/auth/guards";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AddMemberForm, BusinessForm } from "./forms";
+import { AddMemberForm, BusinessForm, JoinProgramForm } from "./forms";
+import { leaveProgram } from "./actions";
 import { AutonomySettings } from "@/components/agent/autonomy-settings";
 
 export const metadata: Metadata = { title: "Settings" };
@@ -19,7 +20,10 @@ export default async function SettingsPage({ params }: { params: Promise<{ bid: 
     .eq("business_id", bid)
     .order("created_at");
   const isOwner = role === "owner";
-  const { data: policies } = await supabase.from("autonomy_policies").select("action_type, level").eq("business_id", bid);
+  const [{ data: policies }, { data: enrollments }] = await Promise.all([
+    supabase.from("autonomy_policies").select("action_type, level").eq("business_id", bid),
+    supabase.from("program_enrollments").select("program_id, enrolled_at, programs(name, sponsor_name)").eq("business_id", bid).eq("status", "active"),
+  ]);
 
   return (
     <>
@@ -49,6 +53,28 @@ export default async function SettingsPage({ params }: { params: Promise<{ bid: 
             })}
           </ul>
           {isOwner && <AddMemberForm businessId={bid} />}
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Programs</CardTitle>
+            <CardDescription>Cohorts, accelerators and lender programs you share your records with.</CardDescription>
+          </CardHeader>
+          {!!enrollments?.length && (
+            <ul className="mb-4 divide-y text-sm">
+              {enrollments.map((e) => (
+                <li key={e.program_id} className="flex items-center gap-3 py-2">
+                  <span className="flex-1">{e.programs?.name}<span className="block text-xs text-muted-foreground">{e.programs?.sponsor_name}</span></span>
+                  {isOwner && (
+                    <form action={leaveProgram}>
+                      <input type="hidden" name="businessId" value={bid} /><input type="hidden" name="programId" value={e.program_id} />
+                      <button className="text-xs font-medium text-destructive hover:underline">Leave and stop sharing</button>
+                    </form>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+          {isOwner ? <JoinProgramForm businessId={bid} /> : <p className="text-sm text-muted-foreground">Only the owner can join programs.</p>}
         </Card>
         <Card className="lg:col-span-2">
           <CardHeader>
