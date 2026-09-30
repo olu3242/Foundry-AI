@@ -157,3 +157,46 @@ export async function revertAutomation(formData: FormData) {
   await supabase.rpc("revert_ops_action", { p_action_id: actionId });
   revalidatePath(`/programs/${programId}`);
 }
+
+// ─── B27 API platform ─────────────────────────────────────────────────────────
+const SCOPES = ["businesses:read", "outcomes:read", "reports:read", "invitations:write", "events:subscribe"] as const;
+
+export async function createApiKey(_: ActionState, formData: FormData): Promise<ActionState<{ key: string }>> {
+  const parsed = z.object({ programId: z.uuid(), name: z.string().trim().min(2).max(80) }).safeParse(Object.fromEntries(formData));
+  const scopes = formData.getAll("scopes").map(String).filter((s): s is (typeof SCOPES)[number] => (SCOPES as readonly string[]).includes(s));
+  if (!parsed.success || !scopes.length) return fail("Name the key and choose at least one permission.");
+  await requireUser(`/programs/${parsed.data.programId}`);
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("create_service_identity", { p_program_id: parsed.data.programId, p_name: parsed.data.name, p_scopes: scopes });
+  if (error) return fail(friendlyDbError(error));
+  revalidatePath(`/programs/${parsed.data.programId}`);
+  return { ok: true, data: { key: (data as { key: string }).key }, message: "Copy this key now. It won't be shown again." };
+}
+
+export async function revokeApiKey(formData: FormData) {
+  const { programId, id } = z.object({ programId: z.uuid(), id: z.uuid() }).parse(Object.fromEntries(formData));
+  await requireUser(`/programs/${programId}`);
+  const supabase = await createClient();
+  await supabase.rpc("revoke_service_identity", { p_identity_id: id });
+  revalidatePath(`/programs/${programId}`);
+}
+
+export async function createWebhook(_: ActionState, formData: FormData): Promise<ActionState<{ key: string }>> {
+  const parsed = z.object({ programId: z.uuid(), identityId: z.uuid(), url: z.url().max(500) }).safeParse(Object.fromEntries(formData));
+  const events = formData.getAll("events").map(String);
+  if (!parsed.success || !events.length) return fail("Choose a key, a URL and at least one event.");
+  await requireUser(`/programs/${parsed.data.programId}`);
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("create_webhook_subscription", { p_identity_id: parsed.data.identityId, p_url: parsed.data.url, p_event_types: events });
+  if (error) return fail(friendlyDbError(error));
+  revalidatePath(`/programs/${parsed.data.programId}`);
+  return { ok: true, data: { key: (data as { secret: string }).secret }, message: "Signing secret (shown once):" };
+}
+
+export async function createSandbox(formData: FormData) {
+  const { programId } = z.object({ programId: z.uuid() }).parse(Object.fromEntries(formData));
+  await requireUser(`/programs/${programId}`);
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("create_sandbox_program", { p_program_id: programId });
+  if (data) redirect(`/programs/${data}`);
+}

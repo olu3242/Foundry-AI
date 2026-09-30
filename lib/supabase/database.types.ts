@@ -767,6 +767,31 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"integration_calls": {
+                  Row: {
+                    "at": string,"error": string | null,"id": number,"identity_id": string | null,"latency_ms": number | null,"method": string,"path": string,"program_id": string | null,"request_id": string | null,"status": number
+                  }
+                  Insert: {
+                    "at"?: string,"error"?: string | null,"id"?: never,"identity_id"?: string | null,"latency_ms"?: number | null,"method": string,"path": string,"program_id"?: string | null,"request_id"?: string | null,"status": number
+                  }
+                  Update: {
+                    "at"?: string,"error"?: string | null,"id"?: never,"identity_id"?: string | null,"latency_ms"?: number | null,"method"?: string,"path"?: string,"program_id"?: string | null,"request_id"?: string | null,"status"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "integration_calls_identity_id_fkey"
+      columns: ["identity_id"]
+isOneToOne: false
+      referencedRelation: "service_identities"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "integration_calls_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"interventions": {
                   Row: {
                     "abandon_reason": string | null,"baseline_value": number,"business_id": string,"completed_at": string | null,"created_by": string,"created_by_role": Database["public"]['Enums']["business_role"],"due_at": string,"expected_direction": string,"id": string,"solution_version_id": string | null,"source_action_id": string | null,"started_at": string,"status": Database["public"]['Enums']["intervention_status"],"target_metric": string,"title": string,"updated_at": string,"window_days": number
@@ -1251,13 +1276,13 @@ isOneToOne: false
                   ]
                 },"programs": {
                   Row: {
-                    "auto_route": boolean,"countries": (string)[],"created_at": string,"created_by": string,"current_period_end": string | null,"description": string | null,"ends_on": string | null,"goals": string | null,"id": string,"join_code": string,"kind": string,"name": string,"phase": string,"pilot_seats": number,"seats": number,"sectors": (string)[],"sponsor_name": string | null,"sponsored_plan_id": string | null,"starts_on": string | null,"status": string,"stripe_customer_id": string | null,"stripe_subscription_id": string | null,"subscription_status": string | null,"target_businesses": number | null,"updated_at": string
+                    "auto_route": boolean,"countries": (string)[],"created_at": string,"created_by": string,"current_period_end": string | null,"description": string | null,"ends_on": string | null,"goals": string | null,"id": string,"is_sandbox": boolean,"join_code": string,"kind": string,"name": string,"phase": string,"pilot_seats": number,"seats": number,"sectors": (string)[],"sponsor_name": string | null,"sponsored_plan_id": string | null,"starts_on": string | null,"status": string,"stripe_customer_id": string | null,"stripe_subscription_id": string | null,"subscription_status": string | null,"target_businesses": number | null,"updated_at": string
                   }
                   Insert: {
-                    "auto_route"?: boolean,"countries"?: (string)[],"created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"goals"?: string | null,"id"?: string,"join_code"?: string,"kind"?: string,"name": string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sectors"?: (string)[],"sponsor_name"?: string | null,"sponsored_plan_id"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"target_businesses"?: number | null,"updated_at"?: string
+                    "auto_route"?: boolean,"countries"?: (string)[],"created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"goals"?: string | null,"id"?: string,"is_sandbox"?: boolean,"join_code"?: string,"kind"?: string,"name": string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sectors"?: (string)[],"sponsor_name"?: string | null,"sponsored_plan_id"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"target_businesses"?: number | null,"updated_at"?: string
                   }
                   Update: {
-                    "auto_route"?: boolean,"countries"?: (string)[],"created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"goals"?: string | null,"id"?: string,"join_code"?: string,"kind"?: string,"name"?: string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sectors"?: (string)[],"sponsor_name"?: string | null,"sponsored_plan_id"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"target_businesses"?: number | null,"updated_at"?: string
+                    "auto_route"?: boolean,"countries"?: (string)[],"created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"goals"?: string | null,"id"?: string,"is_sandbox"?: boolean,"join_code"?: string,"kind"?: string,"name"?: string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sectors"?: (string)[],"sponsor_name"?: string | null,"sponsored_plan_id"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"target_businesses"?: number | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -1560,6 +1585,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"service_identities": {
+                  Row: {
+                    "created_at": string,"created_by": string,"environment": string,"id": string,"key_hash": string,"key_prefix": string,"last_used_at": string | null,"name": string,"program_id": string,"rate_limit_per_min": number,"revoked_at": string | null,"scopes": (string)[],"status": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string,"environment": string,"id"?: string,"key_hash": string,"key_prefix": string,"last_used_at"?: string | null,"name": string,"program_id": string,"rate_limit_per_min"?: number,"revoked_at"?: string | null,"scopes": (string)[],"status"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string,"environment"?: string,"id"?: string,"key_hash"?: string,"key_prefix"?: string,"last_used_at"?: string | null,"name"?: string,"program_id"?: string,"rate_limit_per_min"?: number,"revoked_at"?: string | null,"scopes"?: (string)[],"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "service_identities_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "service_identities_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"solution_engagements": {
                   Row: {
                     "business_id": string,"consented_at": string,"consented_by": string,"id": string,"intervention_id": string,"provider_id": string,"status": string
@@ -1840,6 +1890,50 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"webhook_deliveries": {
+                  Row: {
+                    "attempts": number,"created_at": string,"delivered_at": string | null,"event_id": number | null,"event_type": string,"id": string,"last_error": string | null,"payload": NonNullable<Json>,"response_status": number | null,"status": string,"subscription_id": string
+                  }
+                  Insert: {
+                    "attempts"?: number,"created_at"?: string,"delivered_at"?: string | null,"event_id"?: number | null,"event_type": string,"id"?: string,"last_error"?: string | null,"payload": NonNullable<Json>,"response_status"?: number | null,"status"?: string,"subscription_id": string
+                  }
+                  Update: {
+                    "attempts"?: number,"created_at"?: string,"delivered_at"?: string | null,"event_id"?: number | null,"event_type"?: string,"id"?: string,"last_error"?: string | null,"payload"?: NonNullable<Json>,"response_status"?: number | null,"status"?: string,"subscription_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "webhook_deliveries_subscription_id_fkey"
+      columns: ["subscription_id"]
+isOneToOne: false
+      referencedRelation: "webhook_subscriptions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"webhook_subscriptions": {
+                  Row: {
+                    "created_at": string,"event_types": (string)[],"id": string,"identity_id": string,"program_id": string,"secret": string,"status": string,"url": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"event_types": (string)[],"id"?: string,"identity_id": string,"program_id": string,"secret": string,"status"?: string,"url": string
+                  }
+                  Update: {
+                    "created_at"?: string,"event_types"?: (string)[],"id"?: string,"identity_id"?: string,"program_id"?: string,"secret"?: string,"status"?: string,"url"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "webhook_subscriptions_identity_id_fkey"
+      columns: ["identity_id"]
+isOneToOne: false
+      referencedRelation: "service_identities"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "webhook_subscriptions_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -1866,6 +1960,27 @@ isOneToOne: false
                            },
 "am_platform_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"api_authenticate":
+{ Args: { "p_key_hash": string }; Returns: Json
+                           },
+"api_business_outcomes":
+{ Args: { "p_business_id": string,"p_identity_id": string }; Returns: Json
+                           },
+"api_invite":
+{ Args: { "p_contacts": (string)[],"p_identity_id": string }; Returns: number
+                           },
+"api_list_businesses":
+{ Args: { "p_identity_id": string }; Returns: Json
+                           },
+"api_log_call":
+{ Args: { "p_error"?: string,"p_identity_id": string,"p_latency_ms": number,"p_method": string,"p_path": string,"p_request_id": string,"p_status": number }; Returns: undefined
+                           },
+"api_program_report":
+{ Args: { "p_identity_id": string }; Returns: Json
+                           },
+"api_send_test_event":
+{ Args: { "p_identity_id": string }; Returns: number
                            },
 "assign_partner":
 { Args: { "p_business_id": string,"p_partner_user_id": string,"p_program_id": string }; Returns: undefined
@@ -1971,6 +2086,15 @@ isOneToOne: false
 "create_program":
 { Args: { "p_description"?: string,"p_name": string,"p_sponsor_name"?: string }; Returns: string
                            },
+"create_sandbox_program":
+{ Args: { "p_program_id": string }; Returns: string
+                           },
+"create_service_identity":
+{ Args: { "p_name": string,"p_program_id": string,"p_scopes": (string)[] }; Returns: Json
+                           },
+"create_webhook_subscription":
+{ Args: { "p_event_types": (string)[],"p_identity_id": string,"p_url": string }; Returns: Json
+                           },
 "data_quality_score":
 { Args: { "p_business_id": string }; Returns: Json
                            },
@@ -2070,6 +2194,9 @@ isOneToOne: false
               "admins": number,"assigned_partners": (string)[],"consented_at": string,"program_id": string,"program_name": string,"sponsor_name": string
             }[]
                            },
+"program_integrations":
+{ Args: { "p_program_id": string }; Returns: Json
+                           },
 "program_report":
 { Args: { "p_program_id": string }; Returns: Json
                            },
@@ -2105,6 +2232,9 @@ isOneToOne: false
                            },
 "record_entry":
 { Args: { "p_business_id": string,"p_fields": Json,"p_kind": Database["public"]['Enums']["record_kind"] }; Returns: string
+                           },
+"record_webhook_attempt":
+{ Args: { "p_delivery_id": string,"p_error": string,"p_final": boolean,"p_status": number }; Returns: undefined
                            },
 "register_provider":
 { Args: { "p_contact": string,"p_description"?: string,"p_kind": string,"p_name": string }; Returns: string
@@ -2144,6 +2274,9 @@ isOneToOne: false
                            },
 "review_verifier":
 { Args: { "p_status": string,"p_verifier_id": string }; Returns: undefined
+                           },
+"revoke_service_identity":
+{ Args: { "p_identity_id": string }; Returns: undefined
                            },
 "rollup_metrics":
 { Args: Record<PropertyKey, never>; Returns: number
@@ -2225,6 +2358,9 @@ isOneToOne: false
                            },
 "void_record":
 { Args: { "p_id": string,"p_kind": Database["public"]['Enums']["record_kind"],"p_reason"?: string }; Returns: undefined
+                           },
+"webhook_delivery_for_send":
+{ Args: { "p_delivery_id": string }; Returns: Json
                            },
 "withdraw_evidence_package":
 { Args: { "p_package_id": string }; Returns: undefined

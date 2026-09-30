@@ -16,7 +16,8 @@ import { PortfolioTable } from "@/components/programs/portfolio-table";
 import { loadPortfolio } from "@/lib/programs/portfolio";
 import { billingConfigured } from "@/lib/billing/stripe";
 import { formatDate } from "@/lib/utils";
-import { assignPartner, decidePackage, revertAutomation, setAutoRoute, sponsorPlan, startCheckout } from "../actions";
+import { assignPartner, createSandbox, decidePackage, revokeApiKey, revertAutomation, setAutoRoute, sponsorPlan, startCheckout } from "../actions";
+import { CreateKeyForm, CreateWebhookForm } from "@/components/programs/api-access";
 import { ProductForm } from "@/components/finance/lender";
 import { PassportView } from "@/components/passport/passport-view";
 import type { PassportFacts, PassportPulse, PassportSection } from "@/lib/passport/facts";
@@ -39,6 +40,12 @@ export default async function ProgramPage({ params, searchParams }: { params: Pr
     ? await supabase.from("agent_actions").select("id, business_id, title, status, executed_at, payload, businesses(name)").eq("action_type", "ops.route_verifier")
         .filter("payload->effect->>program_id", "eq", pid).order("created_at", { ascending: false }).limit(10)
     : { data: [] };
+  const { data: integrations } = isAdmin ? await supabase.rpc("program_integrations", { p_program_id: pid }) : { data: null };
+  const api = integrations as unknown as {
+    identities: { id: string; name: string; environment: string; scopes: string[]; key_prefix: string; status: string; last_used_at: string | null }[];
+    webhooks: { id: string; url: string; event_types: string[]; identity: string; delivered: number; failed: number; pending: number }[];
+    calls: { method: string; path: string; status: number; latency_ms: number; at: string }[];
+  } | null;
   const { data: sponsorPlans } = await supabase.from("billing_plans").select("id, key, name, price_minor, currency").eq("payer_kind", "sponsor").eq("status", "active");
 
   const [{ data: enrollments }, { data: members }, { data: assignments }] = await Promise.all([
@@ -145,6 +152,30 @@ export default async function ProgramPage({ params, searchParams }: { params: Pr
           )}
           {isAdmin && (
             <Card><CardHeader><CardTitle>Program settings</CardTitle></CardHeader><ProgramSettingsForm program={program} /></Card>
+          )}
+          {isAdmin && api && (
+            <Card aria-label="API access">
+              <CardHeader><CardTitle>API access {program.is_sandbox && <Badge tone="neutral">sandbox</Badge>}</CardTitle>
+                <CardDescription>Connect your systems through the versioned API (/api/v1). Keys only reach businesses that consented to this program.</CardDescription></CardHeader>
+              <ul className="mb-3 divide-y text-sm">{api.identities.map((k) => (
+                <li key={k.id} className="flex flex-wrap items-center gap-2 py-2" aria-label={`API key ${k.name}`}>
+                  <span className="flex-1">{k.name} · <code className="text-xs">{k.key_prefix}…</code> · {k.scopes.join(", ")}{k.last_used_at ? ` · used ${formatDate(k.last_used_at)}` : ""}</span>
+                  <Badge tone={k.status === "active" ? "brand" : "neutral"}>{k.environment} · {k.status}</Badge>
+                  {k.status === "active" && <form action={revokeApiKey}><input type="hidden" name="programId" value={pid} /><input type="hidden" name="id" value={k.id} /><Button size="sm" variant="outline">Revoke</Button></form>}
+                </li>))}</ul>
+              <CreateKeyForm programId={pid} />
+              <div className="mt-4 border-t pt-4">
+                {api.webhooks.map((w) => <p key={w.id} className="text-xs" aria-label={`Webhook ${w.url}`}>{w.url} · {w.event_types.join(", ")} · delivered {w.delivered} · pending {w.pending} · failed {w.failed}</p>)}
+                <CreateWebhookForm programId={pid} identities={api.identities.filter((k) => k.status === "active" && k.scopes.includes("events:subscribe"))} />
+              </div>
+              {!!api.calls.length && (
+                <details className="mt-4 text-xs"><summary className="cursor-pointer">Recent API calls</summary>
+                  <ul className="mt-1 space-y-0.5" aria-label="API calls">{api.calls.map((c, i) => <li key={i}>{c.method} {c.path} → {c.status} · {c.latency_ms}ms · {formatDate(c.at)}</li>)}</ul></details>
+              )}
+              {!program.is_sandbox && (
+                <form action={createSandbox} className="mt-4"><input type="hidden" name="programId" value={pid} /><Button size="sm" variant="ghost">Create a sandbox program for testing</Button></form>
+              )}
+            </Card>
           )}
           {isAdmin && (
             <Card aria-label="Automation">

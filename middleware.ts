@@ -7,5 +7,5 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   // Skip static assets, the service worker, public share pages, and machine endpoints.
-  matcher: ["/((?!_next/static|_next/image|favicon.svg|manifest.webmanifest|sw.js|p/|api/cron|api/webhooks|api/health).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.svg|manifest.webmanifest|sw.js|p/|api/cron|api/webhooks|api/health|api/v1).*)"],
 };
