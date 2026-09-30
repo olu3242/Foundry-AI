@@ -27,7 +27,7 @@ async function execute(job: Job, worker: string) {
     return "succeeded" as const;
   } catch (error) {
     const permanent = error instanceof PermanentJobError;
-    const message = error instanceof Error ? error.message : String(error);
+    const message = error instanceof Error ? error.message : typeof error === "object" && error && "message" in error ? String((error as { message: unknown }).message) : String(error);
     const { data: status } = await admin.rpc("fail_job", { p_job_id: job.id, p_error: message, p_retryable: !permanent });
     reportError(error, { msg: "job.failed", worker, job_id: job.id, type: job.type, attempt: job.attempts, next: status, business_id: job.business_id });
     return status === "dead" ? ("dead" as const) : ("retrying" as const);

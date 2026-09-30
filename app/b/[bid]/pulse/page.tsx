@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PulseCard, STATE_META, type PulseRow } from "@/components/pulse/pulse-card";
 import { DIMENSIONS } from "@/lib/pulse/score";
 import { refreshPulse } from "./actions";
+import { BenchmarkCard, type BenchmarkRow } from "@/components/pulse/benchmark-card";
 
 export const metadata: Metadata = { title: "Pulse" };
 
@@ -20,6 +21,7 @@ export default async function PulsePage({ params }: { params: Promise<{ bid: str
   const { data: fb } = latest
     ? await supabase.from("pulse_feedback").select("dimension, verdict").eq("business_id", bid).eq("computed_on", latest.computed_on)
     : { data: [] };
+  const { data: bench } = await supabase.rpc("business_benchmark", { p_business_id: bid });
   const ordered = DIMENSIONS.map((d) => rows?.find((r) => r.dimension === d)).filter(Boolean) as (PulseRow & { computed_at: string })[];
   const counts = ordered.reduce<Record<string, number>>((acc, r) => ({ ...acc, [r.state]: (acc[r.state] ?? 0) + 1 }), {});
 
@@ -61,6 +63,7 @@ export default async function PulsePage({ params }: { params: Promise<{ bid: str
                 feedback={{ businessId: bid, computedOn: latest!.computed_on, given: fb?.find((f) => f.dimension === r.dimension)?.verdict }} />
             ))}
           </div>
+          <BenchmarkCard rows={(bench ?? []) as BenchmarkRow[]} />
         </>
       )}
     </>

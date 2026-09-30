@@ -15,6 +15,11 @@ export const handlers: Record<string, JobHandler> = {
   "growth.recommend": growthJob,
   "market.match": marketMatchJob,
   "pilot.baseline": baselineJob,
+  "benchmarks.compute": async ({ admin }) => {
+    const { data, error } = await admin.rpc("compute_benchmarks");
+    if (error) throw error;
+    return { cohorts: data };
+  },
   "outcome.measure": measureOutcomeJob,
   "system.ping": async ({ job }) => ({ pong: true, at: new Date().toISOString(), payload: job.payload }),
 };

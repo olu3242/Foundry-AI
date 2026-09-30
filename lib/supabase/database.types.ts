@@ -93,6 +93,19 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"benchmarks": {
+                  Row: {
+                    "avg_quality": number,"band": string | null,"cohort_key": string,"computed_at": string,"confidence": string,"country_code": string,"level": string,"metric": string,"n": number,"p25": number | null,"p50": number | null,"p75": number | null,"period_end": string,"sector": string | null,"weighted_median": number | null
+                  }
+                  Insert: {
+                    "avg_quality": number,"band"?: string | null,"cohort_key": string,"computed_at"?: string,"confidence": string,"country_code": string,"level": string,"metric": string,"n": number,"p25"?: number | null,"p50"?: number | null,"p75"?: number | null,"period_end": string,"sector"?: string | null,"weighted_median"?: number | null
+                  }
+                  Update: {
+                    "avg_quality"?: number,"band"?: string | null,"cohort_key"?: string,"computed_at"?: string,"confidence"?: string,"country_code"?: string,"level"?: string,"metric"?: string,"n"?: number,"p25"?: number | null,"p50"?: number | null,"p75"?: number | null,"period_end"?: string,"sector"?: string | null,"weighted_median"?: number | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"business_baselines": {
                   Row: {
                     "business_id": string,"captured_at": string,"id": string,"metrics": NonNullable<Json>,"program_id": string | null,"pulse": NonNullable<Json>
@@ -973,6 +986,11 @@ isOneToOne: false
 "batch_nudge":
 { Args: { "p_business_ids": (string)[],"p_message": string }; Returns: number
                            },
+"business_benchmark":
+{ Args: { "p_business_id": string }; Returns: {
+              "avg_quality": number,"cohort": string,"confidence": string,"level": string,"metric": string,"n": number,"p25": number,"p50": number,"p75": number,"period_end": string,"placement": string,"value": number
+            }[]
+                           },
 "business_summary":
 { Args: { "p_business_id": string,"p_from": string,"p_to": string }; Returns: {
               "collected_minor": number,"customers_served": number,"expenses_minor": number,"net_minor": number,"receivable_minor": number,"sales_count": number,"sales_minor": number
@@ -1009,6 +1027,9 @@ isOneToOne: false
                            },
 "complete_job":
 { Args: { "p_job_id": string,"p_result"?: Json }; Returns: undefined
+                           },
+"compute_benchmarks":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "confirm_draft":
 { Args: { "p_draft_id": string,"p_fields"?: Json }; Returns: string
