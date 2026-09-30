@@ -5,7 +5,26 @@ export type Database = {
   
   "public": {
           Tables: {
-            "audit_log": {
+            "agent_runs": {
+                  Row: {
+                    "agent": string,"business_id": string,"created_at": string,"error": string | null,"id": string,"input_tokens": number | null,"latency_ms": number | null,"model": string | null,"output": Json | null,"output_tokens": number | null,"status": string,"subject_id": string | null,"subject_type": string | null,"trigger": string
+                  }
+                  Insert: {
+                    "agent": string,"business_id": string,"created_at"?: string,"error"?: string | null,"id"?: string,"input_tokens"?: number | null,"latency_ms"?: number | null,"model"?: string | null,"output"?: Json | null,"output_tokens"?: number | null,"status": string,"subject_id"?: string | null,"subject_type"?: string | null,"trigger": string
+                  }
+                  Update: {
+                    "agent"?: string,"business_id"?: string,"created_at"?: string,"error"?: string | null,"id"?: string,"input_tokens"?: number | null,"latency_ms"?: number | null,"model"?: string | null,"output"?: Json | null,"output_tokens"?: number | null,"status"?: string,"subject_id"?: string | null,"subject_type"?: string | null,"trigger"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "agent_runs_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"audit_log": {
                   Row: {
                     "action": string,"actor_id": string | null,"business_id": string,"changed_at": string,"id": number,"new_row": Json | null,"old_row": Json | null,"row_id": string | null,"table_name": string
                   }
@@ -31,6 +50,62 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"captures": {
+                  Row: {
+                    "business_id": string,"channel": Database["public"]['Enums']["capture_channel"],"client_ref": string | null,"created_at": string,"created_by": string,"error": string | null,"id": string,"mime_type": string | null,"processed_at": string | null,"raw_text": string | null,"status": Database["public"]['Enums']["capture_status"],"storage_path": string | null,"updated_at": string
+                  }
+                  Insert: {
+                    "business_id": string,"channel": Database["public"]['Enums']["capture_channel"],"client_ref"?: string | null,"created_at"?: string,"created_by"?: string,"error"?: string | null,"id"?: string,"mime_type"?: string | null,"processed_at"?: string | null,"raw_text"?: string | null,"status"?: Database["public"]['Enums']["capture_status"],"storage_path"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "business_id"?: string,"channel"?: Database["public"]['Enums']["capture_channel"],"client_ref"?: string | null,"created_at"?: string,"created_by"?: string,"error"?: string | null,"id"?: string,"mime_type"?: string | null,"processed_at"?: string | null,"raw_text"?: string | null,"status"?: Database["public"]['Enums']["capture_status"],"storage_path"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "captures_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "captures_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"customers": {
+                  Row: {
+                    "business_id": string,"created_at": string,"created_by": string | null,"id": string,"name": string,"notes": string | null,"phone": string | null,"provenance": Database["public"]['Enums']["provenance"],"source_draft_id": string | null,"updated_at": string
+                  }
+                  Insert: {
+                    "business_id": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"name": string,"notes"?: string | null,"phone"?: string | null,"provenance"?: Database["public"]['Enums']["provenance"],"source_draft_id"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "business_id"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"name"?: string,"notes"?: string | null,"phone"?: string | null,"provenance"?: Database["public"]['Enums']["provenance"],"source_draft_id"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "customers_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "customers_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "customers_source_draft_id_fkey"
+      columns: ["source_draft_id"]
+isOneToOne: false
+      referencedRelation: "record_drafts"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"events": {
                   Row: {
                     "actor_id": string | null,"actor_type": Database["public"]['Enums']["actor_type"],"business_id": string,"entity_id": string | null,"entity_type": string | null,"id": number,"occurred_at": string,"payload": NonNullable<Json>,"type": string
@@ -47,6 +122,43 @@ export type Database = {
       columns: ["business_id"]
 isOneToOne: false
       referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"expenses": {
+                  Row: {
+                    "amount_minor": number,"business_id": string,"category": string,"created_at": string,"created_by": string | null,"currency": string,"description": string | null,"id": string,"occurred_at": string,"payment_method": Database["public"]['Enums']["payment_method"],"provenance": Database["public"]['Enums']["provenance"],"source_capture_id": string | null,"source_draft_id": string | null,"supplier": string | null,"updated_at": string,"voided_at": string | null
+                  }
+                  Insert: {
+                    "amount_minor": number,"business_id": string,"category": string,"created_at"?: string,"created_by"?: string | null,"currency": string,"description"?: string | null,"id"?: string,"occurred_at"?: string,"payment_method"?: Database["public"]['Enums']["payment_method"],"provenance"?: Database["public"]['Enums']["provenance"],"source_capture_id"?: string | null,"source_draft_id"?: string | null,"supplier"?: string | null,"updated_at"?: string,"voided_at"?: string | null
+                  }
+                  Update: {
+                    "amount_minor"?: number,"business_id"?: string,"category"?: string,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"description"?: string | null,"id"?: string,"occurred_at"?: string,"payment_method"?: Database["public"]['Enums']["payment_method"],"provenance"?: Database["public"]['Enums']["provenance"],"source_capture_id"?: string | null,"source_draft_id"?: string | null,"supplier"?: string | null,"updated_at"?: string,"voided_at"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "expenses_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "expenses_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "expenses_source_capture_id_fkey"
+      columns: ["source_capture_id"]
+isOneToOne: false
+      referencedRelation: "captures"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "expenses_source_draft_id_fkey"
+      columns: ["source_draft_id"]
+isOneToOne: false
+      referencedRelation: "record_drafts"
       referencedColumns: ["id"]
     }
                   ]
@@ -107,6 +219,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"products": {
+                  Row: {
+                    "business_id": string,"created_at": string,"id": string,"name": string,"reorder_level": number | null,"stock_qty": number,"unit": string | null,"unit_price_minor": number | null,"updated_at": string
+                  }
+                  Insert: {
+                    "business_id": string,"created_at"?: string,"id"?: string,"name": string,"reorder_level"?: number | null,"stock_qty"?: number,"unit"?: string | null,"unit_price_minor"?: number | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "business_id"?: string,"created_at"?: string,"id"?: string,"name"?: string,"reorder_level"?: number | null,"stock_qty"?: number,"unit"?: string | null,"unit_price_minor"?: number | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "products_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "created_at": string,"email": string | null,"full_name": string | null,"id": string,"locale": string,"phone": string | null,"updated_at": string
@@ -119,6 +250,166 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"record_drafts": {
+                  Row: {
+                    "agent_run_id": string | null,"business_id": string,"capture_id": string,"confidence": number,"confirmed_at": string | null,"confirmed_by": string | null,"created_at": string,"evidence": NonNullable<Json>,"explanation": string | null,"fields": NonNullable<Json>,"id": string,"kind": Database["public"]['Enums']["record_kind"],"record_id": string | null,"status": Database["public"]['Enums']["draft_status"]
+                  }
+                  Insert: {
+                    "agent_run_id"?: string | null,"business_id": string,"capture_id": string,"confidence": number,"confirmed_at"?: string | null,"confirmed_by"?: string | null,"created_at"?: string,"evidence"?: NonNullable<Json>,"explanation"?: string | null,"fields": NonNullable<Json>,"id"?: string,"kind": Database["public"]['Enums']["record_kind"],"record_id"?: string | null,"status"?: Database["public"]['Enums']["draft_status"]
+                  }
+                  Update: {
+                    "agent_run_id"?: string | null,"business_id"?: string,"capture_id"?: string,"confidence"?: number,"confirmed_at"?: string | null,"confirmed_by"?: string | null,"created_at"?: string,"evidence"?: NonNullable<Json>,"explanation"?: string | null,"fields"?: NonNullable<Json>,"id"?: string,"kind"?: Database["public"]['Enums']["record_kind"],"record_id"?: string | null,"status"?: Database["public"]['Enums']["draft_status"]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "record_drafts_agent_run_id_fkey"
+      columns: ["agent_run_id"]
+isOneToOne: false
+      referencedRelation: "agent_runs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "record_drafts_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "record_drafts_capture_id_fkey"
+      columns: ["capture_id"]
+isOneToOne: false
+      referencedRelation: "captures"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "record_drafts_confirmed_by_fkey"
+      columns: ["confirmed_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"sale_items": {
+                  Row: {
+                    "business_id": string,"description": string,"id": string,"line_total_minor": number,"product_id": string | null,"quantity": number,"sale_id": string,"unit_price_minor": number
+                  }
+                  Insert: {
+                    "business_id": string,"description": string,"id"?: string,"line_total_minor": number,"product_id"?: string | null,"quantity": number,"sale_id": string,"unit_price_minor": number
+                  }
+                  Update: {
+                    "business_id"?: string,"description"?: string,"id"?: string,"line_total_minor"?: number,"product_id"?: string | null,"quantity"?: number,"sale_id"?: string,"unit_price_minor"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sale_items_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sale_items_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "products"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sale_items_sale_id_fkey"
+      columns: ["sale_id"]
+isOneToOne: false
+      referencedRelation: "sales"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"sales": {
+                  Row: {
+                    "amount_paid_minor": number,"business_id": string,"created_at": string,"created_by": string | null,"currency": string,"customer_id": string | null,"id": string,"notes": string | null,"occurred_at": string,"payment_method": Database["public"]['Enums']["payment_method"],"provenance": Database["public"]['Enums']["provenance"],"source_capture_id": string | null,"source_draft_id": string | null,"total_minor": number,"updated_at": string,"voided_at": string | null
+                  }
+                  Insert: {
+                    "amount_paid_minor": number,"business_id": string,"created_at"?: string,"created_by"?: string | null,"currency": string,"customer_id"?: string | null,"id"?: string,"notes"?: string | null,"occurred_at"?: string,"payment_method"?: Database["public"]['Enums']["payment_method"],"provenance"?: Database["public"]['Enums']["provenance"],"source_capture_id"?: string | null,"source_draft_id"?: string | null,"total_minor": number,"updated_at"?: string,"voided_at"?: string | null
+                  }
+                  Update: {
+                    "amount_paid_minor"?: number,"business_id"?: string,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"customer_id"?: string | null,"id"?: string,"notes"?: string | null,"occurred_at"?: string,"payment_method"?: Database["public"]['Enums']["payment_method"],"provenance"?: Database["public"]['Enums']["provenance"],"source_capture_id"?: string | null,"source_draft_id"?: string | null,"total_minor"?: number,"updated_at"?: string,"voided_at"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sales_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sales_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sales_customer_id_fkey"
+      columns: ["customer_id"]
+isOneToOne: false
+      referencedRelation: "customers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sales_source_capture_id_fkey"
+      columns: ["source_capture_id"]
+isOneToOne: false
+      referencedRelation: "captures"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sales_source_draft_id_fkey"
+      columns: ["source_draft_id"]
+isOneToOne: false
+      referencedRelation: "record_drafts"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"stock_movements": {
+                  Row: {
+                    "business_id": string,"created_at": string,"created_by": string | null,"id": string,"notes": string | null,"occurred_at": string,"product_id": string,"provenance": Database["public"]['Enums']["provenance"],"quantity_delta": number,"reason": Database["public"]['Enums']["stock_reason"],"sale_id": string | null,"source_capture_id": string | null,"source_draft_id": string | null,"unit_cost_minor": number | null
+                  }
+                  Insert: {
+                    "business_id": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"notes"?: string | null,"occurred_at"?: string,"product_id": string,"provenance"?: Database["public"]['Enums']["provenance"],"quantity_delta": number,"reason": Database["public"]['Enums']["stock_reason"],"sale_id"?: string | null,"source_capture_id"?: string | null,"source_draft_id"?: string | null,"unit_cost_minor"?: number | null
+                  }
+                  Update: {
+                    "business_id"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"notes"?: string | null,"occurred_at"?: string,"product_id"?: string,"provenance"?: Database["public"]['Enums']["provenance"],"quantity_delta"?: number,"reason"?: Database["public"]['Enums']["stock_reason"],"sale_id"?: string | null,"source_capture_id"?: string | null,"source_draft_id"?: string | null,"unit_cost_minor"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "stock_movements_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "stock_movements_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "stock_movements_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "products"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "stock_movements_sale_id_fkey"
+      columns: ["sale_id"]
+isOneToOne: false
+      referencedRelation: "sales"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "stock_movements_source_capture_id_fkey"
+      columns: ["source_capture_id"]
+isOneToOne: false
+      referencedRelation: "captures"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "stock_movements_source_draft_id_fkey"
+      columns: ["source_draft_id"]
+isOneToOne: false
+      referencedRelation: "record_drafts"
+      referencedColumns: ["id"]
+    }
                   ]
                 }
           }
@@ -158,6 +449,9 @@ isOneToOne: false
 "complete_job":
 { Args: { "p_job_id": string,"p_result"?: Json }; Returns: undefined
                            },
+"confirm_draft":
+{ Args: { "p_draft_id": string,"p_fields"?: Json }; Returns: string
+                           },
 "create_business":
 { Args: { "p_country_code"?: string,"p_currency"?: string,"p_name": string,"p_sector"?: string,"p_timezone"?: string }; Returns: string
                            },
@@ -175,10 +469,13 @@ isOneToOne: false
                            },
 "reap_stale_jobs":
 { Args: { "p_timeout"?: string }; Returns: number
+                           },
+"reject_draft":
+{ Args: { "p_draft_id": string }; Returns: undefined
                            }
           }
           Enums: {
-            "actor_type": "user"|"agent"|"system","business_role": "owner"|"staff"|"partner"|"program_admin","job_status": "queued"|"running"|"succeeded"|"failed"|"dead"
+            "actor_type": "user"|"agent"|"system","business_role": "owner"|"staff"|"partner"|"program_admin","capture_channel": "text"|"voice"|"photo"|"forward","capture_status": "received"|"processing"|"drafted"|"resolved"|"failed","draft_status": "proposed"|"confirmed"|"rejected","job_status": "queued"|"running"|"succeeded"|"failed"|"dead","payment_method": "cash"|"transfer"|"mobile_money"|"card"|"credit"|"other","provenance": "self_reported"|"document_backed"|"third_party_verified"|"institution_verified","record_kind": "sale"|"expense"|"stock_movement"|"customer","stock_reason": "purchase"|"sale"|"adjustment"|"waste"|"return"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -294,7 +591,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "actor_type": ["user", "agent", "system"],"business_role": ["owner", "staff", "partner", "program_admin"],"job_status": ["queued", "running", "succeeded", "failed", "dead"]
+            "actor_type": ["user", "agent", "system"],"business_role": ["owner", "staff", "partner", "program_admin"],"capture_channel": ["text", "voice", "photo", "forward"],"capture_status": ["received", "processing", "drafted", "resolved", "failed"],"draft_status": ["proposed", "confirmed", "rejected"],"job_status": ["queued", "running", "succeeded", "failed", "dead"],"payment_method": ["cash", "transfer", "mobile_money", "card", "credit", "other"],"provenance": ["self_reported", "document_backed", "third_party_verified", "institution_verified"],"record_kind": ["sale", "expense", "stock_movement", "customer"],"stock_reason": ["purchase", "sale", "adjustment", "waste", "return"]
           }
         }
 } as const

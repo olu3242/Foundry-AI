@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { Home, Settings, LogOut, type LucideIcon } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { Toaster } from "@/components/toast";
 import { cn } from "@/lib/utils";
 import { NAV, type NavKey } from "./nav";
 import { switchBusiness } from "./actions";
@@ -86,6 +87,7 @@ export function AppShell({ businessId, businessName, businesses, children }: Pro
         </main>
       </div>
 
+      <Toaster />
       <nav
         aria-label="Main"
         className="fixed inset-x-0 bottom-0 z-30 grid border-t bg-background/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"

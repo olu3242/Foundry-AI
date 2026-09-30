@@ -20,7 +20,7 @@ const serverSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   CRON_SECRET: z.string().min(16),
   ANTHROPIC_API_KEY: z.string().optional(),
-  AI_EXTRACTION_MODEL: z.string().default("claude-sonnet-5-5"),
+  AI_EXTRACTION_MODEL: z.string().default("claude-opus-5-5"),
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   STRIPE_PROGRAM_PRICE_ID: z.string().optional(),
