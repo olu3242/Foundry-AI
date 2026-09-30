@@ -35,6 +35,12 @@ export type Database = {
 isOneToOne: false
       referencedRelation: "businesses"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "memberships_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
     }
                   ]
                 },"profiles": {

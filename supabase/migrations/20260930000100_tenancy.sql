@@ -61,7 +61,7 @@ create trigger businesses_touch before update on public.businesses
 
 create table public.memberships (
   business_id  uuid not null references public.businesses (id) on delete cascade,
-  user_id      uuid not null references auth.users (id) on delete cascade,
+  user_id      uuid not null references public.profiles (id) on delete cascade,
   role         public.business_role not null,
   created_at   timestamptz not null default now(),
   primary key (business_id, user_id)
