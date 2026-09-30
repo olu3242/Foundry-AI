@@ -28,7 +28,7 @@ export const extractCapture: JobHandler = async ({ job, admin }) => {
   await admin.from("captures").update({ status: "processing", error: null }).eq("id", capture.id);
 
   const [{ data: business }, { data: products }, { data: customers }] = await Promise.all([
-    admin.from("businesses").select("currency, timezone").eq("id", capture.business_id).single(),
+    admin.from("businesses").select("currency, timezone, markets(name, languages, connectors)").eq("id", capture.business_id).single(),
     admin.from("products").select("name").eq("business_id", capture.business_id).order("updated_at", { ascending: false }).limit(50),
     admin.from("customers").select("name").eq("business_id", capture.business_id).order("updated_at", { ascending: false }).limit(50),
   ]);
@@ -54,6 +54,10 @@ export const extractCapture: JobHandler = async ({ job, admin }) => {
         today,
         knownProducts: (products ?? []).map((p) => p.name),
         knownCustomers: (customers ?? []).map((c) => c.name),
+        market: business.markets ? {
+          name: business.markets.name, languages: business.markets.languages,
+          mobileMoney: ((business.markets.connectors as { mobile_money?: string[] } | null)?.mobile_money) ?? [],
+        } : undefined,
       });
     } else if (process.env.NODE_ENV !== "production" && capture.raw_text) {
       result = { ok: true, extraction: heuristicExtract(capture.raw_text), model: "heuristic-dev", usage: { input: 0, output: 0 } };

@@ -3,7 +3,7 @@ import { requireBusiness, WRITER_ROLES } from "@/lib/auth/guards";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AddMemberForm, BusinessForm, JoinProgramForm } from "./forms";
+import { AddMemberForm, BusinessForm, IdentifierForm, JoinProgramForm } from "./forms";
 import { leaveProgram } from "./actions";
 import { AutonomySettings } from "@/components/agent/autonomy-settings";
 
@@ -20,6 +20,10 @@ export default async function SettingsPage({ params }: { params: Promise<{ bid: 
     .eq("business_id", bid)
     .order("created_at");
   const isOwner = role === "owner";
+  const [{ data: market }, { data: identifiers }] = await Promise.all([
+    supabase.from("markets").select("name, identifier_types, jurisdiction").eq("country_code", business.country_code).maybeSingle(),
+    supabase.from("business_identifiers").select("type, value, verified").eq("business_id", bid),
+  ]);
   const [{ data: policies }, { data: enrollments }] = await Promise.all([
     supabase.from("autonomy_policies").select("action_type, level").eq("business_id", bid),
     WRITER_ROLES.includes(role) ? supabase.rpc("program_access_for_business", { p_business_id: bid }) : Promise.resolve({ data: [] }),
@@ -53,6 +57,19 @@ export default async function SettingsPage({ params }: { params: Promise<{ bid: 
             })}
           </ul>
           {isOwner && <AddMemberForm businessId={bid} />}
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Registration numbers</CardTitle>
+            <CardDescription>Used in {market?.name ?? business.country_code}. They help partners recognise your business.</CardDescription>
+          </CardHeader>
+          <ul className="mb-3 space-y-1 text-sm">
+            {(identifiers ?? []).map((i) => <li key={i.type}>{(market?.identifier_types as { key: string; label: string }[] | undefined)?.find((t) => t.key === i.type)?.label ?? i.type}: <span className="font-mono">{i.value}</span></li>)}
+          </ul>
+          {isOwner && (
+            <IdentifierForm businessId={bid} types={(market?.identifier_types ?? []) as { key: string; label: string }[]}
+              current={Object.fromEntries((identifiers ?? []).map((i) => [i.type, i.value]))} />
+          )}
         </Card>
         <Card>
           <CardHeader>

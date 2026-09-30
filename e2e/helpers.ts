@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 
 /** Test numbers are configured in supabase/config.toml [auth.sms.test_otp]. */
 export const TEST_PHONES = { ama: "233200000001", kola: "234800000002" } as const;
@@ -70,4 +70,12 @@ export async function makePlatformAdmin(phone: string) {
   const user = (users.users as { id: string; phone: string }[]).find((u) => u.phone === phone);
   if (!user) throw new Error(`no user for ${phone}`);
   await service("platform_admins?on_conflict=user_id", { method: "POST", headers: { Prefer: "resolution=ignore-duplicates" }, body: JSON.stringify({ user_id: user.id }) });
+}
+
+/**
+ * Playwright's mobile emulation offsets the visual viewport after a field is focused, so coordinate
+ * taps on buttons below long forms miss. Click through the DOM instead (same event path for React).
+ */
+export async function domClick(locator: Locator) {
+  await locator.evaluate((el) => (el as HTMLElement).click());
 }

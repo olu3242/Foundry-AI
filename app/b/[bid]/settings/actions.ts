@@ -71,3 +71,13 @@ export async function leaveProgram(formData: FormData) {
   await supabase.rpc("leave_program", { p_business_id: businessId, p_program_id: programId });
   revalidatePath(`/b/${businessId}/settings`);
 }
+
+export async function setIdentifier(_: ActionState, formData: FormData): Promise<ActionState> {
+  const p = z.object({ businessId: z.uuid(), type: z.string().min(2).max(40), value: z.string().trim().min(2).max(60) }).safeParse(Object.fromEntries(formData));
+  if (!p.success) return fail("Enter the number.");
+  const { supabase } = await requireBusiness(p.data.businessId, ["owner"]);
+  const { error } = await supabase.rpc("set_business_identifier", { p_business_id: p.data.businessId, p_type: p.data.type, p_value: p.data.value });
+  if (error) return fail(friendlyDbError(error));
+  revalidatePath(`/b/${p.data.businessId}/settings`);
+  return { ok: true, message: "Saved." };
+}

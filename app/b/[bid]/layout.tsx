@@ -15,7 +15,7 @@ export default async function BusinessLayout({
     supabase.from("agent_actions").select("id", { count: "exact", head: true }).eq("business_id", bid).eq("status", "proposed"),
   ]);
   return (
-    <AppShell businessId={business.id} businessName={business.name} businesses={businesses ?? []} inboxCount={inboxCount ?? 0}>
+    <AppShell businessId={business.id} businessName={business.name} businesses={businesses ?? []} inboxCount={inboxCount ?? 0} locale={business.locale}>
       {children}
     </AppShell>
   );

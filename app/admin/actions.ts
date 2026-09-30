@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/guards";
 import { createClient } from "@/lib/supabase/server";
+import type { Json } from "@/lib/supabase/database.types";
 
 export async function deprecateVersion(formData: FormData) {
   const { versionId, reason } = z.object({ versionId: z.uuid(), reason: z.string().trim().min(3).max(300) }).parse(Object.fromEntries(formData));
@@ -27,4 +28,25 @@ export async function reviewSolution(formData: FormData) {
   const supabase = await createClient();
   await supabase.rpc("review_solution", { p_solution_id: id, p_decision: decision, p_note: note || undefined });
   revalidatePath("/admin/solutions");
+}
+
+export async function saveMarket(_: unknown, formData: FormData) {
+  await requireUser("/admin");
+  const f = Object.fromEntries(formData) as Record<string, string>;
+  const list = (v?: string) => (v ?? "").split(",").map((x) => x.trim()).filter(Boolean);
+  let identifierTypes: Json = [];
+  try {
+    identifierTypes = f.identifier_types ? (JSON.parse(f.identifier_types) as Json) : [];
+  } catch {
+    return { ok: false as const, error: "Identifier types must be JSON, e.g. [{\"key\":\"ursb\",\"label\":\"URSB\",\"pattern\":\"^[0-9]{6,14}$\"}]" };
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("upsert_market", { p_market: {
+    country_code: f.country_code, name: f.name, currency: f.currency, default_timezone: f.default_timezone, default_locale: f.default_locale || "en",
+    languages: list(f.languages), phone_prefix: f.phone_prefix, identifier_types: identifierTypes,
+    connectors: { mobile_money: list(f.mobile_money) }, data_residency: f.data_residency || "any", status: f.status || "beta",
+  } });
+  if (error) return { ok: false as const, error: error.message };
+  revalidatePath("/admin/markets");
+  return { ok: true as const, message: `Saved ${f.name}.` };
 }

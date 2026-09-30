@@ -174,18 +174,43 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"businesses": {
+                },"business_identifiers": {
                   Row: {
-                    "archived_at": string | null,"country_code": string,"created_at": string,"created_by": string,"currency": string,"id": string,"name": string,"sector": string | null,"timezone": string,"updated_at": string
+                    "business_id": string,"created_at": string,"type": string,"value": string,"verified": boolean
                   }
                   Insert: {
-                    "archived_at"?: string | null,"country_code"?: string,"created_at"?: string,"created_by": string,"currency"?: string,"id"?: string,"name": string,"sector"?: string | null,"timezone"?: string,"updated_at"?: string
+                    "business_id": string,"created_at"?: string,"type": string,"value": string,"verified"?: boolean
                   }
                   Update: {
-                    "archived_at"?: string | null,"country_code"?: string,"created_at"?: string,"created_by"?: string,"currency"?: string,"id"?: string,"name"?: string,"sector"?: string | null,"timezone"?: string,"updated_at"?: string
+                    "business_id"?: string,"created_at"?: string,"type"?: string,"value"?: string,"verified"?: boolean
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "business_identifiers_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"businesses": {
+                  Row: {
+                    "address": NonNullable<Json>,"archived_at": string | null,"country_code": string,"created_at": string,"created_by": string,"currency": string,"id": string,"locale": string | null,"name": string,"sector": string | null,"timezone": string,"updated_at": string
+                  }
+                  Insert: {
+                    "address"?: NonNullable<Json>,"archived_at"?: string | null,"country_code"?: string,"created_at"?: string,"created_by": string,"currency"?: string,"id"?: string,"locale"?: string | null,"name": string,"sector"?: string | null,"timezone"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "address"?: NonNullable<Json>,"archived_at"?: string | null,"country_code"?: string,"created_at"?: string,"created_by"?: string,"currency"?: string,"id"?: string,"locale"?: string | null,"name"?: string,"sector"?: string | null,"timezone"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "businesses_market_fk"
+      columns: ["country_code"]
+isOneToOne: false
+      referencedRelation: "markets"
+      referencedColumns: ["country_code"]
+    }
                   ]
                 },"captures": {
                   Row: {
@@ -467,6 +492,19 @@ isOneToOne: false
       referencedRelation: "businesses"
       referencedColumns: ["id"]
     }
+                  ]
+                },"markets": {
+                  Row: {
+                    "address_format": NonNullable<Json>,"connectors": NonNullable<Json>,"country_code": string,"currency": string,"data_residency": string,"default_locale": string,"default_timezone": string,"identifier_types": NonNullable<Json>,"jurisdiction": NonNullable<Json>,"languages": (string)[],"name": string,"phone_prefix": string,"status": string,"updated_at": string
+                  }
+                  Insert: {
+                    "address_format"?: NonNullable<Json>,"connectors"?: NonNullable<Json>,"country_code": string,"currency": string,"data_residency"?: string,"default_locale"?: string,"default_timezone": string,"identifier_types"?: NonNullable<Json>,"jurisdiction"?: NonNullable<Json>,"languages"?: (string)[],"name": string,"phone_prefix": string,"status"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "address_format"?: NonNullable<Json>,"connectors"?: NonNullable<Json>,"country_code"?: string,"currency"?: string,"data_residency"?: string,"default_locale"?: string,"default_timezone"?: string,"identifier_types"?: NonNullable<Json>,"jurisdiction"?: NonNullable<Json>,"languages"?: (string)[],"name"?: string,"phone_prefix"?: string,"status"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
                   ]
                 },"memberships": {
                   Row: {
@@ -1424,6 +1462,9 @@ isOneToOne: false
 "review_solution":
 { Args: { "p_decision": string,"p_note"?: string,"p_solution_id": string }; Returns: undefined
                            },
+"set_business_identifier":
+{ Args: { "p_business_id": string,"p_type": string,"p_value": string }; Returns: undefined
+                           },
 "snooze_items":
 { Args: { "p_days": number,"p_item_keys": (string)[] }; Returns: undefined
                            },
@@ -1451,6 +1492,9 @@ isOneToOne: false
                            },
 "take_eval_snapshot":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"upsert_market":
+{ Args: { "p_market": Json }; Returns: undefined
                            },
 "verify_outcome":
 { Args: { "p_note"?: string,"p_outcome_id": string,"p_verdict": string }; Returns: undefined

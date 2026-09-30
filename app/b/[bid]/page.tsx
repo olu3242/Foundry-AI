@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Loader2, TriangleAlert } from "lucide-react";
 import { requireBusiness, WRITER_ROLES } from "@/lib/auth/guards";
+import { speechLocale, t } from "@/lib/i18n";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { ActivityFeed } from "@/components/activity-feed";
@@ -41,11 +42,11 @@ export default async function TodayPage({ params }: { params: Promise<{ bid: str
 
   return (
     <>
-      <PageHeader eyebrow="Today" title={business.name} description="Say, type or photograph what happened. Foundry drafts the record; you confirm it." />
+      <PageHeader eyebrow="Today" title={business.name} description={t(business.locale, "today.description")} />
       <AutoRefresh active={inFlight.length > 0} />
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <section className="space-y-4" aria-label="Capture">
-          {canWrite && <CaptureComposer businessId={bid} />}
+          {canWrite && <CaptureComposer businessId={bid} uiLocale={business.locale} locale={speechLocale(business.locale, business.country_code)} />}
           {inFlight.map((c) => (
             <div key={c.id} className="glass flex items-center gap-3 p-4 text-sm text-muted-foreground" role="status">
               <Loader2 className="size-4 animate-spin text-insight" aria-hidden />

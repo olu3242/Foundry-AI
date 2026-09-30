@@ -5,13 +5,15 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
 import { FormMessage } from "@/components/form-message";
-import { COUNTRIES, SECTORS } from "@/lib/auth/current-business";
+import { SECTORS } from "@/lib/auth/current-business";
+
+export type MarketOption = { code: string; name: string; currency: string; timezone: string; beta: boolean };
 import { createBusiness } from "./actions";
 
-export function OnboardingForm() {
+export function OnboardingForm({ markets }: { markets: MarketOption[] }) {
   const [state, action, pending] = useActionState(createBusiness, null);
-  const [country, setCountry] = useState<string>(COUNTRIES[0].code);
-  const selected = COUNTRIES.find((c) => c.code === country) ?? COUNTRIES[0];
+  const [country, setCountry] = useState<string>(markets[0]?.code ?? "NG");
+  const selected = markets.find((c) => c.code === country) ?? markets[0]!;
 
   return (
     <form action={action} className="space-y-4">
@@ -32,9 +34,9 @@ export function OnboardingForm() {
       <div className="space-y-2">
         <Label htmlFor="country">Country</Label>
         <Select id="country" name="country" value={country} onChange={(e) => setCountry(e.target.value)}>
-          {COUNTRIES.map((c) => (
+          {markets.map((c) => (
             <option key={c.code} value={c.code}>
-              {c.name}
+              {c.name}{c.beta ? " (beta)" : ""}
             </option>
           ))}
         </Select>

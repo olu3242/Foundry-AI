@@ -8,6 +8,7 @@ import { FormMessage } from "@/components/form-message";
 import { createCapture } from "@/app/b/[bid]/capture/actions";
 import { addToOutbox } from "@/lib/offline/outbox";
 import { toast } from "@/components/toast";
+import { t } from "@/lib/i18n";
 
 type Recognition = {
   lang: string;
@@ -32,7 +33,7 @@ async function shrink(file: File, maxSide = 1600): Promise<File> {
   return blob ? new File([blob], "capture.jpg", { type: "image/jpeg" }) : file;
 }
 
-export function CaptureComposer({ businessId, locale = "en-NG" }: { businessId: string; locale?: string }) {
+export function CaptureComposer({ businessId, locale = "en-NG", uiLocale = "en" }: { businessId: string; locale?: string; uiLocale?: string | null }) {
   const [state, action, pending] = useActionState(createCapture, null);
   const [text, setText] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
@@ -95,13 +96,13 @@ export function CaptureComposer({ businessId, locale = "en-NG" }: { businessId: 
       <input type="hidden" name="businessId" value={businessId} />
       <input type="hidden" name="channel" value={channel} />
       <input type="hidden" name="clientRef" value={clientRef} />
-      <label htmlFor="capture-text" className="sr-only">What happened in the business?</label>
+      <label htmlFor="capture-text" className="sr-only">{t(uiLocale, "capture.label")}</label>
       <Textarea
         id="capture-text"
         name="text"
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder={'Say or type what happened, e.g. "Sold 2 bags of rice at 45k each to Mama Bisi, cash"'}
+        placeholder={t(uiLocale, "capture.placeholder")}
         className="min-h-28 border-none bg-transparent text-base focus-visible:ring-0"
         maxLength={4000}
       />
@@ -130,7 +131,7 @@ export function CaptureComposer({ businessId, locale = "en-NG" }: { businessId: 
         />
         <span className="flex-1 text-xs text-muted-foreground" aria-live="polite">{listening ? "Listening…" : ""}</span>
         <Button disabled={pending || (!text.trim() && !photo)}>
-          {pending ? <Loader2 className="animate-spin" /> : <Send />} Record
+          {pending ? <Loader2 className="animate-spin" /> : <Send />} {t(uiLocale, "capture.record")}
         </Button>
       </div>
       <FormMessage state={state} />

@@ -9,6 +9,7 @@ import { Toaster } from "@/components/toast";
 import { OutboxStatus } from "@/components/offline/outbox-status";
 import { cn } from "@/lib/utils";
 import { NAV, type NavKey } from "./nav";
+import { t, type MessageKey } from "@/lib/i18n";
 import { switchBusiness } from "./actions";
 
 const ICONS: Record<NavKey, LucideIcon> = { today: Home, records: BookOpen, pulse: Activity, passport: ShieldCheck, market: Store, progress: Target, finance: Landmark, inbox: Inbox, settings: Settings };
@@ -18,10 +19,11 @@ type Props = {
   businessName: string;
   businesses: { id: string; name: string }[];
   inboxCount: number;
+  locale?: string | null;
   children: React.ReactNode;
 };
 
-export function AppShell({ businessId, businessName, businesses, inboxCount, children }: Props) {
+export function AppShell({ businessId, businessName, businesses, inboxCount, locale, children }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -31,7 +33,7 @@ export function AppShell({ businessId, businessName, businesses, inboxCount, chi
 
   const links = NAV.map(({ key, label, segment, mobile }) => {
     const Icon = ICONS[key];
-    return { key, label, href: base + segment, Icon, mobile, active: isActive(segment), count: key === "inbox" ? inboxCount : 0 };
+    return { key, label: t(locale, `nav.${key}` as MessageKey) || label, href: base + segment, Icon, mobile, active: isActive(segment), count: key === "inbox" ? inboxCount : 0 };
   });
 
   return (
@@ -82,7 +84,7 @@ export function AppShell({ businessId, businessName, businesses, inboxCount, chi
           }}
         >
           <button className="flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
-            <LogOut className="size-4" aria-hidden /> Sign out
+            <LogOut className="size-4" aria-hidden /> {t(locale, "nav.signout")}
           </button>
         </form>
       </aside>

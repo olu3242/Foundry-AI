@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
 import { FormMessage } from "@/components/form-message";
 import { SECTORS } from "@/lib/auth/current-business";
-import { addMember, joinProgram, updateBusiness } from "./actions";
+import { addMember, joinProgram, setIdentifier, updateBusiness } from "./actions";
 
 export function BusinessForm({ businessId, name, sector, canEdit }: { businessId: string; name: string; sector: string | null; canEdit: boolean }) {
   const [state, action, pending] = useActionState(updateBusiness, null);
@@ -64,6 +64,19 @@ export function JoinProgramForm({ businessId, code }: { businessId: string; code
       </label>
       <Button size="sm" disabled={pending}>Join program</Button>
       <FormMessage state={state} />
+    </form>
+  );
+}
+
+export function IdentifierForm({ businessId, types, current }: { businessId: string; types: { key: string; label: string }[]; current: Record<string, string> }) {
+  const [state, action, pending] = useActionState(setIdentifier, null);
+  return (
+    <form action={action} className="grid gap-2 sm:grid-cols-[180px_1fr_auto] sm:items-end">
+      <input type="hidden" name="businessId" value={businessId} />
+      <Select name="type" aria-label="Identifier type">{types.map((t) => <option key={t.key} value={t.key}>{t.label}{current[t.key] ? ` (${current[t.key]})` : ""}</option>)}</Select>
+      <Input name="value" aria-label="Identifier number" required />
+      <Button size="sm" disabled={pending}>Save</Button>
+      <div className="sm:col-span-3"><FormMessage state={state} /></div>
     </form>
   );
 }

@@ -11,6 +11,7 @@ export type ExtractionInput = {
   today: string;
   knownProducts: string[];
   knownCustomers: string[];
+  market?: { name: string; languages: string[]; mobileMoney: string[] };
 };
 
 export type ExtractionResult =
@@ -43,6 +44,7 @@ export async function extractRecords(input: ExtractionInput): Promise<Extraction
     `Today: ${input.today}`,
     input.knownProducts.length ? `Known products: ${input.knownProducts.join("; ")}` : null,
     input.knownCustomers.length ? `Known customers: ${input.knownCustomers.join("; ")}` : null,
+    input.market ? `Market: ${input.market.name}; languages: ${input.market.languages.join(", ")}; mobile money here: ${input.market.mobileMoney.join(", ") || "n/a"}` : null,
   ]
     .filter(Boolean)
     .join("\n");
