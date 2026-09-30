@@ -16,7 +16,7 @@ select public.create_business('Owner Co') as bid \gset
 select is((select count(*)::int from public.events where business_id = :'bid' and type in ('business.created', 'member.added')), 2,
   'business creation emits business.created and member.added');
 select is((select actor_type::text from public.events where type = 'business.created'), 'user', 'events record the acting user');
-select is((select count(*)::int from public.audit_log where business_id = :'bid'), 2, 'owner sees audit rows');
+select is((select count(*)::int from public.audit_log where business_id = :'bid'), 3, 'owner sees audit rows (business, membership, default plan)');
 select throws_ok($$ insert into public.events (business_id, type) values ('00000000-0000-0000-0000-000000000000', 'x.y') $$,
   '42501', null, 'users cannot write events directly');
 select throws_ok($$ select public.enqueue_job('test.noop') $$, '42501', null, 'users cannot enqueue jobs');

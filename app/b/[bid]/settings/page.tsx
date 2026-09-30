@@ -60,6 +60,12 @@ export default async function SettingsPage({ params }: { params: Promise<{ bid: 
         </Card>
         <Card>
           <CardHeader>
+            <CardTitle><a href={`/b/${bid}/plan`} className="hover:underline">Plan &amp; usage →</a></CardTitle>
+            <CardDescription>What your plan includes, what you&apos;ve used this month, and who pays.</CardDescription>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
             <CardTitle>Registration numbers</CardTitle>
             <CardDescription>Used in {market?.name ?? business.country_code}. They help partners recognise your business.</CardDescription>
           </CardHeader>

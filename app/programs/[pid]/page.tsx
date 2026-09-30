@@ -16,7 +16,7 @@ import { PortfolioTable } from "@/components/programs/portfolio-table";
 import { loadPortfolio } from "@/lib/programs/portfolio";
 import { billingConfigured } from "@/lib/billing/stripe";
 import { formatDate } from "@/lib/utils";
-import { assignPartner, decidePackage, startCheckout } from "../actions";
+import { assignPartner, decidePackage, sponsorPlan, startCheckout } from "../actions";
 import { ProductForm } from "@/components/finance/lender";
 import { PassportView } from "@/components/passport/passport-view";
 import type { PassportFacts, PassportPulse, PassportSection } from "@/lib/passport/facts";
@@ -35,6 +35,7 @@ export default async function ProgramPage({ params, searchParams }: { params: Pr
   ]);
   if (!program || !me) notFound();
   const isAdmin = me.role === "admin";
+  const { data: sponsorPlans } = await supabase.from("billing_plans").select("id, key, name, price_minor, currency").eq("payer_kind", "sponsor").eq("status", "active");
 
   const [{ data: enrollments }, { data: members }, { data: assignments }] = await Promise.all([
     supabase.from("program_enrollments").select("business_id, enrolled_at, status").eq("program_id", pid).eq("status", "active"),
@@ -140,6 +141,20 @@ export default async function ProgramPage({ params, searchParams }: { params: Pr
           )}
           {isAdmin && (
             <Card><CardHeader><CardTitle>Program settings</CardTitle></CardHeader><ProgramSettingsForm program={program} /></Card>
+          )}
+          {isAdmin && (
+            <Card aria-label="Sponsored plan">
+              <CardHeader><CardTitle>Sponsored plan</CardTitle>
+                <CardDescription>Pay for a plan for every business that joins with consent. Billed to the program monthly.</CardDescription></CardHeader>
+              <form action={sponsorPlan} className="flex flex-wrap items-center gap-2">
+                <input type="hidden" name="programId" value={pid} />
+                <Select name="plan" aria-label="Plan to sponsor" defaultValue={sponsorPlans?.find((p) => p.id === program.sponsored_plan_id)?.key ?? ""} className="h-9 w-56 text-xs">
+                  <option value="">No sponsorship</option>
+                  {sponsorPlans?.map((p) => <option key={p.key} value={p.key}>{p.name} · {formatMoney(p.price_minor, p.currency)}/business/month</option>)}
+                </Select>
+                <Button size="sm">Save sponsorship</Button>
+              </form>
+            </Card>
           )}
           {isAdmin && (
             <Card>

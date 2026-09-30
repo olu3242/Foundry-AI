@@ -162,6 +162,68 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"billable_events": {
+                  Row: {
+                    "amount_minor": number,"business_id": string,"created_at": string,"currency": string,"dedupe_key": string,"description": string,"engagement_id": string | null,"entitlement_id": string | null,"id": string,"kind": string,"payee_provider_id": string | null,"payer_kind": string,"payer_program_id": string | null,"payer_provider_id": string | null,"period_start": string | null,"settled_at": string | null,"status": string
+                  }
+                  Insert: {
+                    "amount_minor": number,"business_id": string,"created_at"?: string,"currency": string,"dedupe_key": string,"description": string,"engagement_id"?: string | null,"entitlement_id"?: string | null,"id"?: string,"kind": string,"payee_provider_id"?: string | null,"payer_kind": string,"payer_program_id"?: string | null,"payer_provider_id"?: string | null,"period_start"?: string | null,"settled_at"?: string | null,"status"?: string
+                  }
+                  Update: {
+                    "amount_minor"?: number,"business_id"?: string,"created_at"?: string,"currency"?: string,"dedupe_key"?: string,"description"?: string,"engagement_id"?: string | null,"entitlement_id"?: string | null,"id"?: string,"kind"?: string,"payee_provider_id"?: string | null,"payer_kind"?: string,"payer_program_id"?: string | null,"payer_provider_id"?: string | null,"period_start"?: string | null,"settled_at"?: string | null,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "billable_events_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "billable_events_engagement_id_fkey"
+      columns: ["engagement_id"]
+isOneToOne: false
+      referencedRelation: "solution_engagements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "billable_events_entitlement_id_fkey"
+      columns: ["entitlement_id"]
+isOneToOne: false
+      referencedRelation: "entitlements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "billable_events_payee_provider_id_fkey"
+      columns: ["payee_provider_id"]
+isOneToOne: false
+      referencedRelation: "providers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "billable_events_payer_program_id_fkey"
+      columns: ["payer_program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "billable_events_payer_provider_id_fkey"
+      columns: ["payer_provider_id"]
+isOneToOne: false
+      referencedRelation: "providers"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"billing_plans": {
+                  Row: {
+                    "created_at": string,"currency": string,"entitlements": NonNullable<Json>,"id": string,"key": string,"name": string,"overage_minor": NonNullable<Json>,"payer_kind": string,"price_minor": number,"status": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"currency"?: string,"entitlements"?: NonNullable<Json>,"id"?: string,"key": string,"name": string,"overage_minor"?: NonNullable<Json>,"payer_kind": string,"price_minor"?: number,"status"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"currency"?: string,"entitlements"?: NonNullable<Json>,"id"?: string,"key"?: string,"name"?: string,"overage_minor"?: NonNullable<Json>,"payer_kind"?: string,"price_minor"?: number,"status"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"business_baselines": {
                   Row: {
                     "business_id": string,"captured_at": string,"id": string,"metrics": NonNullable<Json>,"program_id": string | null,"pulse": NonNullable<Json>
@@ -316,6 +378,49 @@ isOneToOne: false
       columns: ["engagement_id"]
 isOneToOne: false
       referencedRelation: "solution_engagements"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"entitlements": {
+                  Row: {
+                    "business_id": string,"created_at": string,"created_by": string | null,"end_reason": string | null,"ends_at": string | null,"id": string,"payer_program_id": string | null,"payer_provider_id": string | null,"plan_id": string,"source": string,"starts_at": string,"status": string
+                  }
+                  Insert: {
+                    "business_id": string,"created_at"?: string,"created_by"?: string | null,"end_reason"?: string | null,"ends_at"?: string | null,"id"?: string,"payer_program_id"?: string | null,"payer_provider_id"?: string | null,"plan_id": string,"source": string,"starts_at"?: string,"status"?: string
+                  }
+                  Update: {
+                    "business_id"?: string,"created_at"?: string,"created_by"?: string | null,"end_reason"?: string | null,"ends_at"?: string | null,"id"?: string,"payer_program_id"?: string | null,"payer_provider_id"?: string | null,"plan_id"?: string,"source"?: string,"starts_at"?: string,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "entitlements_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "entitlements_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "entitlements_payer_program_id_fkey"
+      columns: ["payer_program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "entitlements_payer_provider_id_fkey"
+      columns: ["payer_provider_id"]
+isOneToOne: false
+      referencedRelation: "providers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "entitlements_plan_id_fkey"
+      columns: ["plan_id"]
+isOneToOne: false
+      referencedRelation: "billing_plans"
       referencedColumns: ["id"]
     }
                   ]
@@ -935,13 +1040,13 @@ isOneToOne: false
                   ]
                 },"programs": {
                   Row: {
-                    "countries": (string)[],"created_at": string,"created_by": string,"current_period_end": string | null,"description": string | null,"ends_on": string | null,"goals": string | null,"id": string,"join_code": string,"kind": string,"name": string,"phase": string,"pilot_seats": number,"seats": number,"sectors": (string)[],"sponsor_name": string | null,"starts_on": string | null,"status": string,"stripe_customer_id": string | null,"stripe_subscription_id": string | null,"subscription_status": string | null,"target_businesses": number | null,"updated_at": string
+                    "countries": (string)[],"created_at": string,"created_by": string,"current_period_end": string | null,"description": string | null,"ends_on": string | null,"goals": string | null,"id": string,"join_code": string,"kind": string,"name": string,"phase": string,"pilot_seats": number,"seats": number,"sectors": (string)[],"sponsor_name": string | null,"sponsored_plan_id": string | null,"starts_on": string | null,"status": string,"stripe_customer_id": string | null,"stripe_subscription_id": string | null,"subscription_status": string | null,"target_businesses": number | null,"updated_at": string
                   }
                   Insert: {
-                    "countries"?: (string)[],"created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"goals"?: string | null,"id"?: string,"join_code"?: string,"kind"?: string,"name": string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sectors"?: (string)[],"sponsor_name"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"target_businesses"?: number | null,"updated_at"?: string
+                    "countries"?: (string)[],"created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"goals"?: string | null,"id"?: string,"join_code"?: string,"kind"?: string,"name": string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sectors"?: (string)[],"sponsor_name"?: string | null,"sponsored_plan_id"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"target_businesses"?: number | null,"updated_at"?: string
                   }
                   Update: {
-                    "countries"?: (string)[],"created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"goals"?: string | null,"id"?: string,"join_code"?: string,"kind"?: string,"name"?: string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sectors"?: (string)[],"sponsor_name"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"target_businesses"?: number | null,"updated_at"?: string
+                    "countries"?: (string)[],"created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"goals"?: string | null,"id"?: string,"join_code"?: string,"kind"?: string,"name"?: string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sectors"?: (string)[],"sponsor_name"?: string | null,"sponsored_plan_id"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"target_businesses"?: number | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -949,6 +1054,12 @@ isOneToOne: false
       columns: ["created_by"]
 isOneToOne: false
       referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "programs_sponsored_plan_id_fkey"
+      columns: ["sponsored_plan_id"]
+isOneToOne: false
+      referencedRelation: "billing_plans"
       referencedColumns: ["id"]
     }
                   ]
@@ -979,13 +1090,13 @@ isOneToOne: false
                   ]
                 },"providers": {
                   Row: {
-                    "contact": string,"created_at": string,"created_by": string,"description": string | null,"id": string,"kind": string,"name": string,"status": string
+                    "contact": string,"created_at": string,"created_by": string,"description": string | null,"id": string,"kind": string,"name": string,"status": string,"take_rate_bps": number
                   }
                   Insert: {
-                    "contact": string,"created_at"?: string,"created_by"?: string,"description"?: string | null,"id"?: string,"kind": string,"name": string,"status"?: string
+                    "contact": string,"created_at"?: string,"created_by"?: string,"description"?: string | null,"id"?: string,"kind": string,"name": string,"status"?: string,"take_rate_bps"?: number
                   }
                   Update: {
-                    "contact"?: string,"created_at"?: string,"created_by"?: string,"description"?: string | null,"id"?: string,"kind"?: string,"name"?: string,"status"?: string
+                    "contact"?: string,"created_at"?: string,"created_by"?: string,"description"?: string | null,"id"?: string,"kind"?: string,"name"?: string,"status"?: string,"take_rate_bps"?: number
                   }
                   Relationships: [
                     {
@@ -1079,16 +1190,28 @@ isOneToOne: false
                   ]
                 },"revenue_events": {
                   Row: {
-                    "amount_minor": number,"currency": string,"external_id": string | null,"id": string,"occurred_at": string,"program_id": string | null,"source": string
+                    "amount_minor": number,"billable_event_id": string | null,"business_id": string | null,"currency": string,"external_id": string | null,"id": string,"occurred_at": string,"program_id": string | null,"source": string
                   }
                   Insert: {
-                    "amount_minor": number,"currency": string,"external_id"?: string | null,"id"?: string,"occurred_at"?: string,"program_id"?: string | null,"source"?: string
+                    "amount_minor": number,"billable_event_id"?: string | null,"business_id"?: string | null,"currency": string,"external_id"?: string | null,"id"?: string,"occurred_at"?: string,"program_id"?: string | null,"source"?: string
                   }
                   Update: {
-                    "amount_minor"?: number,"currency"?: string,"external_id"?: string | null,"id"?: string,"occurred_at"?: string,"program_id"?: string | null,"source"?: string
+                    "amount_minor"?: number,"billable_event_id"?: string | null,"business_id"?: string | null,"currency"?: string,"external_id"?: string | null,"id"?: string,"occurred_at"?: string,"program_id"?: string | null,"source"?: string
                   }
                   Relationships: [
                     {
+      foreignKeyName: "revenue_events_billable_event_id_fkey"
+      columns: ["billable_event_id"]
+isOneToOne: true
+      referencedRelation: "billable_events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "revenue_events_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "revenue_events_program_id_fkey"
       columns: ["program_id"]
 isOneToOne: false
@@ -1313,6 +1436,31 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"usage_events": {
+                  Row: {
+                    "business_id": string,"correlation_id": string,"entitlement_id": string,"feature": string,"id": string,"occurred_at": string,"overage": boolean,"quantity": number
+                  }
+                  Insert: {
+                    "business_id": string,"correlation_id": string,"entitlement_id": string,"feature": string,"id"?: string,"occurred_at"?: string,"overage"?: boolean,"quantity"?: number
+                  }
+                  Update: {
+                    "business_id"?: string,"correlation_id"?: string,"entitlement_id"?: string,"feature"?: string,"id"?: string,"occurred_at"?: string,"overage"?: boolean,"quantity"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "usage_events_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "usage_events_entitlement_id_fkey"
+      columns: ["entitlement_id"]
+isOneToOne: false
+      referencedRelation: "entitlements"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"verifications": {
                   Row: {
                     "business_id": string,"created_at": string,"evidence_path": string | null,"id": string,"level": Database["public"]['Enums']["provenance"],"method": string,"note": string | null,"period_end": string | null,"period_start": string | null,"subject_id": string | null,"subject_type": Database["public"]['Enums']["verification_subject"],"verified_by": string,"verifier_role": Database["public"]['Enums']["business_role"]
@@ -1384,6 +1532,9 @@ isOneToOne: false
               "collected_minor": number,"customers_served": number,"expenses_minor": number,"net_minor": number,"receivable_minor": number,"sales_count": number,"sales_minor": number
             }[]
                            },
+"choose_plan":
+{ Args: { "p_business_id": string,"p_plan_key": string }; Returns: string
+                           },
 "claim_jobs":
 { Args: { "p_job_id"?: string,"p_limit"?: number,"p_types"?: (string)[],"p_worker": string }; Returns: {
               "attempts": number,
@@ -1415,6 +1566,12 @@ isOneToOne: false
               "active": number,"cohort": string,"month_offset": number,"rate": number,"size": number
             }[]
                            },
+"commercial_overview":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"commercial_trace":
+{ Args: { "p_revenue_event_id": string }; Returns: Json
+                           },
 "complete_intervention":
 { Args: { "p_intervention_id": string }; Returns: undefined
                            },
@@ -1426,6 +1583,9 @@ isOneToOne: false
                            },
 "confirm_draft":
 { Args: { "p_draft_id": string,"p_fields"?: Json }; Returns: string
+                           },
+"consume_entitlement":
+{ Args: { "p_business_id": string,"p_correlation_id": string,"p_feature": string }; Returns: boolean
                            },
 "create_business":
 { Args: { "p_country_code"?: string,"p_currency"?: string,"p_name": string,"p_sector"?: string,"p_timezone"?: string }; Returns: string
@@ -1447,6 +1607,9 @@ isOneToOne: false
                            },
 "enqueue_job":
 { Args: { "p_business_id"?: string,"p_dedupe_key"?: string,"p_max_attempts"?: number,"p_payload"?: Json,"p_run_at"?: string,"p_type": string }; Returns: string
+                           },
+"entitlement_status":
+{ Args: { "p_business_id": string }; Returns: Json
                            },
 "extraction_eval":
 { Args: { "p_days"?: number }; Returns: {
@@ -1485,6 +1648,9 @@ isOneToOne: false
               "business_id": string,"business_name": string,"detail": string,"item_key": string,"kind": string,"link": string,"severity": number,"since": string,"title": string
             }[]
                            },
+"partner_sponsor_business":
+{ Args: { "p_active"?: boolean,"p_business_id": string,"p_provider_id": string }; Returns: undefined
+                           },
 "passport_facts":
 { Args: { "p_business_id": string }; Returns: Json
                            },
@@ -1521,6 +1687,9 @@ isOneToOne: false
 "purge_expired_ops":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"rate_billing":
+{ Args: { "p_period"?: string }; Returns: number
+                           },
 "reap_stale_jobs":
 { Args: { "p_timeout"?: string }; Returns: number
                            },
@@ -1556,6 +1725,9 @@ isOneToOne: false
 "set_business_identifier":
 { Args: { "p_business_id": string,"p_type": string,"p_value": string }; Returns: undefined
                            },
+"settle_billable_event":
+{ Args: { "p_id": string,"p_method": string,"p_reference": string }; Returns: string
+                           },
 "snooze_items":
 { Args: { "p_days": number,"p_item_keys": (string)[] }; Returns: undefined
                            },
@@ -1568,6 +1740,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "completed": number,"solution_version_id": string,"target_dimension": string,"verified_improved": number
             }[]
+                           },
+"sponsor_plan":
+{ Args: { "p_plan_key": string,"p_program_id": string }; Returns: number
                            },
 "start_intervention":
 { Args: { "p_business_id": string,"p_metric": string,"p_solution_version_id"?: string,"p_source_action_id"?: string,"p_title": string,"p_window_days"?: number }; Returns: string
@@ -1589,6 +1764,9 @@ isOneToOne: false
                            },
 "verify_outcome":
 { Args: { "p_note"?: string,"p_outcome_id": string,"p_verdict": string }; Returns: undefined
+                           },
+"void_billable_event":
+{ Args: { "p_id": string,"p_reason": string }; Returns: undefined
                            },
 "void_record":
 { Args: { "p_id": string,"p_kind": Database["public"]['Enums']["record_kind"],"p_reason"?: string }; Returns: undefined

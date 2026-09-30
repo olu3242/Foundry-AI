@@ -43,6 +43,16 @@ export const extractCapture: JobHandler = async ({ job, admin }) => {
     image = { base64: Buffer.from(await blob.arrayBuffer()).toString("base64"), mediaType };
   }
 
+  // B21: automatic reading is a metered plan feature (idempotent per capture across retries).
+  const { data: allowed, error: meterError } = await admin.rpc("consume_entitlement", {
+    p_business_id: capture.business_id, p_feature: "capture.ai", p_correlation_id: `capture:${capture.id}`,
+  });
+  if (meterError) throw meterError;
+  if (!allowed) {
+    await markFailed("You've used this month's automatic readings on your plan. Enter this one by hand, or see Plan & usage.");
+    return { skipped: "plan_limit" };
+  }
+
   const started = Date.now();
   let result: ExtractionResult;
   try {

@@ -131,3 +131,12 @@ export async function decidePackage(formData: FormData) {
   await supabase.rpc("decide_evidence_package", { p_package_id: id, p_status: status, p_note: note || undefined });
   revalidatePath(`/programs/${programId}`);
 }
+
+// B21: sponsor a plan for every consenting business in the program ("" ends sponsorship).
+export async function sponsorPlan(formData: FormData) {
+  const { programId, plan } = z.object({ programId: z.uuid(), plan: z.string().max(40) }).parse(Object.fromEntries(formData));
+  await requireUser(`/programs/${programId}`);
+  const supabase = await createClient();
+  await supabase.rpc("sponsor_plan", { p_program_id: programId, p_plan_key: plan || (null as unknown as string) });
+  revalidatePath(`/programs/${programId}`);
+}

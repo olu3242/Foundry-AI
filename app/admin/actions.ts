@@ -62,3 +62,21 @@ export async function addCost(_: unknown, formData: FormData) {
   revalidatePath("/admin/scale");
   return { ok: true as const, message: "Cost recorded." };
 }
+
+// ─── B21 commercial ───────────────────────────────────────────────────────────
+export async function rateBilling() {
+  await requireUser("/admin");
+  const supabase = await createClient();
+  await supabase.rpc("rate_billing", {});
+  revalidatePath("/admin/commercial");
+}
+
+export async function settleCharge(formData: FormData) {
+  const { id, method, reference } = z.object({
+    id: z.uuid(), method: z.enum(["mobile_money", "bank_transfer", "cash", "card", "stripe"]), reference: z.string().trim().min(3).max(120),
+  }).parse(Object.fromEntries(formData));
+  await requireUser("/admin");
+  const supabase = await createClient();
+  await supabase.rpc("settle_billable_event", { p_id: id, p_method: method, p_reference: reference });
+  revalidatePath("/admin/commercial");
+}

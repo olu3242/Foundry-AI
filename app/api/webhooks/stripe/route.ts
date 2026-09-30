@@ -45,6 +45,14 @@ export async function POST(request: NextRequest) {
     } else if (event.type === "invoice.paid") {
       // B20: revenue for unit economics.
       const inv = event.data.object;
+      // B21: invoices raised for a Foundry charge settle it (revenue + attribution in one place).
+      const billableId = inv.metadata?.billable_event_id;
+      if (billableId) {
+        const { error } = await admin.rpc("settle_billable_event", { p_id: billableId, p_method: "stripe", p_reference: inv.id ?? event.id });
+        if (error) throw error;
+        log("info", "stripe.webhook", { id: event.id, type: event.type, billableId });
+        return NextResponse.json({ received: true });
+      }
       const subId = inv.parent?.subscription_details?.subscription;
       const { data: program } = subId
         ? await admin.from("programs").select("id").eq("stripe_subscription_id", typeof subId === "string" ? subId : subId.id).maybeSingle()
