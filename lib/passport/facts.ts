@@ -18,6 +18,7 @@ export type PassportFacts = {
   provenance_180: Partial<Record<Provenance, number>>;
   monthly_sales: { month: string; sales_minor: number }[];
   highest_level: Provenance | null;
+  verified_outcomes: { title: string; metric: string; baseline: number; observed: number; delta: number; verifier_role: string; at: string }[];
   verifications: { level: Provenance; method: string; subject: string; period_start: string | null; period_end: string | null; verifier_role: string; at: string }[];
 };
 

@@ -17,6 +17,9 @@ export default async function PulsePage({ params }: { params: Promise<{ bid: str
   const { data: rows } = latest
     ? await supabase.from("pulse_snapshots").select("dimension, score, state, trend, why, action, evidence, computed_at").eq("business_id", bid).eq("computed_on", latest.computed_on)
     : { data: [] };
+  const { data: fb } = latest
+    ? await supabase.from("pulse_feedback").select("dimension, verdict").eq("business_id", bid).eq("computed_on", latest.computed_on)
+    : { data: [] };
   const ordered = DIMENSIONS.map((d) => rows?.find((r) => r.dimension === d)).filter(Boolean) as (PulseRow & { computed_at: string })[];
   const counts = ordered.reduce<Record<string, number>>((acc, r) => ({ ...acc, [r.state]: (acc[r.state] ?? 0) + 1 }), {});
 
@@ -53,7 +56,10 @@ export default async function PulsePage({ params }: { params: Promise<{ bid: str
             </li>
           </ul>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {ordered.map((r) => <PulseCard key={r.dimension} row={r} />)}
+            {ordered.map((r) => (
+              <PulseCard key={r.dimension} row={r}
+                feedback={{ businessId: bid, computedOn: latest!.computed_on, given: fb?.find((f) => f.dimension === r.dimension)?.verdict }} />
+            ))}
           </div>
         </>
       )}

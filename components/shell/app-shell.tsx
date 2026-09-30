@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { Activity, BookOpen, Home, Inbox, Settings, ShieldCheck, Store, LogOut, type LucideIcon } from "lucide-react";
+import { Activity, BookOpen, Home, Inbox, Target, Settings, ShieldCheck, Store, LogOut, type LucideIcon } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Toaster } from "@/components/toast";
 import { OutboxStatus } from "@/components/offline/outbox-status";
@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { NAV, type NavKey } from "./nav";
 import { switchBusiness } from "./actions";
 
-const ICONS: Record<NavKey, LucideIcon> = { today: Home, records: BookOpen, pulse: Activity, passport: ShieldCheck, market: Store, inbox: Inbox, settings: Settings };
+const ICONS: Record<NavKey, LucideIcon> = { today: Home, records: BookOpen, pulse: Activity, passport: ShieldCheck, market: Store, progress: Target, inbox: Inbox, settings: Settings };
 
 type Props = {
   businessId: string;

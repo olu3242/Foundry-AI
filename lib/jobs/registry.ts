@@ -3,6 +3,7 @@ import { extractCapture } from "@/lib/capture/extract-job";
 import { computePulseJob } from "@/lib/pulse/job";
 import { growthJob } from "@/lib/growth/job";
 import { marketMatchJob } from "@/lib/market/job";
+import { baselineJob, measureOutcomeJob } from "@/lib/interventions/jobs";
 
 /**
  * Job type → handler. Types are `domain.action`. Feature batches register here;
@@ -13,6 +14,8 @@ export const handlers: Record<string, JobHandler> = {
   "pulse.compute": computePulseJob,
   "growth.recommend": growthJob,
   "market.match": marketMatchJob,
+  "pilot.baseline": baselineJob,
+  "outcome.measure": measureOutcomeJob,
   "system.ping": async ({ job }) => ({ pong: true, at: new Date().toISOString(), payload: job.payload }),
 };
 

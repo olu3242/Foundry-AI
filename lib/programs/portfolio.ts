@@ -7,6 +7,7 @@ export type PortfolioRow = {
   states: Partial<Record<PulseState, number>>;
   statesAtStart: Partial<Record<PulseState, number>> | null;
   lastActivity: string | null;
+  activation: number;
 };
 
 const tally = (rows: { state: PulseState }[]) =>
@@ -25,6 +26,12 @@ export async function loadPortfolio(supabase: ServerSupabase, businessIds: strin
     supabase.from("events").select("business_id, occurred_at").in("business_id", businessIds)
       .in("type", ["sale.recorded", "expense.recorded", "stock.moved"]).order("occurred_at", { ascending: false }).limit(500),
   ]);
+  const activations = Object.fromEntries(await Promise.all(businessIds.map(async (id) => {
+    const { data } = await supabase.rpc("activation_status", { p_business_id: id });
+    const a = (data ?? {}) as Record<string, unknown>;
+    const steps = ["first_capture", "first_record", "first_pulse", "first_intervention", "first_completed", "first_verified_outcome"];
+    return [id, steps.filter((k) => a[k]).length + (Number(a.active_days_30 ?? 0) >= 7 ? 1 : 0)] as const;
+  })));
   return (businesses ?? []).map<PortfolioRow>((b) => {
     const own = (snaps ?? []).filter((s) => s.business_id === b.id);
     const days = [...new Set(own.map((s) => s.computed_on))].sort();
@@ -36,6 +43,7 @@ export async function loadPortfolio(supabase: ServerSupabase, businessIds: strin
       states: latest ? tally(own.filter((s) => s.computed_on === latest)) : {},
       statesAtStart: baseline && baseline !== latest ? tally(own.filter((s) => s.computed_on === baseline)) : null,
       lastActivity: (events ?? []).find((e) => e.business_id === b.id)?.occurred_at ?? null,
+      activation: activations[b.id] ?? 0,
     };
   });
 }

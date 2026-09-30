@@ -37,7 +37,10 @@ export function PortfolioTable({ rows, extra }: { rows: PortfolioRow[]; extra?: 
               </p>
             )}
           </div>
-          <p className="text-xs text-muted-foreground">{r.lastActivity ? `Last record ${formatDate(r.lastActivity)}` : "No records yet"}</p>
+          <p className="text-xs text-muted-foreground">
+            {r.lastActivity ? `Last record ${formatDate(r.lastActivity)}` : "No records yet"}
+            <span className="block">Activation {r.activation}/7</span>
+          </p>
           <div>{extra?.(r)}</div>
         </li>
       ))}

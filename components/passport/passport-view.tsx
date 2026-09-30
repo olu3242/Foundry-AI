@@ -2,6 +2,7 @@ import { BadgeCheck, Building2, FileCheck2, Landmark, PenLine, ShieldCheck } fro
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
 import { DIMENSION_LABEL, type Dimension } from "@/lib/pulse/score";
+import { METRICS, formatMetric, type MetricKey } from "@/lib/interventions/catalog";
 import type { PassportFacts, PassportPulse, PassportSection, Provenance } from "@/lib/passport/facts";
 
 export const LADDER: { level: Provenance; label: string; description: string; Icon: typeof PenLine }[] = [
@@ -107,6 +108,25 @@ export function PassportView({ facts, pulse, sections }: { facts: PassportFacts;
               ))}
             </ul>
           )}
+        </section>
+      )}
+
+      {sections.includes("proof") && facts.verified_outcomes?.length > 0 && (
+        <section aria-labelledby="pp-results" className="glass p-5">
+          <h2 id="pp-results" className="mb-3 font-semibold">Verified results</h2>
+          <ul className="divide-y text-sm">
+            {facts.verified_outcomes.map((o, i) => (
+              <li key={i} className="flex flex-wrap items-center gap-2 py-2">
+                <ShieldCheck className="size-4 text-growth" aria-hidden />
+                <span className="font-medium">{o.title}</span>
+                <span className="text-muted-foreground">
+                  {METRICS[o.metric as MetricKey]?.label}: {formatMetric(o.metric, o.baseline, facts.currency)} → {formatMetric(o.metric, o.observed, facts.currency)}
+                </span>
+                <span className="ml-auto text-xs text-muted-foreground">checked by {o.verifier_role === "program_admin" ? "a program" : "a partner"} · {date(o.at)}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs text-muted-foreground">Measured from the business&apos;s own records before and after each plan. A change after a plan is not proof the plan caused it.</p>
         </section>
       )}
 

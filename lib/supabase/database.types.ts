@@ -93,6 +93,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"business_baselines": {
+                  Row: {
+                    "business_id": string,"captured_at": string,"id": string,"metrics": NonNullable<Json>,"program_id": string | null,"pulse": NonNullable<Json>
+                  }
+                  Insert: {
+                    "business_id": string,"captured_at"?: string,"id"?: string,"metrics": NonNullable<Json>,"program_id"?: string | null,"pulse"?: NonNullable<Json>
+                  }
+                  Update: {
+                    "business_id"?: string,"captured_at"?: string,"id"?: string,"metrics"?: NonNullable<Json>,"program_id"?: string | null,"pulse"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "business_baselines_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "business_baselines_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"businesses": {
                   Row: {
                     "archived_at": string | null,"country_code": string,"created_at": string,"created_by": string,"currency": string,"id": string,"name": string,"sector": string | null,"timezone": string,"updated_at": string
@@ -231,6 +256,37 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"interventions": {
+                  Row: {
+                    "abandon_reason": string | null,"baseline_value": number,"business_id": string,"completed_at": string | null,"created_by": string,"created_by_role": Database["public"]['Enums']["business_role"],"due_at": string,"expected_direction": string,"id": string,"solution_version_id": string | null,"source_action_id": string | null,"started_at": string,"status": Database["public"]['Enums']["intervention_status"],"target_metric": string,"title": string,"updated_at": string,"window_days": number
+                  }
+                  Insert: {
+                    "abandon_reason"?: string | null,"baseline_value": number,"business_id": string,"completed_at"?: string | null,"created_by"?: string,"created_by_role": Database["public"]['Enums']["business_role"],"due_at": string,"expected_direction": string,"id"?: string,"solution_version_id"?: string | null,"source_action_id"?: string | null,"started_at"?: string,"status"?: Database["public"]['Enums']["intervention_status"],"target_metric": string,"title": string,"updated_at"?: string,"window_days"?: number
+                  }
+                  Update: {
+                    "abandon_reason"?: string | null,"baseline_value"?: number,"business_id"?: string,"completed_at"?: string | null,"created_by"?: string,"created_by_role"?: Database["public"]['Enums']["business_role"],"due_at"?: string,"expected_direction"?: string,"id"?: string,"solution_version_id"?: string | null,"source_action_id"?: string | null,"started_at"?: string,"status"?: Database["public"]['Enums']["intervention_status"],"target_metric"?: string,"title"?: string,"updated_at"?: string,"window_days"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "interventions_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "interventions_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "interventions_source_action_id_fkey"
+      columns: ["source_action_id"]
+isOneToOne: false
+      referencedRelation: "agent_actions"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"jobs": {
                   Row: {
                     "attempts": number,"business_id": string | null,"created_at": string,"dedupe_key": string | null,"finished_at": string | null,"id": string,"last_error": string | null,"locked_at": string | null,"locked_by": string | null,"max_attempts": number,"payload": NonNullable<Json>,"priority": number,"result": Json | null,"run_at": string,"status": Database["public"]['Enums']["job_status"],"type": string,"updated_at": string
@@ -322,6 +378,37 @@ isOneToOne: false
       columns: ["opportunity_id"]
 isOneToOne: false
       referencedRelation: "opportunities"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"outcomes": {
+                  Row: {
+                    "baseline_value": number,"business_id": string,"delta": number,"evidence": NonNullable<Json>,"id": string,"improved": boolean,"intervention_id": string,"measured_at": string,"metric": string,"observed_value": number,"status": Database["public"]['Enums']["outcome_status"],"verification_note": string | null,"verified_at": string | null,"verified_by": string | null,"verifier_role": Database["public"]['Enums']["business_role"] | null,"window_end": string,"window_start": string
+                  }
+                  Insert: {
+                    "baseline_value": number,"business_id": string,"delta": number,"evidence"?: NonNullable<Json>,"id"?: string,"improved": boolean,"intervention_id": string,"measured_at"?: string,"metric": string,"observed_value": number,"status"?: Database["public"]['Enums']["outcome_status"],"verification_note"?: string | null,"verified_at"?: string | null,"verified_by"?: string | null,"verifier_role"?: Database["public"]['Enums']["business_role"] | null,"window_end": string,"window_start": string
+                  }
+                  Update: {
+                    "baseline_value"?: number,"business_id"?: string,"delta"?: number,"evidence"?: NonNullable<Json>,"id"?: string,"improved"?: boolean,"intervention_id"?: string,"measured_at"?: string,"metric"?: string,"observed_value"?: number,"status"?: Database["public"]['Enums']["outcome_status"],"verification_note"?: string | null,"verified_at"?: string | null,"verified_by"?: string | null,"verifier_role"?: Database["public"]['Enums']["business_role"] | null,"window_end"?: string,"window_start"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "outcomes_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "outcomes_intervention_id_fkey"
+      columns: ["intervention_id"]
+isOneToOne: true
+      referencedRelation: "interventions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "outcomes_verified_by_fkey"
+      columns: ["verified_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
       referencedColumns: ["id"]
     }
                   ]
@@ -496,18 +583,43 @@ isOneToOne: false
                   ]
                 },"programs": {
                   Row: {
-                    "created_at": string,"created_by": string,"current_period_end": string | null,"description": string | null,"id": string,"join_code": string,"name": string,"pilot_seats": number,"seats": number,"sponsor_name": string | null,"status": string,"stripe_customer_id": string | null,"stripe_subscription_id": string | null,"subscription_status": string | null,"updated_at": string
+                    "created_at": string,"created_by": string,"current_period_end": string | null,"description": string | null,"ends_on": string | null,"id": string,"join_code": string,"name": string,"phase": string,"pilot_seats": number,"seats": number,"sponsor_name": string | null,"starts_on": string | null,"status": string,"stripe_customer_id": string | null,"stripe_subscription_id": string | null,"subscription_status": string | null,"updated_at": string
                   }
                   Insert: {
-                    "created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"id"?: string,"join_code"?: string,"name": string,"pilot_seats"?: number,"seats"?: number,"sponsor_name"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"updated_at"?: string
+                    "created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"id"?: string,"join_code"?: string,"name": string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sponsor_name"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"id"?: string,"join_code"?: string,"name"?: string,"pilot_seats"?: number,"seats"?: number,"sponsor_name"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"updated_at"?: string
+                    "created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"id"?: string,"join_code"?: string,"name"?: string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sponsor_name"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
       foreignKeyName: "programs_created_by_fkey"
       columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"pulse_feedback": {
+                  Row: {
+                    "business_id": string,"computed_on": string,"created_at": string,"dimension": string,"id": string,"note": string | null,"user_id": string,"user_role": Database["public"]['Enums']["business_role"],"verdict": string
+                  }
+                  Insert: {
+                    "business_id": string,"computed_on": string,"created_at"?: string,"dimension": string,"id"?: string,"note"?: string | null,"user_id"?: string,"user_role": Database["public"]['Enums']["business_role"],"verdict": string
+                  }
+                  Update: {
+                    "business_id"?: string,"computed_on"?: string,"created_at"?: string,"dimension"?: string,"id"?: string,"note"?: string | null,"user_id"?: string,"user_role"?: Database["public"]['Enums']["business_role"],"verdict"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pulse_feedback_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pulse_feedback_user_id_fkey"
+      columns: ["user_id"]
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
@@ -736,7 +848,13 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "add_member":
+            "abandon_intervention":
+{ Args: { "p_intervention_id": string,"p_reason": string }; Returns: undefined
+                           },
+"activation_status":
+{ Args: { "p_business_id": string }; Returns: Json
+                           },
+"add_member":
 { Args: { "p_business_id": string,"p_contact": string,"p_role": Database["public"]['Enums']["business_role"] }; Returns: string
                            },
 "add_program_member":
@@ -779,6 +897,9 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"complete_intervention":
+{ Args: { "p_intervention_id": string }; Returns: undefined
+                           },
 "complete_job":
 { Args: { "p_job_id": string,"p_result"?: Json }; Returns: undefined
                            },
@@ -799,6 +920,9 @@ isOneToOne: false
                            },
 "fail_job":
 { Args: { "p_error": string,"p_job_id": string,"p_retryable"?: boolean }; Returns: Database["public"]['Enums']["job_status"]
+                           },
+"give_pulse_feedback":
+{ Args: { "p_business_id": string,"p_computed_on": string,"p_dimension": string,"p_note"?: string,"p_verdict": string }; Returns: undefined
                            },
 "hit_rate_limit":
 { Args: { "p_key": string,"p_limit": number,"p_window_seconds": number }; Returns: boolean
@@ -830,12 +954,18 @@ isOneToOne: false
 "reject_draft":
 { Args: { "p_draft_id": string }; Returns: undefined
                            },
+"start_intervention":
+{ Args: { "p_business_id": string,"p_metric": string,"p_solution_version_id"?: string,"p_source_action_id"?: string,"p_title": string,"p_window_days"?: number }; Returns: string
+                           },
+"verify_outcome":
+{ Args: { "p_note"?: string,"p_outcome_id": string,"p_verdict": string }; Returns: undefined
+                           },
 "void_record":
 { Args: { "p_id": string,"p_kind": Database["public"]['Enums']["record_kind"],"p_reason"?: string }; Returns: undefined
                            }
           }
           Enums: {
-            "action_status": "proposed"|"approved"|"rejected"|"executed"|"failed"|"expired","actor_type": "user"|"agent"|"system","business_role": "owner"|"staff"|"partner"|"program_admin","capture_channel": "text"|"voice"|"photo"|"forward","capture_status": "received"|"processing"|"drafted"|"resolved"|"failed","draft_status": "proposed"|"confirmed"|"rejected","job_status": "queued"|"running"|"succeeded"|"failed"|"dead","payment_method": "cash"|"transfer"|"mobile_money"|"card"|"credit"|"other","program_role": "admin"|"partner","provenance": "self_reported"|"document_backed"|"third_party_verified"|"institution_verified","pulse_state": "strong"|"steady"|"watch"|"at_risk"|"insufficient_data","pulse_trend": "up"|"flat"|"down"|"unknown","record_kind": "sale"|"expense"|"stock_movement"|"customer","stock_reason": "purchase"|"sale"|"adjustment"|"waste"|"return","verification_subject": "business"|"sale"|"expense"|"stock_movement"
+            "action_status": "proposed"|"approved"|"rejected"|"executed"|"failed"|"expired","actor_type": "user"|"agent"|"system","business_role": "owner"|"staff"|"partner"|"program_admin","capture_channel": "text"|"voice"|"photo"|"forward","capture_status": "received"|"processing"|"drafted"|"resolved"|"failed","draft_status": "proposed"|"confirmed"|"rejected","intervention_status": "active"|"completed"|"abandoned","job_status": "queued"|"running"|"succeeded"|"failed"|"dead","outcome_status": "observed"|"verified"|"disputed","payment_method": "cash"|"transfer"|"mobile_money"|"card"|"credit"|"other","program_role": "admin"|"partner","provenance": "self_reported"|"document_backed"|"third_party_verified"|"institution_verified","pulse_state": "strong"|"steady"|"watch"|"at_risk"|"insufficient_data","pulse_trend": "up"|"flat"|"down"|"unknown","record_kind": "sale"|"expense"|"stock_movement"|"customer","stock_reason": "purchase"|"sale"|"adjustment"|"waste"|"return","verification_subject": "business"|"sale"|"expense"|"stock_movement"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -951,7 +1081,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "action_status": ["proposed", "approved", "rejected", "executed", "failed", "expired"],"actor_type": ["user", "agent", "system"],"business_role": ["owner", "staff", "partner", "program_admin"],"capture_channel": ["text", "voice", "photo", "forward"],"capture_status": ["received", "processing", "drafted", "resolved", "failed"],"draft_status": ["proposed", "confirmed", "rejected"],"job_status": ["queued", "running", "succeeded", "failed", "dead"],"payment_method": ["cash", "transfer", "mobile_money", "card", "credit", "other"],"program_role": ["admin", "partner"],"provenance": ["self_reported", "document_backed", "third_party_verified", "institution_verified"],"pulse_state": ["strong", "steady", "watch", "at_risk", "insufficient_data"],"pulse_trend": ["up", "flat", "down", "unknown"],"record_kind": ["sale", "expense", "stock_movement", "customer"],"stock_reason": ["purchase", "sale", "adjustment", "waste", "return"],"verification_subject": ["business", "sale", "expense", "stock_movement"]
+            "action_status": ["proposed", "approved", "rejected", "executed", "failed", "expired"],"actor_type": ["user", "agent", "system"],"business_role": ["owner", "staff", "partner", "program_admin"],"capture_channel": ["text", "voice", "photo", "forward"],"capture_status": ["received", "processing", "drafted", "resolved", "failed"],"draft_status": ["proposed", "confirmed", "rejected"],"intervention_status": ["active", "completed", "abandoned"],"job_status": ["queued", "running", "succeeded", "failed", "dead"],"outcome_status": ["observed", "verified", "disputed"],"payment_method": ["cash", "transfer", "mobile_money", "card", "credit", "other"],"program_role": ["admin", "partner"],"provenance": ["self_reported", "document_backed", "third_party_verified", "institution_verified"],"pulse_state": ["strong", "steady", "watch", "at_risk", "insufficient_data"],"pulse_trend": ["up", "flat", "down", "unknown"],"record_kind": ["sale", "expense", "stock_movement", "customer"],"stock_reason": ["purchase", "sale", "adjustment", "waste", "return"],"verification_subject": ["business", "sale", "expense", "stock_movement"]
           }
         }
 } as const

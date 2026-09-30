@@ -1,6 +1,7 @@
 import { ArrowDownRight, ArrowRight, ArrowUpRight, CircleDashed, Minus, OctagonAlert, ShieldCheck, TriangleAlert, Circle } from "lucide-react";
 import { DIMENSION_LABEL, type Dimension, type PulseState, type PulseTrend } from "@/lib/pulse/score";
 import { cn } from "@/lib/utils";
+import { pulseFeedback } from "@/app/b/[bid]/progress/actions";
 
 // Status is never colour-only: every state has its own label and icon shape.
 export const STATE_META: Record<PulseState, { label: string; Icon: typeof Circle; tone: string; bar: string }> = {
@@ -23,7 +24,7 @@ export type PulseRow = {
   evidence: Record<string, unknown>;
 };
 
-export function PulseCard({ row }: { row: PulseRow }) {
+export function PulseCard({ row, feedback }: { row: PulseRow; feedback?: { businessId: string; computedOn: string; given?: string } }) {
   const meta = STATE_META[row.state];
   const trend = TREND[row.trend];
   return (
@@ -52,6 +53,20 @@ export function PulseCard({ row }: { row: PulseRow }) {
         <p className="rounded-xl border border-orange/25 bg-orange/10 px-3 py-2 text-sm">
           <span className="font-semibold text-orange-ink">Next step: </span>{row.action}
         </p>
+      )}
+      {feedback && (
+        <form action={pulseFeedback} className="mt-auto flex items-center gap-2 pt-1 text-xs text-muted-foreground">
+          <input type="hidden" name="businessId" value={feedback.businessId} />
+          <input type="hidden" name="dimension" value={row.dimension} />
+          <input type="hidden" name="computedOn" value={feedback.computedOn} />
+          <span>Does this match what you see?</span>
+          {(["accurate", "inaccurate"] as const).map((v) => (
+            <button key={v} name="verdict" value={v} aria-pressed={feedback.given === v}
+              className={cn("rounded-full border px-2 py-0.5 hover:bg-muted", feedback.given === v && "border-growth text-growth")}>
+              {v === "accurate" ? "Yes" : "No"}
+            </button>
+          ))}
+        </form>
       )}
     </article>
   );

@@ -34,6 +34,14 @@ const DESCRIBE: Record<string, (p: Payload) => string> = {
   "action.executed": (p) => `Done: ${str(p.title)}`,
   "action.rejected": (p) => `Set aside: ${str(p.title)}`,
   "market.interested": (p) => `You showed interest in “${str(p.title)}”`,
+  "intervention.started": (p) => `Plan started: ${str(p.title)}`,
+  "intervention.completed": (p) => `Plan completed: ${str(p.title)}`,
+  "intervention.abandoned": () => "A plan was stopped",
+  "outcome.observed": (p) => (p.improved ? "A plan's result was measured: it improved" : "A plan's result was measured: no improvement yet"),
+  "outcome.verified": () => "A result was verified by your partner",
+  "outcome.disputed": () => "A partner questioned a result",
+  "program.joined": (p) => `Joined ${str(p.name)}`,
+  "program.left": () => "Left a program",
   "job.dead": (p) => `Background task ${str(p.type)} failed and needs attention`,
 };
 

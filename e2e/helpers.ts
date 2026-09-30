@@ -41,3 +41,25 @@ export async function createFreshBusiness(page: Page, prefix: string) {
   await page.waitForURL(/\/b\/[0-9a-f-]{36}$/);
   return page.url().match(/\/b\/([0-9a-f-]{36})/)![1]!;
 }
+
+// ─── Service-side helpers (simulate elapsed time / run the worker) ─────────────
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321";
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ??
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"; // local demo key
+export const CRON_HEADERS = { Authorization: `Bearer ${process.env.CRON_SECRET ?? "local-cron-secret-0123456789"}` };
+
+export async function service(path: string, init: RequestInit = {}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...init,
+    headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, "Content-Type": "application/json", Prefer: "return=representation", ...init.headers },
+  });
+  if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+  return res.json();
+}
+
+/** Makes queued jobs matching a dedupe-key prefix due now (time travel for multi-day windows). */
+export async function fastForwardJobs(dedupePrefix: string) {
+  await service(`jobs?dedupe_key=like.${encodeURIComponent(dedupePrefix)}*&status=eq.queued`, {
+    method: "PATCH", body: JSON.stringify({ run_at: new Date(Date.now() - 1000).toISOString() }),
+  });
+}
