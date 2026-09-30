@@ -25,6 +25,10 @@ const DESCRIBE: Record<string, (p: Payload) => string> = {
   },
   "sale.voided": () => "A sale was voided",
   "expense.voided": () => "An expense was voided",
+  "verification.added": (p) => `Proof added: ${str(p.method).replace(/_/g, " ")}`,
+  "passport.shared": (p) => `Passport shared with ${str(p.label)}`,
+  "passport.revoked": (p) => `Passport link for ${str(p.label)} switched off`,
+  "passport.viewed": (p) => `${str(p.label)} viewed your Passport`,
   "job.dead": (p) => `Background task ${str(p.type)} failed and needs attention`,
 };
 

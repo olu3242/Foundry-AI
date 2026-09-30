@@ -219,6 +219,56 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"passport_shares": {
+                  Row: {
+                    "business_id": string,"created_at": string,"created_by": string,"expires_at": string,"id": string,"label": string,"last_viewed_at": string | null,"revoked_at": string | null,"sections": (string)[],"token_hash": string,"view_count": number
+                  }
+                  Insert: {
+                    "business_id": string,"created_at"?: string,"created_by"?: string,"expires_at": string,"id"?: string,"label": string,"last_viewed_at"?: string | null,"revoked_at"?: string | null,"sections": (string)[],"token_hash": string,"view_count"?: number
+                  }
+                  Update: {
+                    "business_id"?: string,"created_at"?: string,"created_by"?: string,"expires_at"?: string,"id"?: string,"label"?: string,"last_viewed_at"?: string | null,"revoked_at"?: string | null,"sections"?: (string)[],"token_hash"?: string,"view_count"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "passport_shares_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "passport_shares_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"passport_views": {
+                  Row: {
+                    "business_id": string,"id": number,"share_id": string,"viewed_at": string,"viewer_hash": string | null
+                  }
+                  Insert: {
+                    "business_id": string,"id"?: never,"share_id": string,"viewed_at"?: string,"viewer_hash"?: string | null
+                  }
+                  Update: {
+                    "business_id"?: string,"id"?: never,"share_id"?: string,"viewed_at"?: string,"viewer_hash"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "passport_views_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "passport_views_share_id_fkey"
+      columns: ["share_id"]
+isOneToOne: false
+      referencedRelation: "passport_shares"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"products": {
                   Row: {
                     "business_id": string,"created_at": string,"id": string,"name": string,"reorder_level": number | null,"stock_qty": number,"unit": string | null,"unit_price_minor": number | null,"updated_at": string
@@ -430,6 +480,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"verifications": {
+                  Row: {
+                    "business_id": string,"created_at": string,"evidence_path": string | null,"id": string,"level": Database["public"]['Enums']["provenance"],"method": string,"note": string | null,"period_end": string | null,"period_start": string | null,"subject_id": string | null,"subject_type": Database["public"]['Enums']["verification_subject"],"verified_by": string,"verifier_role": Database["public"]['Enums']["business_role"]
+                  }
+                  Insert: {
+                    "business_id": string,"created_at"?: string,"evidence_path"?: string | null,"id"?: string,"level": Database["public"]['Enums']["provenance"],"method": string,"note"?: string | null,"period_end"?: string | null,"period_start"?: string | null,"subject_id"?: string | null,"subject_type": Database["public"]['Enums']["verification_subject"],"verified_by"?: string,"verifier_role": Database["public"]['Enums']["business_role"]
+                  }
+                  Update: {
+                    "business_id"?: string,"created_at"?: string,"evidence_path"?: string | null,"id"?: string,"level"?: Database["public"]['Enums']["provenance"],"method"?: string,"note"?: string | null,"period_end"?: string | null,"period_start"?: string | null,"subject_id"?: string | null,"subject_type"?: Database["public"]['Enums']["verification_subject"],"verified_by"?: string,"verifier_role"?: Database["public"]['Enums']["business_role"]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "verifications_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "verifications_verified_by_fkey"
+      columns: ["verified_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -438,6 +513,9 @@ isOneToOne: false
           Functions: {
             "add_member":
 { Args: { "p_business_id": string,"p_contact": string,"p_role": Database["public"]['Enums']["business_role"] }; Returns: string
+                           },
+"add_verification":
+{ Args: { "p_business_id": string,"p_evidence_path"?: string,"p_level": Database["public"]['Enums']["provenance"],"p_method": string,"p_note"?: string,"p_period_end"?: string,"p_period_start"?: string,"p_subject_id"?: string,"p_subject_type": Database["public"]['Enums']["verification_subject"] }; Returns: string
                            },
 "business_summary":
 { Args: { "p_business_id": string,"p_from": string,"p_to": string }; Returns: {
@@ -488,6 +566,9 @@ isOneToOne: false
 "hit_rate_limit":
 { Args: { "p_key": string,"p_limit": number,"p_window_seconds": number }; Returns: boolean
                            },
+"passport_facts":
+{ Args: { "p_business_id": string }; Returns: Json
+                           },
 "pulse_metrics":
 { Args: { "p_as_of"?: string,"p_business_id": string }; Returns: Json
                            },
@@ -508,7 +589,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "actor_type": "user"|"agent"|"system","business_role": "owner"|"staff"|"partner"|"program_admin","capture_channel": "text"|"voice"|"photo"|"forward","capture_status": "received"|"processing"|"drafted"|"resolved"|"failed","draft_status": "proposed"|"confirmed"|"rejected","job_status": "queued"|"running"|"succeeded"|"failed"|"dead","payment_method": "cash"|"transfer"|"mobile_money"|"card"|"credit"|"other","provenance": "self_reported"|"document_backed"|"third_party_verified"|"institution_verified","pulse_state": "strong"|"steady"|"watch"|"at_risk"|"insufficient_data","pulse_trend": "up"|"flat"|"down"|"unknown","record_kind": "sale"|"expense"|"stock_movement"|"customer","stock_reason": "purchase"|"sale"|"adjustment"|"waste"|"return"
+            "actor_type": "user"|"agent"|"system","business_role": "owner"|"staff"|"partner"|"program_admin","capture_channel": "text"|"voice"|"photo"|"forward","capture_status": "received"|"processing"|"drafted"|"resolved"|"failed","draft_status": "proposed"|"confirmed"|"rejected","job_status": "queued"|"running"|"succeeded"|"failed"|"dead","payment_method": "cash"|"transfer"|"mobile_money"|"card"|"credit"|"other","provenance": "self_reported"|"document_backed"|"third_party_verified"|"institution_verified","pulse_state": "strong"|"steady"|"watch"|"at_risk"|"insufficient_data","pulse_trend": "up"|"flat"|"down"|"unknown","record_kind": "sale"|"expense"|"stock_movement"|"customer","stock_reason": "purchase"|"sale"|"adjustment"|"waste"|"return","verification_subject": "business"|"sale"|"expense"|"stock_movement"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -624,7 +705,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "actor_type": ["user", "agent", "system"],"business_role": ["owner", "staff", "partner", "program_admin"],"capture_channel": ["text", "voice", "photo", "forward"],"capture_status": ["received", "processing", "drafted", "resolved", "failed"],"draft_status": ["proposed", "confirmed", "rejected"],"job_status": ["queued", "running", "succeeded", "failed", "dead"],"payment_method": ["cash", "transfer", "mobile_money", "card", "credit", "other"],"provenance": ["self_reported", "document_backed", "third_party_verified", "institution_verified"],"pulse_state": ["strong", "steady", "watch", "at_risk", "insufficient_data"],"pulse_trend": ["up", "flat", "down", "unknown"],"record_kind": ["sale", "expense", "stock_movement", "customer"],"stock_reason": ["purchase", "sale", "adjustment", "waste", "return"]
+            "actor_type": ["user", "agent", "system"],"business_role": ["owner", "staff", "partner", "program_admin"],"capture_channel": ["text", "voice", "photo", "forward"],"capture_status": ["received", "processing", "drafted", "resolved", "failed"],"draft_status": ["proposed", "confirmed", "rejected"],"job_status": ["queued", "running", "succeeded", "failed", "dead"],"payment_method": ["cash", "transfer", "mobile_money", "card", "credit", "other"],"provenance": ["self_reported", "document_backed", "third_party_verified", "institution_verified"],"pulse_state": ["strong", "steady", "watch", "at_risk", "insufficient_data"],"pulse_trend": ["up", "flat", "down", "unknown"],"record_kind": ["sale", "expense", "stock_movement", "customer"],"stock_reason": ["purchase", "sale", "adjustment", "waste", "return"],"verification_subject": ["business", "sale", "expense", "stock_movement"]
           }
         }
 } as const
