@@ -16,7 +16,11 @@ import { PortfolioTable } from "@/components/programs/portfolio-table";
 import { loadPortfolio } from "@/lib/programs/portfolio";
 import { billingConfigured } from "@/lib/billing/stripe";
 import { formatDate } from "@/lib/utils";
-import { assignPartner, startCheckout } from "../actions";
+import { assignPartner, decidePackage, startCheckout } from "../actions";
+import { ProductForm } from "@/components/finance/lender";
+import { PassportView } from "@/components/passport/passport-view";
+import type { PassportFacts, PassportPulse, PassportSection } from "@/lib/passport/facts";
+import { formatMoney } from "@/lib/money";
 
 export const metadata: Metadata = { title: "Program" };
 
@@ -38,6 +42,10 @@ export default async function ProgramPage({ params, searchParams }: { params: Pr
     supabase.from("partner_assignments").select("partner_user_id, business_id").eq("program_id", pid),
   ]);
   const { data: report } = isAdmin ? await supabase.rpc("program_report", { p_program_id: pid }) : { data: null };
+  const { data: packages } = isAdmin && program.kind === "lender"
+    ? await supabase.from("evidence_packages").select("id, status, sections, snapshot, snapshot_sha256, eligibility, requested_amount_minor, purpose, submitted_at, financial_products(name, currency)")
+        .eq("program_id", pid).order("submitted_at", { ascending: false })
+    : { data: null };
   const since = Object.fromEntries((enrollments ?? []).map((e) => [e.business_id, e.enrolled_at]));
   const rows = await loadPortfolio(supabase, Object.keys(since), since);
   const partners = (members ?? []).filter((m) => m.role === "partner");
@@ -51,6 +59,38 @@ export default async function ProgramPage({ params, searchParams }: { params: Pr
         <Card className="mb-6"><CardHeader><CardTitle>Program report</CardTitle><CardDescription>What a sponsor sees: totals only, never individual businesses.</CardDescription></CardHeader>
           <ProgramReport programId={pid} report={report as unknown as Report} />
         </Card>
+      )}
+      {isAdmin && program.kind === "lender" && (
+        <div className="mb-6 grid gap-6 xl:grid-cols-[1fr_380px]">
+          <Card>
+            <CardHeader><CardTitle>Evidence packages ({packages?.length ?? 0})</CardTitle>
+              <CardDescription>Frozen snapshots each business chose to share. You don&apos;t get access to their books; withdrawn or expired packages disappear.</CardDescription></CardHeader>
+            <div className="space-y-6">
+              {packages?.map((p) => {
+                const snap = p.snapshot as Record<string, unknown>;
+                const facts = { provenance_180: {}, monthly_sales: [], verifications: [], verified_outcomes: [], months_with_records: 0, active_days_90: 0, records_180: 0, highest_level: null, ...snap } as unknown as PassportFacts;
+                return (
+                  <article key={p.id} aria-label={`Package from ${String(snap.name)}`} className="space-y-3 rounded-xl border p-4">
+                    <p className="text-sm"><span className="font-semibold">{String(snap.name)}</span> asks {formatMoney(p.requested_amount_minor ?? 0, p.financial_products?.currency ?? "NGN")} for “{p.purpose}” · {p.status.replace("_", " ")}</p>
+                    <PassportView facts={facts} pulse={(snap.pulse as PassportPulse) ?? null} sections={p.sections as PassportSection[]} />
+                    <p className="break-all text-xs text-muted-foreground">Snapshot SHA-256 {p.snapshot_sha256}</p>
+                    {["submitted", "under_review"].includes(p.status) && (
+                      <form action={decidePackage} className="flex flex-wrap gap-2">
+                        <input type="hidden" name="programId" value={pid} /><input type="hidden" name="id" value={p.id} />
+                        <input name="note" aria-label="Decision note" placeholder="Note to the business" className="h-9 flex-1 rounded-xl border bg-surface/60 px-3 text-xs" />
+                        <Select name="status" aria-label="Decision" className="h-9 w-36 text-xs" defaultValue="approved">
+                          <option value="approved">Approve</option><option value="declined">Decline</option><option value="under_review">Mark reviewing</option>
+                        </Select>
+                        <Button size="sm">Send decision</Button>
+                      </form>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          </Card>
+          <Card><CardHeader><CardTitle>List a finance product</CardTitle><CardDescription>Set clear requirements; businesses see exactly which they meet.</CardDescription></CardHeader><ProductForm programId={pid} /></Card>
+        </div>
       )}
       <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
         <Card className="p-0">

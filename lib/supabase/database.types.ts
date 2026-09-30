@@ -256,6 +256,49 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"evidence_packages": {
+                  Row: {
+                    "business_id": string,"decided_at": string | null,"decided_by": string | null,"decision_amount_minor": number | null,"decision_note": string | null,"eligibility": NonNullable<Json>,"expires_at": string,"id": string,"product_id": string,"program_id": string,"purpose": string | null,"requested_amount_minor": number | null,"sections": (string)[],"snapshot": NonNullable<Json>,"snapshot_sha256": string,"status": Database["public"]['Enums']["package_status"],"submitted_at": string,"submitted_by": string
+                  }
+                  Insert: {
+                    "business_id": string,"decided_at"?: string | null,"decided_by"?: string | null,"decision_amount_minor"?: number | null,"decision_note"?: string | null,"eligibility": NonNullable<Json>,"expires_at"?: string,"id"?: string,"product_id": string,"program_id": string,"purpose"?: string | null,"requested_amount_minor"?: number | null,"sections": (string)[],"snapshot": NonNullable<Json>,"snapshot_sha256": string,"status"?: Database["public"]['Enums']["package_status"],"submitted_at"?: string,"submitted_by"?: string
+                  }
+                  Update: {
+                    "business_id"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"decision_amount_minor"?: number | null,"decision_note"?: string | null,"eligibility"?: NonNullable<Json>,"expires_at"?: string,"id"?: string,"product_id"?: string,"program_id"?: string,"purpose"?: string | null,"requested_amount_minor"?: number | null,"sections"?: (string)[],"snapshot"?: NonNullable<Json>,"snapshot_sha256"?: string,"status"?: Database["public"]['Enums']["package_status"],"submitted_at"?: string,"submitted_by"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "evidence_packages_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "evidence_packages_decided_by_fkey"
+      columns: ["decided_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "evidence_packages_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "financial_products"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "evidence_packages_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "evidence_packages_submitted_by_fkey"
+      columns: ["submitted_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"expenses": {
                   Row: {
                     "amount_minor": number,"business_id": string,"category": string,"created_at": string,"created_by": string | null,"currency": string,"description": string | null,"id": string,"occurred_at": string,"payment_method": Database["public"]['Enums']["payment_method"],"provenance": Database["public"]['Enums']["provenance"],"source_capture_id": string | null,"source_draft_id": string | null,"supplier": string | null,"updated_at": string,"voided_at": string | null
@@ -290,6 +333,25 @@ isOneToOne: false
       columns: ["source_draft_id"]
 isOneToOne: false
       referencedRelation: "record_drafts"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"financial_products": {
+                  Row: {
+                    "created_at": string,"currency": string,"description": string | null,"eligibility": NonNullable<Json>,"id": string,"max_amount_minor": number | null,"min_amount_minor": number | null,"name": string,"product_type": string,"program_id": string,"required_sections": (string)[],"status": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"currency": string,"description"?: string | null,"eligibility"?: NonNullable<Json>,"id"?: string,"max_amount_minor"?: number | null,"min_amount_minor"?: number | null,"name": string,"product_type": string,"program_id": string,"required_sections"?: (string)[],"status"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"currency"?: string,"description"?: string | null,"eligibility"?: NonNullable<Json>,"id"?: string,"max_amount_minor"?: number | null,"min_amount_minor"?: number | null,"name"?: string,"product_type"?: string,"program_id"?: string,"required_sections"?: (string)[],"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "financial_products_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
       referencedColumns: ["id"]
     }
                   ]
@@ -1114,11 +1176,17 @@ isOneToOne: false
 "create_business":
 { Args: { "p_country_code"?: string,"p_currency"?: string,"p_name": string,"p_sector"?: string,"p_timezone"?: string }; Returns: string
                            },
+"create_financial_product":
+{ Args: { "p_currency": string,"p_description"?: string,"p_eligibility": Json,"p_max": number,"p_min": number,"p_name": string,"p_product_type": string,"p_program_id": string }; Returns: string
+                           },
 "create_program":
 { Args: { "p_description"?: string,"p_name": string,"p_sponsor_name"?: string }; Returns: string
                            },
 "decide_action":
 { Args: { "p_action_id": string,"p_decision": string,"p_result"?: Json }; Returns: undefined
+                           },
+"decide_evidence_package":
+{ Args: { "p_amount_minor"?: number,"p_note"?: string,"p_package_id": string,"p_status": Database["public"]['Enums']["package_status"] }; Returns: undefined
                            },
 "deprecate_solution_version":
 { Args: { "p_reason": string,"p_version_id": string }; Returns: undefined
@@ -1154,6 +1222,9 @@ isOneToOne: false
                            },
 "passport_facts":
 { Args: { "p_business_id": string }; Returns: Json
+                           },
+"product_eligibility":
+{ Args: { "p_business_id": string,"p_product_id": string }; Returns: Json
                            },
 "program_access_for_business":
 { Args: { "p_business_id": string }; Returns: {
@@ -1192,15 +1263,21 @@ isOneToOne: false
 "start_intervention":
 { Args: { "p_business_id": string,"p_metric": string,"p_solution_version_id"?: string,"p_source_action_id"?: string,"p_title": string,"p_window_days"?: number }; Returns: string
                            },
+"submit_evidence_package":
+{ Args: { "p_amount_minor": number,"p_business_id": string,"p_consent": boolean,"p_product_id": string,"p_purpose": string,"p_sections": (string)[] }; Returns: string
+                           },
 "verify_outcome":
 { Args: { "p_note"?: string,"p_outcome_id": string,"p_verdict": string }; Returns: undefined
                            },
 "void_record":
 { Args: { "p_id": string,"p_kind": Database["public"]['Enums']["record_kind"],"p_reason"?: string }; Returns: undefined
+                           },
+"withdraw_evidence_package":
+{ Args: { "p_package_id": string }; Returns: undefined
                            }
           }
           Enums: {
-            "action_status": "proposed"|"approved"|"rejected"|"executed"|"failed"|"expired","actor_type": "user"|"agent"|"system","business_role": "owner"|"staff"|"partner"|"program_admin","capture_channel": "text"|"voice"|"photo"|"forward","capture_status": "received"|"processing"|"drafted"|"resolved"|"failed","draft_status": "proposed"|"confirmed"|"rejected","intervention_status": "active"|"completed"|"abandoned","job_status": "queued"|"running"|"succeeded"|"failed"|"dead","outcome_status": "observed"|"verified"|"disputed","payment_method": "cash"|"transfer"|"mobile_money"|"card"|"credit"|"other","program_role": "admin"|"partner","provenance": "self_reported"|"document_backed"|"third_party_verified"|"institution_verified","pulse_state": "strong"|"steady"|"watch"|"at_risk"|"insufficient_data","pulse_trend": "up"|"flat"|"down"|"unknown","record_kind": "sale"|"expense"|"stock_movement"|"customer","solution_status": "draft"|"submitted"|"approved"|"active"|"rejected"|"deprecated","stock_reason": "purchase"|"sale"|"adjustment"|"waste"|"return","verification_subject": "business"|"sale"|"expense"|"stock_movement"
+            "action_status": "proposed"|"approved"|"rejected"|"executed"|"failed"|"expired","actor_type": "user"|"agent"|"system","business_role": "owner"|"staff"|"partner"|"program_admin","capture_channel": "text"|"voice"|"photo"|"forward","capture_status": "received"|"processing"|"drafted"|"resolved"|"failed","draft_status": "proposed"|"confirmed"|"rejected","intervention_status": "active"|"completed"|"abandoned","job_status": "queued"|"running"|"succeeded"|"failed"|"dead","outcome_status": "observed"|"verified"|"disputed","package_status": "submitted"|"under_review"|"approved"|"declined"|"withdrawn","payment_method": "cash"|"transfer"|"mobile_money"|"card"|"credit"|"other","program_role": "admin"|"partner","provenance": "self_reported"|"document_backed"|"third_party_verified"|"institution_verified","pulse_state": "strong"|"steady"|"watch"|"at_risk"|"insufficient_data","pulse_trend": "up"|"flat"|"down"|"unknown","record_kind": "sale"|"expense"|"stock_movement"|"customer","solution_status": "draft"|"submitted"|"approved"|"active"|"rejected"|"deprecated","stock_reason": "purchase"|"sale"|"adjustment"|"waste"|"return","verification_subject": "business"|"sale"|"expense"|"stock_movement"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1316,7 +1393,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "action_status": ["proposed", "approved", "rejected", "executed", "failed", "expired"],"actor_type": ["user", "agent", "system"],"business_role": ["owner", "staff", "partner", "program_admin"],"capture_channel": ["text", "voice", "photo", "forward"],"capture_status": ["received", "processing", "drafted", "resolved", "failed"],"draft_status": ["proposed", "confirmed", "rejected"],"intervention_status": ["active", "completed", "abandoned"],"job_status": ["queued", "running", "succeeded", "failed", "dead"],"outcome_status": ["observed", "verified", "disputed"],"payment_method": ["cash", "transfer", "mobile_money", "card", "credit", "other"],"program_role": ["admin", "partner"],"provenance": ["self_reported", "document_backed", "third_party_verified", "institution_verified"],"pulse_state": ["strong", "steady", "watch", "at_risk", "insufficient_data"],"pulse_trend": ["up", "flat", "down", "unknown"],"record_kind": ["sale", "expense", "stock_movement", "customer"],"solution_status": ["draft", "submitted", "approved", "active", "rejected", "deprecated"],"stock_reason": ["purchase", "sale", "adjustment", "waste", "return"],"verification_subject": ["business", "sale", "expense", "stock_movement"]
+            "action_status": ["proposed", "approved", "rejected", "executed", "failed", "expired"],"actor_type": ["user", "agent", "system"],"business_role": ["owner", "staff", "partner", "program_admin"],"capture_channel": ["text", "voice", "photo", "forward"],"capture_status": ["received", "processing", "drafted", "resolved", "failed"],"draft_status": ["proposed", "confirmed", "rejected"],"intervention_status": ["active", "completed", "abandoned"],"job_status": ["queued", "running", "succeeded", "failed", "dead"],"outcome_status": ["observed", "verified", "disputed"],"package_status": ["submitted", "under_review", "approved", "declined", "withdrawn"],"payment_method": ["cash", "transfer", "mobile_money", "card", "credit", "other"],"program_role": ["admin", "partner"],"provenance": ["self_reported", "document_backed", "third_party_verified", "institution_verified"],"pulse_state": ["strong", "steady", "watch", "at_risk", "insufficient_data"],"pulse_trend": ["up", "flat", "down", "unknown"],"record_kind": ["sale", "expense", "stock_movement", "customer"],"solution_status": ["draft", "submitted", "approved", "active", "rejected", "deprecated"],"stock_reason": ["purchase", "sale", "adjustment", "waste", "return"],"verification_subject": ["business", "sale", "expense", "stock_movement"]
           }
         }
 } as const

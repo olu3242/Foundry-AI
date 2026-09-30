@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { fail, friendlyDbError, type ActionState } from "@/lib/actions";
 import { billingConfigured, getStripe } from "@/lib/billing/stripe";
 import { publicEnv, serverEnv } from "@/lib/env";
+import { toMinor } from "@/lib/money";
 
 export async function createProgram(_: ActionState, formData: FormData): Promise<ActionState> {
   await requireUser("/programs");
@@ -94,4 +95,39 @@ export async function updateProgram(_: ActionState, formData: FormData): Promise
   if (error) return fail(friendlyDbError(error));
   revalidatePath(`/programs/${p.programId}`);
   return { ok: true, message: "Saved." };
+}
+
+export async function createProduct(_: ActionState, formData: FormData): Promise<ActionState> {
+  const parsed = z.object({
+    programId: z.uuid(), name: z.string().trim().min(3).max(120),
+    productType: z.enum(["working_capital", "stock_financing", "equipment", "invoice_financing", "grant", "other"]),
+    currency: z.string().regex(/^[A-Za-z]{3}$/), min: z.coerce.number().min(0), max: z.coerce.number().positive(),
+    minMonths: z.coerce.number().int().min(0).max(36).default(0),
+    minProof: z.enum(["self_reported", "document_backed", "third_party_verified", "institution_verified"]),
+    minVerified: z.coerce.number().int().min(0).max(20).default(0), countries: z.string().optional(),
+  }).safeParse(Object.fromEntries([...formData.entries()].filter(([, v]) => v !== "")));
+  if (!parsed.success) return fail("Please check the product details.");
+  const p = parsed.data;
+  await requireUser(`/programs/${p.programId}`);
+  const supabase = await createClient();
+  const cur = p.currency.toUpperCase();
+  const countries = (p.countries ?? "").split(",").map((c) => c.trim().toUpperCase()).filter(Boolean);
+  const { error } = await supabase.rpc("create_financial_product", {
+    p_program_id: p.programId, p_name: p.name, p_product_type: p.productType, p_currency: cur,
+    p_min: toMinor(p.min, cur), p_max: toMinor(p.max, cur),
+    p_eligibility: { min_months_records: p.minMonths, min_proof_level: p.minProof, ...(p.minVerified ? { min_verified_outcomes: p.minVerified } : {}), ...(countries.length ? { countries } : {}) },
+  });
+  if (error) return fail(friendlyDbError(error));
+  revalidatePath(`/programs/${p.programId}`);
+  return { ok: true, message: "Listed. Eligible businesses can now share evidence with you." };
+}
+
+export async function decidePackage(formData: FormData) {
+  const { programId, id, status, note } = z.object({
+    programId: z.uuid(), id: z.uuid(), status: z.enum(["under_review", "approved", "declined"]), note: z.string().max(1000).optional(),
+  }).parse(Object.fromEntries(formData));
+  await requireUser(`/programs/${programId}`);
+  const supabase = await createClient();
+  await supabase.rpc("decide_evidence_package", { p_package_id: id, p_status: status, p_note: note || undefined });
+  revalidatePath(`/programs/${programId}`);
 }
