@@ -64,3 +64,20 @@ export async function pulseFeedback(formData: FormData) {
   await supabase.rpc("give_pulse_feedback", { p_business_id: businessId, p_dimension: dimension, p_computed_on: computedOn, p_verdict: verdict });
   revalidatePath(`/b/${businessId}/pulse`);
 }
+
+export async function startProviderSolution(_: ActionState, formData: FormData): Promise<ActionState> {
+  const parsed = z.object({ businessId: z.uuid(), versionId: z.uuid(), consent: z.literal("on") }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return fail("Tick the box to agree to work with this provider.");
+  const { supabase } = await requireBusiness(parsed.data.businessId, ["owner", "staff"]);
+  const { error } = await supabase.rpc("start_provider_solution", { p_business_id: parsed.data.businessId, p_solution_version_id: parsed.data.versionId, p_consent: true });
+  if (error) return fail(friendlyDbError(error));
+  revalidatePath(`/b/${parsed.data.businessId}`, "layout");
+  return { ok: true, message: "Started. The provider will be in touch." };
+}
+
+export async function businessUpdate(formData: FormData) {
+  const { businessId, engagementId, note } = z.object({ businessId: z.uuid(), engagementId: z.uuid(), note: z.string().trim().min(2).max(1000) }).parse(Object.fromEntries(formData));
+  const { supabase } = await requireBusiness(businessId, ["owner", "staff"]);
+  await supabase.rpc("post_engagement_update", { p_engagement_id: engagementId, p_note: note });
+  revalidatePath(`/b/${businessId}/progress`);
+}

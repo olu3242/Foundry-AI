@@ -34,7 +34,7 @@ export default async function ProgressPage({ params }: { params: Promise<{ bid: 
   const [solutions, { data: activation }, { data: plans }] = await Promise.all([
     loadSolutions(supabase),
     supabase.rpc("activation_status", { p_business_id: bid }),
-    supabase.from("interventions").select("*, outcomes(*)").eq("business_id", bid).order("started_at", { ascending: false }).limit(30),
+    supabase.from("interventions").select("*, outcomes(*), solution_engagements(id, providers(name), engagement_updates(note, created_at))").eq("business_id", bid).order("started_at", { ascending: false }).limit(30),
   ]);
   const a = (activation ?? {}) as Record<string, string | number | null>;
   const done = (key: string) => (key === "active_week" ? Number(a.active_days_30 ?? 0) >= 7 : Boolean(a[key]));
@@ -65,6 +65,16 @@ export default async function ProgressPage({ params }: { params: Promise<{ bid: 
                   <Badge tone={p.status === "active" ? "opportunity" : p.status === "completed" ? "brand" : "neutral"}>{p.status}</Badge>
                   <span className="ml-auto text-xs text-muted-foreground">Started {formatDate(p.started_at)} · ends {formatDate(p.due_at)}</span>
                 </header>
+                {(() => {
+                  const e = Array.isArray(p.solution_engagements) ? p.solution_engagements[0] : p.solution_engagements;
+                  if (!e) return null;
+                  return (
+                    <div className="rounded-xl bg-muted/50 p-3 text-xs" aria-label="Provider updates">
+                      <p className="font-medium">With {e.providers?.name}</p>
+                      {(e.engagement_updates as { note: string; created_at: string }[]).map((u, i) => <p key={i}>{formatDate(u.created_at)}: {u.note}</p>)}
+                    </div>
+                  );
+                })()}
                 <p className="text-sm text-muted-foreground">{metric?.label}: {formatMetric(p.target_metric, Number(p.baseline_value), cur)} at the start</p>
                 {o && (
                   <div className="rounded-xl border p-3 text-sm">

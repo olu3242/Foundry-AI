@@ -1,10 +1,11 @@
 import { StartPlanForm } from "@/components/progress/start-plan-form";
+import { StartProviderForm } from "@/components/marketplace/start-provider-form";
 import { METRICS, type MetricKey } from "@/lib/interventions/catalog";
 
 export type SolutionRow = {
   key: string; name: string; summary: string; target_metric: string; default_window_days: number;
   version_id: string; version: number; activated: number; completed: number; improved: number; verified: number; sample_ok: boolean;
-  price?: string | null; provider?: string | null;
+  price?: string | null; provider?: string | null; provider_led?: boolean;
 };
 
 /** B13: every plan shows its track record; small samples say so instead of implying a result. */
@@ -19,7 +20,9 @@ export function SolutionList({ businessId, rows, canStart }: { businessId: strin
               <p className="text-sm text-muted-foreground">{s.summary}</p>
               <p className="text-xs text-muted-foreground">Moves: {METRICS[s.target_metric as MetricKey]?.label} · {s.default_window_days} days</p>
             </div>
-            {canStart && <StartPlanForm compact businessId={businessId} defaults={{ title: s.name, metric: s.target_metric, solutionVersionId: s.version_id, windowDays: s.default_window_days }} />}
+            {canStart && (s.provider_led
+              ? <StartProviderForm businessId={businessId} versionId={s.version_id} provider={s.provider ?? "the provider"} />
+              : <StartPlanForm compact businessId={businessId} defaults={{ title: s.name, metric: s.target_metric, solutionVersionId: s.version_id, windowDays: s.default_window_days }} />)}
           </div>
           <p className="text-xs" data-testid={`funnel-${s.key}`}>
             {s.activated} started · {s.completed} completed · {s.improved} improved · {s.verified} verified

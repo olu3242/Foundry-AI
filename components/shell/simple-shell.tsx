@@ -12,6 +12,7 @@ export function SimpleShell({ children }: { children: React.ReactNode }) {
             <Link href="/app" className="hover:text-foreground">My business</Link>
             <Link href="/partner" className="hover:text-foreground">Portfolio</Link>
             <Link href="/programs" className="hover:text-foreground">Programs</Link>
+            <Link href="/providers" className="hover:text-foreground">Providers</Link>
             <form action="/auth/signout" method="post"><button className="hover:text-foreground">Sign out</button></form>
           </nav>
         </div>

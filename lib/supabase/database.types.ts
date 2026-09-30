@@ -94,13 +94,13 @@ isOneToOne: false
                   ]
                 },"audit_log": {
                   Row: {
-                    "action": string,"actor_id": string | null,"business_id": string,"changed_at": string,"id": number,"new_row": Json | null,"old_row": Json | null,"row_id": string | null,"table_name": string
+                    "action": string,"actor_id": string | null,"business_id": string | null,"changed_at": string,"id": number,"new_row": Json | null,"old_row": Json | null,"row_id": string | null,"table_name": string
                   }
                   Insert: {
-                    "action": string,"actor_id"?: string | null,"business_id": string,"changed_at"?: string,"id"?: never,"new_row"?: Json | null,"old_row"?: Json | null,"row_id"?: string | null,"table_name": string
+                    "action": string,"actor_id"?: string | null,"business_id"?: string | null,"changed_at"?: string,"id"?: never,"new_row"?: Json | null,"old_row"?: Json | null,"row_id"?: string | null,"table_name": string
                   }
                   Update: {
-                    "action"?: string,"actor_id"?: string | null,"business_id"?: string,"changed_at"?: string,"id"?: never,"new_row"?: Json | null,"old_row"?: Json | null,"row_id"?: string | null,"table_name"?: string
+                    "action"?: string,"actor_id"?: string | null,"business_id"?: string | null,"changed_at"?: string,"id"?: never,"new_row"?: Json | null,"old_row"?: Json | null,"row_id"?: string | null,"table_name"?: string
                   }
                   Relationships: [
                     
@@ -234,6 +234,31 @@ isOneToOne: false
       columns: ["source_draft_id"]
 isOneToOne: false
       referencedRelation: "record_drafts"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"engagement_updates": {
+                  Row: {
+                    "created_at": string,"created_by": string,"engagement_id": string,"id": string,"note": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string,"engagement_id": string,"id"?: string,"note": string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string,"engagement_id"?: string,"id"?: string,"note"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "engagement_updates_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "engagement_updates_engagement_id_fkey"
+      columns: ["engagement_id"]
+isOneToOne: false
+      referencedRelation: "solution_engagements"
       referencedColumns: ["id"]
     }
                   ]
@@ -818,6 +843,50 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"provider_members": {
+                  Row: {
+                    "provider_id": string,"user_id": string
+                  }
+                  Insert: {
+                    "provider_id": string,"user_id": string
+                  }
+                  Update: {
+                    "provider_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "provider_members_provider_id_fkey"
+      columns: ["provider_id"]
+isOneToOne: false
+      referencedRelation: "providers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "provider_members_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"providers": {
+                  Row: {
+                    "contact": string,"created_at": string,"created_by": string,"description": string | null,"id": string,"kind": string,"name": string,"status": string
+                  }
+                  Insert: {
+                    "contact": string,"created_at"?: string,"created_by"?: string,"description"?: string | null,"id"?: string,"kind": string,"name": string,"status"?: string
+                  }
+                  Update: {
+                    "contact"?: string,"created_at"?: string,"created_by"?: string,"description"?: string | null,"id"?: string,"kind"?: string,"name"?: string,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "providers_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"pulse_feedback": {
                   Row: {
                     "business_id": string,"computed_on": string,"created_at": string,"dimension": string,"id": string,"note": string | null,"user_id": string,"user_role": Database["public"]['Enums']["business_role"],"verdict": string
@@ -973,6 +1042,43 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"solution_engagements": {
+                  Row: {
+                    "business_id": string,"consented_at": string,"consented_by": string,"id": string,"intervention_id": string,"provider_id": string,"status": string
+                  }
+                  Insert: {
+                    "business_id": string,"consented_at"?: string,"consented_by": string,"id"?: string,"intervention_id": string,"provider_id": string,"status"?: string
+                  }
+                  Update: {
+                    "business_id"?: string,"consented_at"?: string,"consented_by"?: string,"id"?: string,"intervention_id"?: string,"provider_id"?: string,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "solution_engagements_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "solution_engagements_consented_by_fkey"
+      columns: ["consented_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "solution_engagements_intervention_id_fkey"
+      columns: ["intervention_id"]
+isOneToOne: true
+      referencedRelation: "interventions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "solution_engagements_provider_id_fkey"
+      columns: ["provider_id"]
+isOneToOne: false
+      referencedRelation: "providers"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"solution_versions": {
                   Row: {
                     "created_at": string,"deprecated_reason": string | null,"id": string,"playbook": NonNullable<Json>,"solution_id": string,"status": string,"version": number
@@ -994,16 +1100,28 @@ isOneToOne: false
                   ]
                 },"solutions": {
                   Row: {
-                    "created_at": string,"default_window_days": number,"id": string,"key": string,"name": string,"status": Database["public"]['Enums']["solution_status"],"summary": string,"target_dimension": string | null,"target_metric": string
+                    "commercial_terms": string | null,"created_at": string,"currency": string | null,"default_window_days": number,"delivery": string,"id": string,"key": string,"name": string,"price_minor": number | null,"pricing_model": string,"provider_id": string | null,"review_note": string | null,"reviewed_at": string | null,"reviewed_by": string | null,"status": Database["public"]['Enums']["solution_status"],"summary": string,"target_dimension": string | null,"target_metric": string
                   }
                   Insert: {
-                    "created_at"?: string,"default_window_days"?: number,"id"?: string,"key": string,"name": string,"status"?: Database["public"]['Enums']["solution_status"],"summary": string,"target_dimension"?: string | null,"target_metric": string
+                    "commercial_terms"?: string | null,"created_at"?: string,"currency"?: string | null,"default_window_days"?: number,"delivery"?: string,"id"?: string,"key": string,"name": string,"price_minor"?: number | null,"pricing_model"?: string,"provider_id"?: string | null,"review_note"?: string | null,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"status"?: Database["public"]['Enums']["solution_status"],"summary": string,"target_dimension"?: string | null,"target_metric": string
                   }
                   Update: {
-                    "created_at"?: string,"default_window_days"?: number,"id"?: string,"key"?: string,"name"?: string,"status"?: Database["public"]['Enums']["solution_status"],"summary"?: string,"target_dimension"?: string | null,"target_metric"?: string
+                    "commercial_terms"?: string | null,"created_at"?: string,"currency"?: string | null,"default_window_days"?: number,"delivery"?: string,"id"?: string,"key"?: string,"name"?: string,"price_minor"?: number | null,"pricing_model"?: string,"provider_id"?: string | null,"review_note"?: string | null,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"status"?: Database["public"]['Enums']["solution_status"],"summary"?: string,"target_dimension"?: string | null,"target_metric"?: string
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "solutions_provider_id_fkey"
+      columns: ["provider_id"]
+isOneToOne: false
+      referencedRelation: "providers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "solutions_reviewed_by_fkey"
+      columns: ["reviewed_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"stock_movements": {
                   Row: {
@@ -1223,6 +1341,9 @@ isOneToOne: false
 "passport_facts":
 { Args: { "p_business_id": string }; Returns: Json
                            },
+"post_engagement_update":
+{ Args: { "p_engagement_id": string,"p_note": string }; Returns: undefined
+                           },
 "product_eligibility":
 { Args: { "p_business_id": string,"p_product_id": string }; Returns: Json
                            },
@@ -1233,6 +1354,11 @@ isOneToOne: false
                            },
 "program_report":
 { Args: { "p_program_id": string }; Returns: Json
+                           },
+"provider_engagements":
+{ Args: { "p_provider_id": string }; Returns: {
+              "business_name": string,"due_at": string,"engagement_id": string,"plan_status": string,"result_improved": boolean,"result_status": string,"solution": string,"started_at": string,"updates": Json
+            }[]
                            },
 "publish_solution_version":
 { Args: { "p_playbook": Json,"p_solution_id": string }; Returns: string
@@ -1249,8 +1375,17 @@ isOneToOne: false
 "record_entry":
 { Args: { "p_business_id": string,"p_fields": Json,"p_kind": Database["public"]['Enums']["record_kind"] }; Returns: string
                            },
+"register_provider":
+{ Args: { "p_contact": string,"p_description"?: string,"p_kind": string,"p_name": string }; Returns: string
+                           },
 "reject_draft":
 { Args: { "p_draft_id": string }; Returns: undefined
+                           },
+"review_provider":
+{ Args: { "p_provider_id": string,"p_status": string }; Returns: undefined
+                           },
+"review_solution":
+{ Args: { "p_decision": string,"p_note"?: string,"p_solution_id": string }; Returns: undefined
                            },
 "snooze_items":
 { Args: { "p_days": number,"p_item_keys": (string)[] }; Returns: undefined
@@ -1263,8 +1398,14 @@ isOneToOne: false
 "start_intervention":
 { Args: { "p_business_id": string,"p_metric": string,"p_solution_version_id"?: string,"p_source_action_id"?: string,"p_title": string,"p_window_days"?: number }; Returns: string
                            },
+"start_provider_solution":
+{ Args: { "p_business_id": string,"p_consent": boolean,"p_solution_version_id": string }; Returns: string
+                           },
 "submit_evidence_package":
 { Args: { "p_amount_minor": number,"p_business_id": string,"p_consent": boolean,"p_product_id": string,"p_purpose": string,"p_sections": (string)[] }; Returns: string
+                           },
+"submit_solution":
+{ Args: { "p_commercial_terms"?: string,"p_currency": string,"p_delivery": string,"p_key": string,"p_name": string,"p_playbook": Json,"p_price_minor": number,"p_pricing_model": string,"p_provider_id": string,"p_summary": string,"p_target_dimension": string,"p_target_metric": string,"p_window_days": number }; Returns: string
                            },
 "verify_outcome":
 { Args: { "p_note"?: string,"p_outcome_id": string,"p_verdict": string }; Returns: undefined

@@ -4,7 +4,9 @@ import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { deprecateVersion } from "../actions";
+import { deprecateVersion, reviewProvider, reviewSolution } from "../actions";
+import { Select } from "@/components/ui/input";
+import { formatMoney } from "@/lib/money";
 
 export const metadata: Metadata = { title: "Solution effectiveness" };
 
@@ -12,11 +14,38 @@ const pct = (n: number | null) => (n === null ? "—" : `${Math.round(n * 100)}%
 
 export default async function SolutionsAdminPage() {
   const supabase = await createClient();
-  const { data: rows } = await supabase.rpc("solution_effectiveness", {});
+  const [{ data: rows }, { data: pendingProviders }, { data: submitted }] = await Promise.all([
+    supabase.rpc("solution_effectiveness", {}),
+    supabase.from("providers").select("id, name, kind, contact, description").eq("status", "pending"),
+    supabase.from("solutions").select("id, name, summary, delivery, pricing_model, price_minor, currency, providers(name)").eq("status", "submitted"),
+  ]);
   return (
     <>
       <PageHeader eyebrow="Admin" title="Is each solution working?"
         description="Per version: started → completed → improved → verified. Rates use completed plans as the base; fewer than 5 completions is flagged as too small to judge." />
+      {(!!pendingProviders?.length || !!submitted?.length) && (
+        <section className="glass mb-6 space-y-4 p-5" aria-label="Review queue">
+          <h2 className="font-semibold">Review queue</h2>
+          {pendingProviders?.map((p) => (
+            <div key={p.id} className="flex flex-wrap items-center gap-3 text-sm" aria-label={`Provider ${p.name}`}>
+              <span className="flex-1"><span className="font-medium">{p.name}</span> · {p.kind} · {p.contact}</span>
+              {(["approved", "suspended"] as const).map((st) => (
+                <form key={st} action={reviewProvider}><input type="hidden" name="id" value={p.id} /><input type="hidden" name="status" value={st} />
+                  <Button size="sm" variant={st === "approved" ? "default" : "ghost"}>{st === "approved" ? "Approve provider" : "Suspend"}</Button></form>
+              ))}
+            </div>
+          ))}
+          {submitted?.map((s) => (
+            <form key={s.id} action={reviewSolution} className="flex flex-wrap items-center gap-2 text-sm" aria-label={`Solution ${s.name}`}>
+              <input type="hidden" name="id" value={s.id} />
+              <span className="flex-1"><span className="font-medium">{s.name}</span> by {s.providers?.name} · {s.delivery.replace("_", " ")} · {s.pricing_model}{s.price_minor ? ` ${formatMoney(s.price_minor, s.currency ?? "NGN")}` : ""}</span>
+              <Input name="note" aria-label="Review note" placeholder="Note" className="h-8 w-40 text-xs" />
+              <Select name="decision" aria-label="Review decision" className="h-8 w-32 text-xs" defaultValue="active"><option value="active">Approve</option><option value="rejected">Reject</option></Select>
+              <Button size="sm">Send review</Button>
+            </form>
+          ))}
+        </section>
+      )}
       <div className="glass overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="text-left text-xs text-muted-foreground">
