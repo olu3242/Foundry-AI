@@ -44,13 +44,13 @@ isOneToOne: false
                   ]
                 },"agent_actions": {
                   Row: {
-                    "action_type": string,"agent_run_id": string | null,"autonomy_level": number,"body": string | null,"business_id": string,"created_at": string,"decided_at": string | null,"decided_by": string | null,"dedupe_key": string | null,"executed_at": string | null,"expires_at": string | null,"id": string,"payload": NonNullable<Json>,"result": Json | null,"source": string | null,"status": Database["public"]['Enums']["action_status"],"title": string
+                    "action_type": string,"agent_run_id": string | null,"autonomy_level": number,"body": string | null,"business_id": string,"created_at": string,"decided_at": string | null,"decided_by": string | null,"dedupe_key": string | null,"executed_at": string | null,"expires_at": string | null,"generator": string,"id": string,"payload": NonNullable<Json>,"rank_basis": Json | null,"rank_score": number | null,"result": Json | null,"solution_version_id": string | null,"source": string | null,"status": Database["public"]['Enums']["action_status"],"title": string
                   }
                   Insert: {
-                    "action_type": string,"agent_run_id"?: string | null,"autonomy_level": number,"body"?: string | null,"business_id": string,"created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"dedupe_key"?: string | null,"executed_at"?: string | null,"expires_at"?: string | null,"id"?: string,"payload"?: NonNullable<Json>,"result"?: Json | null,"source"?: string | null,"status"?: Database["public"]['Enums']["action_status"],"title": string
+                    "action_type": string,"agent_run_id"?: string | null,"autonomy_level": number,"body"?: string | null,"business_id": string,"created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"dedupe_key"?: string | null,"executed_at"?: string | null,"expires_at"?: string | null,"generator"?: string,"id"?: string,"payload"?: NonNullable<Json>,"rank_basis"?: Json | null,"rank_score"?: number | null,"result"?: Json | null,"solution_version_id"?: string | null,"source"?: string | null,"status"?: Database["public"]['Enums']["action_status"],"title": string
                   }
                   Update: {
-                    "action_type"?: string,"agent_run_id"?: string | null,"autonomy_level"?: number,"body"?: string | null,"business_id"?: string,"created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"dedupe_key"?: string | null,"executed_at"?: string | null,"expires_at"?: string | null,"id"?: string,"payload"?: NonNullable<Json>,"result"?: Json | null,"source"?: string | null,"status"?: Database["public"]['Enums']["action_status"],"title"?: string
+                    "action_type"?: string,"agent_run_id"?: string | null,"autonomy_level"?: number,"body"?: string | null,"business_id"?: string,"created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"dedupe_key"?: string | null,"executed_at"?: string | null,"expires_at"?: string | null,"generator"?: string,"id"?: string,"payload"?: NonNullable<Json>,"rank_basis"?: Json | null,"rank_score"?: number | null,"result"?: Json | null,"solution_version_id"?: string | null,"source"?: string | null,"status"?: Database["public"]['Enums']["action_status"],"title"?: string
                   }
                   Relationships: [
                     {
@@ -71,17 +71,23 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "agent_actions_solution_version_id_fkey"
+      columns: ["solution_version_id"]
+isOneToOne: false
+      referencedRelation: "solution_versions"
+      referencedColumns: ["id"]
     }
                   ]
                 },"agent_runs": {
                   Row: {
-                    "agent": string,"business_id": string,"created_at": string,"error": string | null,"id": string,"input_tokens": number | null,"latency_ms": number | null,"model": string | null,"output": Json | null,"output_tokens": number | null,"status": string,"subject_id": string | null,"subject_type": string | null,"trigger": string
+                    "agent": string,"business_id": string,"created_at": string,"error": string | null,"id": string,"input_tokens": number | null,"latency_ms": number | null,"model": string | null,"output": Json | null,"output_tokens": number | null,"prompt_version": string | null,"status": string,"subject_id": string | null,"subject_type": string | null,"trigger": string
                   }
                   Insert: {
-                    "agent": string,"business_id": string,"created_at"?: string,"error"?: string | null,"id"?: string,"input_tokens"?: number | null,"latency_ms"?: number | null,"model"?: string | null,"output"?: Json | null,"output_tokens"?: number | null,"status": string,"subject_id"?: string | null,"subject_type"?: string | null,"trigger": string
+                    "agent": string,"business_id": string,"created_at"?: string,"error"?: string | null,"id"?: string,"input_tokens"?: number | null,"latency_ms"?: number | null,"model"?: string | null,"output"?: Json | null,"output_tokens"?: number | null,"prompt_version"?: string | null,"status": string,"subject_id"?: string | null,"subject_type"?: string | null,"trigger": string
                   }
                   Update: {
-                    "agent"?: string,"business_id"?: string,"created_at"?: string,"error"?: string | null,"id"?: string,"input_tokens"?: number | null,"latency_ms"?: number | null,"model"?: string | null,"output"?: Json | null,"output_tokens"?: number | null,"status"?: string,"subject_id"?: string | null,"subject_type"?: string | null,"trigger"?: string
+                    "agent"?: string,"business_id"?: string,"created_at"?: string,"error"?: string | null,"id"?: string,"input_tokens"?: number | null,"latency_ms"?: number | null,"model"?: string | null,"output"?: Json | null,"output_tokens"?: number | null,"prompt_version"?: string | null,"status"?: string,"subject_id"?: string | null,"subject_type"?: string | null,"trigger"?: string
                   }
                   Relationships: [
                     {
@@ -261,6 +267,19 @@ isOneToOne: false
       referencedRelation: "solution_engagements"
       referencedColumns: ["id"]
     }
+                  ]
+                },"eval_snapshots": {
+                  Row: {
+                    "drift": boolean,"id": string,"metrics": NonNullable<Json>,"scope": string,"subject": string,"taken_on": string
+                  }
+                  Insert: {
+                    "drift"?: boolean,"id"?: string,"metrics": NonNullable<Json>,"scope": string,"subject": string,"taken_on"?: string
+                  }
+                  Update: {
+                    "drift"?: boolean,"id"?: string,"metrics"?: NonNullable<Json>,"scope"?: string,"subject"?: string,"taken_on"?: string
+                  }
+                  Relationships: [
+                    
                   ]
                 },"events": {
                   Row: {
@@ -933,13 +952,13 @@ isOneToOne: false
                   ]
                 },"record_drafts": {
                   Row: {
-                    "agent_run_id": string | null,"business_id": string,"capture_id": string,"confidence": number,"confirmed_at": string | null,"confirmed_by": string | null,"created_at": string,"evidence": NonNullable<Json>,"explanation": string | null,"fields": NonNullable<Json>,"id": string,"kind": Database["public"]['Enums']["record_kind"],"record_id": string | null,"status": Database["public"]['Enums']["draft_status"]
+                    "agent_run_id": string | null,"ai_fields": Json | null,"business_id": string,"capture_id": string,"confidence": number,"confirmed_at": string | null,"confirmed_by": string | null,"created_at": string,"evidence": NonNullable<Json>,"explanation": string | null,"fields": NonNullable<Json>,"id": string,"kind": Database["public"]['Enums']["record_kind"],"record_id": string | null,"status": Database["public"]['Enums']["draft_status"]
                   }
                   Insert: {
-                    "agent_run_id"?: string | null,"business_id": string,"capture_id": string,"confidence": number,"confirmed_at"?: string | null,"confirmed_by"?: string | null,"created_at"?: string,"evidence"?: NonNullable<Json>,"explanation"?: string | null,"fields": NonNullable<Json>,"id"?: string,"kind": Database["public"]['Enums']["record_kind"],"record_id"?: string | null,"status"?: Database["public"]['Enums']["draft_status"]
+                    "agent_run_id"?: string | null,"ai_fields"?: Json | null,"business_id": string,"capture_id": string,"confidence": number,"confirmed_at"?: string | null,"confirmed_by"?: string | null,"created_at"?: string,"evidence"?: NonNullable<Json>,"explanation"?: string | null,"fields": NonNullable<Json>,"id"?: string,"kind": Database["public"]['Enums']["record_kind"],"record_id"?: string | null,"status"?: Database["public"]['Enums']["draft_status"]
                   }
                   Update: {
-                    "agent_run_id"?: string | null,"business_id"?: string,"capture_id"?: string,"confidence"?: number,"confirmed_at"?: string | null,"confirmed_by"?: string | null,"created_at"?: string,"evidence"?: NonNullable<Json>,"explanation"?: string | null,"fields"?: NonNullable<Json>,"id"?: string,"kind"?: Database["public"]['Enums']["record_kind"],"record_id"?: string | null,"status"?: Database["public"]['Enums']["draft_status"]
+                    "agent_run_id"?: string | null,"ai_fields"?: Json | null,"business_id"?: string,"capture_id"?: string,"confidence"?: number,"confirmed_at"?: string | null,"confirmed_by"?: string | null,"created_at"?: string,"evidence"?: NonNullable<Json>,"explanation"?: string | null,"fields"?: NonNullable<Json>,"id"?: string,"kind"?: Database["public"]['Enums']["record_kind"],"record_id"?: string | null,"status"?: Database["public"]['Enums']["draft_status"]
                   }
                   Relationships: [
                     {
@@ -1312,6 +1331,11 @@ isOneToOne: false
 "enqueue_job":
 { Args: { "p_business_id"?: string,"p_dedupe_key"?: string,"p_max_attempts"?: number,"p_payload"?: Json,"p_run_at"?: string,"p_type": string }; Returns: string
                            },
+"extraction_eval":
+{ Args: { "p_days"?: number }; Returns: {
+              "confirmed": number,"confirmed_unedited": number,"drafts": number,"edit_rate": number,"edited": number,"model": string,"reject_rate": number,"rejected": number
+            }[]
+                           },
 "fail_job":
 { Args: { "p_error": string,"p_job_id": string,"p_retryable"?: boolean }; Returns: Database["public"]['Enums']["job_status"]
                            },
@@ -1323,6 +1347,9 @@ isOneToOne: false
                            },
 "join_program":
 { Args: { "p_business_id": string,"p_consent": boolean,"p_join_code": string }; Returns: string
+                           },
+"learning_overview":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "leave_program":
 { Args: { "p_business_id": string,"p_program_id": string }; Returns: undefined
@@ -1363,6 +1390,11 @@ isOneToOne: false
 "publish_solution_version":
 { Args: { "p_playbook": Json,"p_solution_id": string }; Returns: string
                            },
+"pulse_calibration":
+{ Args: { "p_days"?: number }; Returns: {
+              "accuracy": number,"accurate": number,"dimension": string,"feedback": number
+            }[]
+                           },
 "pulse_metrics":
 { Args: { "p_as_of"?: string,"p_business_id": string }; Returns: Json
                            },
@@ -1371,6 +1403,11 @@ isOneToOne: false
                            },
 "reap_stale_jobs":
 { Args: { "p_timeout"?: string }; Returns: number
+                           },
+"recommendation_eval":
+{ Args: { "p_days"?: number }; Returns: {
+              "acceptance_rate": number,"accepted": number,"completion_rate": number,"generator": string,"ignored": number,"improved_rate": number,"median_decision_hours": number,"pending": number,"rejected": number,"shown": number,"verified_rate": number
+            }[]
                            },
 "record_entry":
 { Args: { "p_business_id": string,"p_fields": Json,"p_kind": Database["public"]['Enums']["record_kind"] }; Returns: string
@@ -1395,6 +1432,11 @@ isOneToOne: false
               "abandoned": number,"activated": number,"completed": number,"completion_rate": number,"failure_reasons": Json,"improved": number,"improvement_rate": number,"median_change_pct": number,"sample_ok": boolean,"solution_id": string,"solution_key": string,"solution_name": string,"verified": number,"verified_rate": number,"version": number,"version_id": string,"version_status": string
             }[]
                            },
+"solution_rank_stats":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "completed": number,"solution_version_id": string,"target_dimension": string,"verified_improved": number
+            }[]
+                           },
 "start_intervention":
 { Args: { "p_business_id": string,"p_metric": string,"p_solution_version_id"?: string,"p_source_action_id"?: string,"p_title": string,"p_window_days"?: number }; Returns: string
                            },
@@ -1406,6 +1448,9 @@ isOneToOne: false
                            },
 "submit_solution":
 { Args: { "p_commercial_terms"?: string,"p_currency": string,"p_delivery": string,"p_key": string,"p_name": string,"p_playbook": Json,"p_price_minor": number,"p_pricing_model": string,"p_provider_id": string,"p_summary": string,"p_target_dimension": string,"p_target_metric": string,"p_window_days": number }; Returns: string
+                           },
+"take_eval_snapshot":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "verify_outcome":
 { Args: { "p_note"?: string,"p_outcome_id": string,"p_verdict": string }; Returns: undefined

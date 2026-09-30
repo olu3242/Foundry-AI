@@ -19,6 +19,7 @@ export async function GET(request: Request) {
     for (const b of businesses ?? []) {
       await enqueue("pulse.compute", { businessId: b.id, dedupeKey: `pulse:${b.id}`, payload: { day } });
     }
+    await enqueue("learning.snapshot", { dedupeKey: `learning:${day}`, runAt: new Date(Date.now() + 20 * 60_000) });
     await enqueue("benchmarks.compute", { dedupeKey: `benchmarks:${day}`, runAt: new Date(Date.now() + 15 * 60_000) });
     return { purged, pulse_enqueued: businesses?.length ?? 0 };
   });

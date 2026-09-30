@@ -3,6 +3,10 @@ import { PermanentJobError, type JobHandler } from "@/lib/jobs/types";
 import { ACTION_TYPES, effectiveLevel, modeFor, type ActionType } from "@/lib/autonomy/policy";
 import type { Json } from "@/lib/supabase/database.types";
 import { growthActions, type Debtor } from "./rules";
+import { rankSolutions, type Ranked } from "@/lib/learning/rank";
+
+/** Lineage: bump when rules or ranking change so evaluation can compare versions. */
+export const GENERATOR = "rules-v2-ranked";
 
 export const growthJob: JobHandler = async ({ job, admin }) => {
   const bid = job.business_id;
@@ -38,19 +42,34 @@ export const growthJob: JobHandler = async ({ job, admin }) => {
     .map((p) => ({ product_id: p.id, name: p.name, qty: Number(p.stock_qty), reorder_level: p.reorder_level === null ? null : Number(p.reorder_level) }))
     .filter((p) => p.qty < 0 || (p.reorder_level !== null && p.qty <= p.reorder_level));
 
-  // B13: attach the current version of the catalogue solution for each Pulse dimension.
-  const { data: solutions } = await admin.from("solutions")
-    .select("key, name, summary, target_dimension, target_metric, default_window_days, solution_versions(id, version, status)").eq("status", "active");
-  const byDimension = new Map((solutions ?? []).map((s) => {
-    const v = s.solution_versions.filter((x) => x.status === "active").sort((a, b) => b.version - a.version)[0];
-    return [s.target_dimension, v ? { ...s, version_id: v.id } : null] as const;
-  }));
+  // B13 + B18: for each Pulse dimension, the active solution with the best verified track record
+  // (Bayesian-smoothed; catalogue order when evidence is sparse).
+  const [{ data: solutions }, { data: rankStats }] = await Promise.all([
+    admin.from("solutions").select("key, name, summary, target_dimension, target_metric, default_window_days, created_at, solution_versions(id, version, status)")
+      .eq("status", "active").order("created_at"),
+    admin.rpc("solution_rank_stats"),
+  ]);
+  const byDimension = new Map<string, { key: string; name: string; summary: string; target_metric: string; default_window_days: number; version_id: string; rank: Ranked }>();
+  const dims = new Set((solutions ?? []).map((s) => s.target_dimension).filter((d): d is string => Boolean(d)));
+  for (const dim of dims) {
+    const pool = (solutions ?? []).flatMap((s, order) => {
+      if (s.target_dimension !== dim) return [];
+      const v = s.solution_versions.filter((x) => x.status === "active").sort((a, b) => b.version - a.version)[0];
+      if (!v) return [];
+      const st = rankStats?.find((r) => r.solution_version_id === v.id);
+      return [{ s, cand: { version_id: v.id, key: s.key, completed: st?.completed ?? 0, verified_improved: st?.verified_improved ?? 0, catalogue_order: order } }];
+    });
+    const [best] = rankSolutions(pool.map((p) => p.cand));
+    const sol = best && pool.find((p) => p.cand.version_id === best.version_id)!.s;
+    if (best && sol) byDimension.set(dim, { ...sol, version_id: best.version_id, rank: best });
+  }
 
   const drafts = growthActions({ businessName: business.name, currency: business.currency, pulse: pulse ?? [], debtors: [...debtors.values()], stock });
   for (const d of drafts) {
     const sol = d.action_type === "growth.recommend" ? byDimension.get(String(d.payload.dimension)) : null;
     if (sol) {
       d.payload = { ...d.payload, solution_key: sol.key, solution_version_id: sol.version_id, metric: sol.target_metric, window_days: sol.default_window_days, plan_title: sol.name };
+      (d as typeof d & { rank?: Ranked }).rank = sol.rank;
       d.body = `${d.body} Suggested plan: ${sol.name}. ${sol.summary}`;
     }
   }
@@ -59,7 +78,7 @@ export const growthJob: JobHandler = async ({ job, admin }) => {
   const seen = new Set((open ?? []).map((a) => `${a.action_type}|${a.dedupe_key}`));
 
   const { data: run } = await admin.from("agent_runs").insert({
-    business_id: bid, agent: "growth", trigger: `job:${job.id}`, model: "rules-v1", status: "succeeded",
+    business_id: bid, agent: "growth", trigger: `job:${job.id}`, model: GENERATOR, prompt_version: GENERATOR, status: "succeeded",
     output: { proposed: drafts.length } as Json, latency_ms: Date.now() - started,
   }).select("id").single();
 
@@ -76,6 +95,12 @@ export const growthJob: JobHandler = async ({ job, admin }) => {
       business_id: bid, agent_run_id: run?.id ?? null, action_type: d.action_type, autonomy_level: level,
       title: d.title, body: d.body, payload: d.payload as { [key: string]: Json }, source: d.source, dedupe_key: d.dedupe_key,
       status: auto ? "executed" : "proposed", executed_at: auto ? new Date().toISOString() : null,
+      generator: GENERATOR,
+      solution_version_id: (d.payload.solution_version_id as string | undefined) ?? null,
+      rank_score: (d as typeof d & { rank?: Ranked }).rank?.score ?? null,
+      rank_basis: (d as typeof d & { rank?: Ranked }).rank
+        ? { method: (d as typeof d & { rank?: Ranked }).rank!.method, completed: (d as typeof d & { rank?: Ranked }).rank!.completed, verified_improved: (d as typeof d & { rank?: Ranked }).rank!.verified_improved }
+        : null,
       expires_at: new Date(Date.now() + 14 * 86_400_000).toISOString(),
     });
     if (error && error.code !== "23505") throw error;

@@ -6,6 +6,9 @@ import { heuristicExtract } from "@/lib/ai/heuristic";
 import { toDrafts } from "@/lib/ai/map";
 import type { Json } from "@/lib/supabase/database.types";
 
+/** Lineage for B18 evaluation: bump when the extraction prompt or schema changes. */
+export const EXTRACTION_PROMPT_VERSION = "extract-v1";
+
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 type ImageType = (typeof IMAGE_TYPES)[number];
 
@@ -75,6 +78,7 @@ export const extractCapture: JobHandler = async ({ job, admin }) => {
       subject_type: "capture",
       subject_id: capture.id,
       model: result.model,
+      prompt_version: EXTRACTION_PROMPT_VERSION,
       status: result.ok ? "succeeded" : result.reason === "refused" ? "refused" : "failed",
       output: (result.ok ? { ...result.extraction, rejected: drafted.rejected } : { reason: result.reason, detail: result.detail }) as Json,
       input_tokens: result.usage.input,
