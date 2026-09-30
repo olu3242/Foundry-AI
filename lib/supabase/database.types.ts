@@ -443,6 +443,43 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"escalations": {
+                  Row: {
+                    "business_id": string,"created_at": string,"dedupe_key": string,"evidence": NonNullable<Json>,"id": string,"kind": string,"program_id": string | null,"reason": string,"resolved_at": string | null,"resolved_by": string | null,"source_action_id": string | null,"status": string
+                  }
+                  Insert: {
+                    "business_id": string,"created_at"?: string,"dedupe_key": string,"evidence"?: NonNullable<Json>,"id"?: string,"kind": string,"program_id"?: string | null,"reason": string,"resolved_at"?: string | null,"resolved_by"?: string | null,"source_action_id"?: string | null,"status"?: string
+                  }
+                  Update: {
+                    "business_id"?: string,"created_at"?: string,"dedupe_key"?: string,"evidence"?: NonNullable<Json>,"id"?: string,"kind"?: string,"program_id"?: string | null,"reason"?: string,"resolved_at"?: string | null,"resolved_by"?: string | null,"source_action_id"?: string | null,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "escalations_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "escalations_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "escalations_resolved_by_fkey"
+      columns: ["resolved_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "escalations_source_action_id_fkey"
+      columns: ["source_action_id"]
+isOneToOne: false
+      referencedRelation: "agent_actions"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"eval_snapshots": {
                   Row: {
                     "drift": boolean,"id": string,"metrics": NonNullable<Json>,"scope": string,"subject": string,"taken_on": string
@@ -1059,13 +1096,13 @@ isOneToOne: false
                   ]
                 },"programs": {
                   Row: {
-                    "countries": (string)[],"created_at": string,"created_by": string,"current_period_end": string | null,"description": string | null,"ends_on": string | null,"goals": string | null,"id": string,"join_code": string,"kind": string,"name": string,"phase": string,"pilot_seats": number,"seats": number,"sectors": (string)[],"sponsor_name": string | null,"sponsored_plan_id": string | null,"starts_on": string | null,"status": string,"stripe_customer_id": string | null,"stripe_subscription_id": string | null,"subscription_status": string | null,"target_businesses": number | null,"updated_at": string
+                    "auto_route": boolean,"countries": (string)[],"created_at": string,"created_by": string,"current_period_end": string | null,"description": string | null,"ends_on": string | null,"goals": string | null,"id": string,"join_code": string,"kind": string,"name": string,"phase": string,"pilot_seats": number,"seats": number,"sectors": (string)[],"sponsor_name": string | null,"sponsored_plan_id": string | null,"starts_on": string | null,"status": string,"stripe_customer_id": string | null,"stripe_subscription_id": string | null,"subscription_status": string | null,"target_businesses": number | null,"updated_at": string
                   }
                   Insert: {
-                    "countries"?: (string)[],"created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"goals"?: string | null,"id"?: string,"join_code"?: string,"kind"?: string,"name": string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sectors"?: (string)[],"sponsor_name"?: string | null,"sponsored_plan_id"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"target_businesses"?: number | null,"updated_at"?: string
+                    "auto_route"?: boolean,"countries"?: (string)[],"created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"goals"?: string | null,"id"?: string,"join_code"?: string,"kind"?: string,"name": string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sectors"?: (string)[],"sponsor_name"?: string | null,"sponsored_plan_id"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"target_businesses"?: number | null,"updated_at"?: string
                   }
                   Update: {
-                    "countries"?: (string)[],"created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"goals"?: string | null,"id"?: string,"join_code"?: string,"kind"?: string,"name"?: string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sectors"?: (string)[],"sponsor_name"?: string | null,"sponsored_plan_id"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"target_businesses"?: number | null,"updated_at"?: string
+                    "auto_route"?: boolean,"countries"?: (string)[],"created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"goals"?: string | null,"id"?: string,"join_code"?: string,"kind"?: string,"name"?: string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sectors"?: (string)[],"sponsor_name"?: string | null,"sponsored_plan_id"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"target_businesses"?: number | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -1560,6 +1597,9 @@ isOneToOne: false
 "assign_partner":
 { Args: { "p_business_id": string,"p_partner_user_id": string,"p_program_id": string }; Returns: undefined
                            },
+"automation_overview":
+{ Args: { "p_days"?: number }; Returns: Json
+                           },
 "batch_nudge":
 { Args: { "p_business_ids": (string)[],"p_message": string }; Returns: number
                            },
@@ -1754,8 +1794,14 @@ isOneToOne: false
 "reject_draft":
 { Args: { "p_draft_id": string }; Returns: undefined
                            },
+"resolve_escalation":
+{ Args: { "p_id": string }; Returns: undefined
+                           },
 "retention_overview":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"revert_ops_action":
+{ Args: { "p_action_id": string }; Returns: undefined
                            },
 "review_provider":
 { Args: { "p_provider_id": string,"p_status": string }; Returns: undefined
@@ -1765,6 +1811,9 @@ isOneToOne: false
                            },
 "rollup_metrics":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"run_routine_ops":
+{ Args: { "p_business_id"?: string }; Returns: Json
                            },
 "scale_metrics":
 { Args: { "p_from"?: string,"p_to"?: string }; Returns: Json
@@ -1777,6 +1826,9 @@ isOneToOne: false
                            },
 "set_business_identifier":
 { Args: { "p_business_id": string,"p_type": string,"p_value": string }; Returns: undefined
+                           },
+"set_program_auto_route":
+{ Args: { "p_on": boolean,"p_program_id": string }; Returns: undefined
                            },
 "settle_billable_event":
 { Args: { "p_id": string,"p_method": string,"p_reference": string }; Returns: string

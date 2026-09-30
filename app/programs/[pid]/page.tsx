@@ -16,7 +16,7 @@ import { PortfolioTable } from "@/components/programs/portfolio-table";
 import { loadPortfolio } from "@/lib/programs/portfolio";
 import { billingConfigured } from "@/lib/billing/stripe";
 import { formatDate } from "@/lib/utils";
-import { assignPartner, decidePackage, sponsorPlan, startCheckout } from "../actions";
+import { assignPartner, decidePackage, revertAutomation, setAutoRoute, sponsorPlan, startCheckout } from "../actions";
 import { ProductForm } from "@/components/finance/lender";
 import { PassportView } from "@/components/passport/passport-view";
 import type { PassportFacts, PassportPulse, PassportSection } from "@/lib/passport/facts";
@@ -35,6 +35,10 @@ export default async function ProgramPage({ params, searchParams }: { params: Pr
   ]);
   if (!program || !me) notFound();
   const isAdmin = me.role === "admin";
+  const { data: routed } = isAdmin
+    ? await supabase.from("agent_actions").select("id, business_id, title, status, executed_at, payload, businesses(name)").eq("action_type", "ops.route_verifier")
+        .filter("payload->effect->>program_id", "eq", pid).order("created_at", { ascending: false }).limit(10)
+    : { data: [] };
   const { data: sponsorPlans } = await supabase.from("billing_plans").select("id, key, name, price_minor, currency").eq("payer_kind", "sponsor").eq("status", "active");
 
   const [{ data: enrollments }, { data: members }, { data: assignments }] = await Promise.all([
@@ -141,6 +145,27 @@ export default async function ProgramPage({ params, searchParams }: { params: Pr
           )}
           {isAdmin && (
             <Card><CardHeader><CardTitle>Program settings</CardTitle></CardHeader><ProgramSettingsForm program={program} /></Card>
+          )}
+          {isAdmin && (
+            <Card aria-label="Automation">
+              <CardHeader><CardTitle>Automation</CardTitle>
+                <CardDescription>When on, results waiting for a check are assigned to the partner with the fewest businesses. Otherwise they are escalated to you.</CardDescription></CardHeader>
+              <form action={setAutoRoute} className="flex items-center gap-3 text-sm">
+                <input type="hidden" name="programId" value={pid} /><input type="hidden" name="on" value={program.auto_route ? "false" : "true"} />
+                <Badge tone={program.auto_route ? "brand" : "neutral"}>Auto-assign verifiers: {program.auto_route ? "on" : "off"}</Badge>
+                <Button size="sm" variant="outline">{program.auto_route ? "Turn off" : "Turn on"}</Button>
+              </form>
+              {!!routed?.length && (
+                <ul className="mt-4 divide-y text-sm">{routed.map((a) => (
+                  <li key={a.id} className="flex items-center gap-2 py-2" aria-label={`Automated step for ${a.businesses?.name}`}>
+                    <span className="flex-1">{a.businesses?.name}: {a.title}</span>
+                    {a.status === "executed" ? (
+                      <form action={revertAutomation}><input type="hidden" name="programId" value={pid} /><input type="hidden" name="actionId" value={a.id} />
+                        <Button size="sm" variant="outline">Undo</Button></form>
+                    ) : <Badge tone="neutral">undone</Badge>}
+                  </li>))}</ul>
+              )}
+            </Card>
           )}
           {isAdmin && (
             <Card aria-label="Sponsored plan">

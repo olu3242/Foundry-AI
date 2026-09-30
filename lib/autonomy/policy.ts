@@ -30,6 +30,16 @@ export const ACTION_TYPES = {
     description: "Warnings when stock runs low or the count looks wrong.",
     defaultLevel: 4, maxLevel: 4,
   },
+  "ops.record_request": {
+    label: "Reminders to record",
+    description: "A nudge when a few days pass without records, so your books stay complete.",
+    defaultLevel: 4, maxLevel: 4,
+  },
+  "ops.plan_reminder": {
+    label: "Plan reminders",
+    description: "A reminder before a plan ends, so its result can be measured.",
+    defaultLevel: 4, maxLevel: 4,
+  },
   "market.match": {
     label: "Opportunity matching",
     description: "Finding contracts, buyers and programs your records qualify you for.",

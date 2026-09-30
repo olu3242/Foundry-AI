@@ -31,6 +31,11 @@ export const handlers: Record<string, JobHandler> = {
     return { cohorts: data };
   },
   "outcome.measure": measureOutcomeJob,
+  "ops.routine": async ({ admin }) => {
+    const { data, error } = await admin.rpc("run_routine_ops", {});
+    if (error) throw error;
+    return data;
+  },
   "retention.scan": async ({ admin }) => {
     const { data, error } = await admin.rpc("scan_retention");
     if (error) throw error;

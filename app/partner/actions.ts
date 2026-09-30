@@ -16,14 +16,21 @@ export async function batchAction(_: ActionState, formData: FormData): Promise<A
   const supabase = await createClient();
   if (parsed.data.op === "done") {
     // B22: operator confirms the recovery step was taken; the scan marks it recovered once activity resumes.
-    const ids = items.map((i) => i.split("|")[0]!).filter((k) => k.startsWith("recover:")).map((k) => k.slice("recover:".length));
-    if (!ids.length) return fail("Select at least one recovery item.");
+    // B23: escalations resolve the same way.
+    const keys = items.map((i) => i.split("|")[0]!);
+    const ids = keys.filter((k) => k.startsWith("recover:")).map((k) => k.slice("recover:".length));
+    const escalations = keys.filter((k) => k.startsWith("escalate:")).map((k) => k.slice("escalate:".length));
+    if (!ids.length && !escalations.length) return fail("Select at least one recovery or escalated item.");
     for (const id of ids) {
       const { error } = await supabase.rpc("close_recovery_action", { p_id: id, p_status: "done", p_note: parsed.data.message || undefined });
       if (error) return fail(friendlyDbError(error));
     }
+    for (const id of escalations) {
+      const { error } = await supabase.rpc("resolve_escalation", { p_id: id });
+      if (error) return fail(friendlyDbError(error));
+    }
     revalidatePath("/partner");
-    return { ok: true, message: `Marked ${ids.length} recovery step(s) done.` };
+    return { ok: true, message: ids.length ? `Marked ${ids.length} recovery step(s) done.` : `Resolved ${escalations.length} escalation(s).` };
   }
   if (parsed.data.op === "snooze") {
     const keys = items.map((i) => i.split("|")[0]!);

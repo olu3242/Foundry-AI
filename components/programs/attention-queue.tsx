@@ -35,7 +35,7 @@ export function AttentionQueue({ items }: { items: QueueItem[] }) {
         <Select name="op" aria-label="Batch action" value={op} onChange={(e) => setOp(e.target.value as "snooze" | "nudge" | "done")} className="h-9 w-44 text-xs">
           <option value="snooze">Snooze selected</option>
           <option value="nudge">Send a note to owners</option>
-          <option value="done">Mark recovery done</option>
+          <option value="done">Mark done (recovery / escalation)</option>
         </Select>
         {op === "snooze" ? (
           <Select name="days" aria-label="Snooze days" className="h-9 w-28 text-xs" defaultValue="3"><option value="1">1 day</option><option value="3">3 days</option><option value="7">7 days</option></Select>

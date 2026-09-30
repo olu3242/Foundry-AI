@@ -140,3 +140,20 @@ export async function sponsorPlan(formData: FormData) {
   await supabase.rpc("sponsor_plan", { p_program_id: programId, p_plan_key: plan || (null as unknown as string) });
   revalidatePath(`/programs/${programId}`);
 }
+
+// B23: program-level routing authority and undo of automated steps.
+export async function setAutoRoute(formData: FormData) {
+  const { programId, on } = z.object({ programId: z.uuid(), on: z.enum(["true", "false"]) }).parse(Object.fromEntries(formData));
+  await requireUser(`/programs/${programId}`);
+  const supabase = await createClient();
+  await supabase.rpc("set_program_auto_route", { p_program_id: programId, p_on: on === "true" });
+  revalidatePath(`/programs/${programId}`);
+}
+
+export async function revertAutomation(formData: FormData) {
+  const { programId, actionId } = z.object({ programId: z.uuid(), actionId: z.uuid() }).parse(Object.fromEntries(formData));
+  await requireUser(`/programs/${programId}`);
+  const supabase = await createClient();
+  await supabase.rpc("revert_ops_action", { p_action_id: actionId });
+  revalidatePath(`/programs/${programId}`);
+}

@@ -21,6 +21,7 @@ export async function GET(request: Request) {
     }
     await enqueue("metrics.rollup", { dedupeKey: `metrics:${day}`, runAt: new Date(Date.now() + 30 * 60_000) });
     await enqueue("learning.snapshot", { dedupeKey: `learning:${day}`, runAt: new Date(Date.now() + 20 * 60_000) });
+    await enqueue("ops.routine", { dedupeKey: `ops:${day}`, runAt: new Date(Date.now() + 10 * 60_000) });
     await enqueue("retention.scan", { dedupeKey: `retention:${day}`, runAt: new Date(Date.now() + 25 * 60_000) });
     await enqueue("benchmarks.compute", { dedupeKey: `benchmarks:${day}`, runAt: new Date(Date.now() + 15 * 60_000) });
     return { purged, pulse_enqueued: businesses?.length ?? 0 };

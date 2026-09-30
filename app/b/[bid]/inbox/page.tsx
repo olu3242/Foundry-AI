@@ -19,16 +19,26 @@ export default async function InboxPage({ params }: { params: Promise<{ bid: str
   const { bid } = await params;
   const { role, supabase } = await requireBusiness(bid);
   const canAct = WRITER_ROLES.includes(role);
-  const [{ data: proposed }, { data: recent }] = await Promise.all([
+  const [{ data: proposed }, { data: recent }, { data: notices }] = await Promise.all([
     supabase.from("agent_actions").select("*").eq("business_id", bid).eq("status", "proposed").order("created_at", { ascending: false }).limit(50),
     supabase.from("agent_actions").select("id, title, status, action_type, autonomy_level, decided_at, executed_at, created_at")
       .eq("business_id", bid).neq("status", "proposed").order("created_at", { ascending: false }).limit(20),
+    // B23: what routine automation did this week, shown up front (not only in history).
+    supabase.from("agent_actions").select("id, title, body, executed_at").eq("business_id", bid).eq("source", "ops-automation").eq("status", "executed")
+      .gte("executed_at", new Date(Date.now() - 7 * 864e5).toISOString()).order("executed_at", { ascending: false }).limit(5),
   ]);
 
   return (
     <>
       <PageHeader eyebrow="Inbox" title="What Foundry suggests"
         description="Suggestions and drafts from Foundry's assistants. Each says why it was made and what level of freedom you've given it. Nothing is sent without you." />
+      {!!notices?.length && (
+        <section aria-label="From Foundry" className="mb-6 space-y-2">
+          {notices.map((n) => (
+            <p key={n.id} className="glass p-3 text-sm"><span className="font-medium">{n.title}.</span> {n.body}</p>
+          ))}
+        </section>
+      )}
       <div className="space-y-3">
         {!proposed?.length && <p className="glass p-6 text-sm text-muted-foreground">You&apos;re all caught up.</p>}
         {proposed?.map((a) => {

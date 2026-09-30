@@ -87,3 +87,10 @@ export async function scanRetention() {
   await supabase.rpc("scan_retention");
   revalidatePath("/admin/retention");
 }
+
+export async function runRoutineOps() {
+  await requireUser("/admin");
+  const supabase = await createClient();
+  await supabase.rpc("run_routine_ops", {});
+  revalidatePath("/admin/retention");
+}
