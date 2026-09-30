@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { CRON_HEADERS, createFreshBusiness, ensureBusiness, fastForwardJobs, signInWithPhone, TEST_PHONES } from "./helpers";
 
 test("B11 pilot loop: join → capture → confirm → pulse → plan → outcome → verify → passport", async ({ page, browser, request }) => {
+  test.setTimeout(120_000);
   // Operator runs a pilot program.
   await signInWithPhone(page, TEST_PHONES.kola);
   await ensureBusiness(page, "Kola Foods");

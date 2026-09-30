@@ -10,7 +10,11 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:3000",
     trace: "retain-on-failure",
+    // Phone-sized layout without Chromium's mobile emulation, whose visual-viewport offset after
+    // focusing a field makes coordinate clicks miss buttons on long forms.
     ...devices["Pixel 7"],
+    isMobile: false,
+    hasTouch: false,
     launchOptions: process.env.PW_CHROMIUM_PATH ? { executablePath: process.env.PW_CHROMIUM_PATH } : {},
   },
   webServer: { command: "npm run dev", url: "http://localhost:3000", reuseExistingServer: true, timeout: 120_000 },

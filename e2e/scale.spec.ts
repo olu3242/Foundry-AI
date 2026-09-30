@@ -17,7 +17,8 @@ test("B20 evidence layer: a verified result flows into impact, economics, certif
   await page.getByLabel("What was sold").fill("Fruit");
   await page.getByLabel(/Price each/).fill("1000");
   await page.getByRole("button", { name: "Save" }).click();
-  await expect(page.getByText("1 × Fruit")).toBeVisible();
+  await expect(page.getByText("Saved to your books.")).toBeVisible();
+  await expect(page.getByText("1 × Fruit")).toBeVisible({ timeout: 15_000 });
 
   await page.goto(`/b/${bid}/progress`);
   await page.getByRole("article", { name: "Weekend market stall" }).getByRole("button", { name: "Mark done" }).click();

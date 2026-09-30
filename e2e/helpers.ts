@@ -33,9 +33,9 @@ export async function ensureBusiness(page: Page, name: string) {
 }
 
 /** A brand-new business, so tests that change state are repeatable. */
-export async function createFreshBusiness(page: Page, prefix: string) {
+export async function createFreshBusiness(page: Page, prefix: string, name = `${prefix} ${Date.now()}`) {
   await page.goto("/onboarding");
-  await page.getByLabel("Business name").fill(`${prefix} ${Date.now()}`);
+  await page.getByLabel("Business name").fill(name);
   await page.getByLabel("Country").selectOption("GH");
   await page.getByRole("button", { name: "Create my business" }).click();
   await page.waitForURL(/\/b\/[0-9a-f-]{36}$/);

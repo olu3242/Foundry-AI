@@ -1,7 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { createFreshBusiness, ensureBusiness, makePlatformAdmin, signInWithPhone, TEST_PHONES } from "./helpers";
+import { createFreshBusiness, ensureBusiness, makePlatformAdmin, service, signInWithPhone, TEST_PHONES } from "./helpers";
 
 test("B13 proven plans carry a measurable funnel; admins deprecate versions", async ({ page, browser }) => {
+  // Fixture reset: this spec deprecates v1, so restore it to keep the spec re-runnable.
+  const [sol] = await service("solutions?key=eq.grow_sales_push&select=id");
+  await service(`solution_versions?solution_id=eq.${sol.id}&version=eq.1`, { method: "PATCH", body: JSON.stringify({ status: "active" }) });
   await signInWithPhone(page, TEST_PHONES.ama);
   await ensureBusiness(page, "Ama Provisions");
   const bid = await createFreshBusiness(page, "Solutions");

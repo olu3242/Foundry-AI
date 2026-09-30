@@ -17,9 +17,11 @@ test("B15 invite → join link → consent → sponsor report without identities
   const owner = await browser.newPage();
   await signInWithPhone(owner, TEST_PHONES.ama);
   await ensureBusiness(owner, "Ama Provisions");
-  const bid = await createFreshBusiness(owner, "Invited");
+  const bizName = `Invited ${Date.now()}`;
+  const bid = await createFreshBusiness(owner, "Invited", bizName);
   await owner.goto(new URL(link).pathname);
-  const card = owner.locator("div.glass", { has: owner.getByRole("heading", { name: /^Invited / }) });
+  // Innermost card for this run's business (earlier runs leave other "Invited …" businesses).
+  const card = owner.locator("div.glass", { has: owner.getByRole("heading", { name: bizName, exact: true }) }).last();
   await card.getByRole("checkbox").check();
   await card.getByRole("button", { name: "Join program" }).click();
   await expect(owner.getByText("You've joined.", { exact: false })).toBeVisible();

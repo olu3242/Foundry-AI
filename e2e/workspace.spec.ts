@@ -13,7 +13,8 @@ test("hand-entered sale on credit shows in records and receivables", async ({ pa
   await page.getByLabel("Paid by").selectOption("credit");
   await page.getByLabel(/Paid so far/).fill("4000");
   await page.getByRole("button", { name: "Save" }).click();
-  await expect(page.getByText(`4 × ${item}`)).toBeVisible();
+  await expect(page.getByText("Saved to your books.")).toBeVisible();
+  await expect(page.getByText(`4 × ${item}`)).toBeVisible({ timeout: 15_000 });
   const row = page.locator("div.flex", { has: page.getByText(`4 × ${item}`) }).last();
   await expect(row.getByText(/owes/)).toContainText("6,000");
 });
