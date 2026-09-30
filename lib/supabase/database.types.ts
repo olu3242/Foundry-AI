@@ -722,6 +722,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"forecasts": {
+                  Row: {
+                    "as_of": string,"assumptions": NonNullable<Json>,"basis": string,"business_id": string,"confidence": string,"horizon_days": number,"id": string,"input_digest": string,"inputs": NonNullable<Json>,"kind": string,"method": string,"method_version": string,"request": string | null,"result": Json | null,"subject_id": string | null
+                  }
+                  Insert: {
+                    "as_of"?: string,"assumptions": NonNullable<Json>,"basis": string,"business_id": string,"confidence": string,"horizon_days": number,"id"?: string,"input_digest": string,"inputs": NonNullable<Json>,"kind": string,"method": string,"method_version"?: string,"request"?: string | null,"result"?: Json | null,"subject_id"?: string | null
+                  }
+                  Update: {
+                    "as_of"?: string,"assumptions"?: NonNullable<Json>,"basis"?: string,"business_id"?: string,"confidence"?: string,"horizon_days"?: number,"id"?: string,"input_digest"?: string,"inputs"?: NonNullable<Json>,"kind"?: string,"method"?: string,"method_version"?: string,"request"?: string | null,"result"?: Json | null,"subject_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "forecasts_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"fx_rates": {
                   Row: {
                     "as_of": string,"currency": string,"minor_units": number,"source": string,"usd_per_unit": number
@@ -1922,8 +1941,14 @@ isOneToOne: false
 "complete_job":
 { Args: { "p_job_id": string,"p_result"?: Json }; Returns: undefined
                            },
+"compute_all_forecasts":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "compute_benchmarks":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"compute_forecasts":
+{ Args: { "p_business_id": string }; Returns: number
                            },
 "confirm_draft":
 { Args: { "p_draft_id": string,"p_fields"?: Json }; Returns: string
@@ -1987,6 +2012,30 @@ isOneToOne: false
 "join_program":
 { Args: { "p_business_id": string,"p_consent": boolean,"p_join_code": string }; Returns: string
                            },
+"latest_forecasts":
+{ Args: { "p_business_id": string }; Returns: {
+              "as_of": string,
+"assumptions": NonNullable<Json>,
+"basis": string,
+"business_id": string,
+"confidence": string,
+"horizon_days": number,
+"id": string,
+"input_digest": string,
+"inputs": NonNullable<Json>,
+"kind": string,
+"method": string,
+"method_version": string,
+"request": string | null,
+"result": Json | null,
+"subject_id": string | null
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "forecasts"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
 "learning_overview":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -2065,6 +2114,9 @@ isOneToOne: false
                            },
 "reject_draft":
 { Args: { "p_draft_id": string }; Returns: undefined
+                           },
+"reproduce_forecast":
+{ Args: { "p_forecast_id": string }; Returns: Json
                            },
 "request_verification":
 { Args: { "p_business_id": string,"p_claim_type": string,"p_consent": boolean,"p_params": Json,"p_verifier_id": string }; Returns: string

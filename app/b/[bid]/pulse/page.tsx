@@ -40,6 +40,7 @@ export default async function PulsePage({ params }: { params: Promise<{ bid: str
         description="Nine signals from your own records. Each one says what it's based on and what to do next. This is not a credit score."
         actions={refresh}
       />
+      <a href={`/b/${bid}/outlook`} className="mb-4 inline-block text-sm font-medium text-primary hover:underline">Outlook: what&apos;s likely next →</a>
       {!ordered.length ? (
         <p className="glass p-6 text-sm text-muted-foreground">Pulse appears after your first records. Record a few sales and expenses, then press Refresh.</p>
       ) : (
