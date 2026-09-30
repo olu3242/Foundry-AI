@@ -26,6 +26,8 @@ jobs:
 
   database:
     runs-on: ubuntu-latest
+    env:
+      SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN: local-dev
     steps:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
