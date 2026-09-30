@@ -1,0 +1,95 @@
+@import "@fontsource-variable/inter";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Foundry tokens (HSL channels). Raw brand hexes in comments; see README "Design tokens". */
+@layer base {
+  :root {
+    --font-sans: "Inter Variable";
+    --radius: 1rem;
+
+    --brand: 153 100% 21%;        /* #006B3A Foundry Green */
+    --forest: 153 82% 13%;        /* #063D24 */
+    --growth: 142 71% 45%;        /* #22C55E */
+    --gold: 38 92% 50%;           /* #F59E0B */
+    --gold-ink: 26 90% 37%;       /* text-safe gold on light */
+    --orange: 25 95% 53%;         /* #F97316 */
+    --orange-ink: 17 88% 40%;     /* text-safe orange on light */
+    --navy: 223 66% 17%;          /* #0F204A */
+    --insight: 254 90% 66%;       /* #805CF6, AI moments only */
+
+    --background: 60 23% 97%;     /* #FAFAF7 canvas */
+    --foreground: 215 28% 17%;    /* #1F2937 charcoal */
+    --surface: 0 0% 100%;
+    --muted: 60 9% 93%;
+    --muted-foreground: 221 13% 46%; /* #667085 */
+    --border: 220 13% 88%;
+    --input: 220 13% 85%;
+    --ring: 153 100% 21%;
+    --primary: 153 100% 21%;
+    --primary-foreground: 0 0% 100%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --shadow: 215 28% 17%;
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --background: 158 45% 5%;
+      --foreground: 60 20% 96%;
+      --surface: 158 30% 9%;
+      --muted: 158 20% 13%;
+      --muted-foreground: 150 8% 68%;
+      --border: 158 16% 18%;
+      --input: 158 16% 22%;
+      --ring: 142 71% 45%;
+      --primary: 142 71% 45%;
+      --primary-foreground: 158 60% 6%;
+      --gold-ink: 38 92% 60%;
+      --orange-ink: 25 95% 62%;
+      --shadow: 0 0% 0%;
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --background: 158 45% 5%;
+    --foreground: 60 20% 96%;
+    --surface: 158 30% 9%;
+    --muted: 158 20% 13%;
+    --muted-foreground: 150 8% 68%;
+    --border: 158 16% 18%;
+    --input: 158 16% 22%;
+    --ring: 142 71% 45%;
+    --primary: 142 71% 45%;
+    --primary-foreground: 158 60% 6%;
+    --gold-ink: 38 92% 60%;
+    --orange-ink: 25 95% 62%;
+    --shadow: 0 0% 0%;
+    color-scheme: dark;
+  }
+
+  * { @apply border-border; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  :focus-visible { @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background; }
+}
+
+@layer components {
+  .glass {
+    @apply rounded-lg border bg-surface/70 shadow-glass backdrop-blur-xl;
+  }
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
