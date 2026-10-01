@@ -1324,6 +1324,81 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
+                },"playbook_run_steps": {
+                  Row: {
+                    "ended_at": string | null,"gate": string,"intervention_id": string | null,"run_id": string,"solution_key": string,"started_at": string | null,"status": string,"step_no": number
+                  }
+                  Insert: {
+                    "ended_at"?: string | null,"gate": string,"intervention_id"?: string | null,"run_id": string,"solution_key": string,"started_at"?: string | null,"status"?: string,"step_no": number
+                  }
+                  Update: {
+                    "ended_at"?: string | null,"gate"?: string,"intervention_id"?: string | null,"run_id"?: string,"solution_key"?: string,"started_at"?: string | null,"status"?: string,"step_no"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "playbook_run_steps_intervention_id_fkey"
+      columns: ["intervention_id"]
+isOneToOne: false
+      referencedRelation: "interventions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "playbook_run_steps_run_id_fkey"
+      columns: ["run_id"]
+isOneToOne: false
+      referencedRelation: "playbook_runs"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"playbook_runs": {
+                  Row: {
+                    "baseline": number | null,"business_id": string,"current_step": number,"decision_id": string | null,"ended_at": string | null,"id": string,"launched_by": string,"playbook_key": string,"result": Json | null,"started_at": string,"status": string,"stop_reason": string | null,"trigger": NonNullable<Json>,"version": number
+                  }
+                  Insert: {
+                    "baseline"?: number | null,"business_id": string,"current_step"?: number,"decision_id"?: string | null,"ended_at"?: string | null,"id"?: string,"launched_by"?: string,"playbook_key": string,"result"?: Json | null,"started_at"?: string,"status"?: string,"stop_reason"?: string | null,"trigger"?: NonNullable<Json>,"version": number
+                  }
+                  Update: {
+                    "baseline"?: number | null,"business_id"?: string,"current_step"?: number,"decision_id"?: string | null,"ended_at"?: string | null,"id"?: string,"launched_by"?: string,"playbook_key"?: string,"result"?: Json | null,"started_at"?: string,"status"?: string,"stop_reason"?: string | null,"trigger"?: NonNullable<Json>,"version"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "playbook_runs_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "playbook_runs_decision_id_fkey"
+      columns: ["decision_id"]
+isOneToOne: false
+      referencedRelation: "decisions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "playbook_runs_launched_by_fkey"
+      columns: ["launched_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "playbook_runs_playbook_key_fkey"
+      columns: ["playbook_key"]
+isOneToOne: false
+      referencedRelation: "playbooks"
+      referencedColumns: ["key"]
+    }
+                  ]
+                },"playbooks": {
+                  Row: {
+                    "key": string,"metric": string,"name": string,"problem": string,"status": string,"steps": NonNullable<Json>,"version": number
+                  }
+                  Insert: {
+                    "key": string,"metric": string,"name": string,"problem": string,"status"?: string,"steps": NonNullable<Json>,"version"?: number
+                  }
+                  Update: {
+                    "key"?: string,"metric"?: string,"name"?: string,"problem"?: string,"status"?: string,"steps"?: NonNullable<Json>,"version"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"policies": {
                   Row: {
                     "activated_at": string | null,"created_at": string,"created_by": string | null,"definition": NonNullable<Json>,"id": string,"key": string,"note": string | null,"scope_id": string,"scope_type": string,"status": string,"version": number
@@ -2470,6 +2545,9 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"launch_playbook":
+{ Args: { "p_business_id": string,"p_decision_id"?: string,"p_playbook_key": string }; Returns: string
+                           },
 "learning_overview":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -2524,6 +2602,9 @@ isOneToOne: false
                            },
 "passport_facts":
 { Args: { "p_business_id": string }; Returns: Json
+                           },
+"playbook_effectiveness":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "post_engagement_update":
 { Args: { "p_engagement_id": string,"p_note": string }; Returns: undefined
@@ -2698,6 +2779,9 @@ isOneToOne: false
                            },
 "submit_solution":
 { Args: { "p_commercial_terms"?: string,"p_currency": string,"p_delivery": string,"p_key": string,"p_name": string,"p_playbook": Json,"p_price_minor": number,"p_pricing_model": string,"p_provider_id": string,"p_summary": string,"p_target_dimension": string,"p_target_metric": string,"p_window_days": number }; Returns: string
+                           },
+"suggest_playbooks":
+{ Args: { "p_business_id": string }; Returns: Json
                            },
 "take_eval_snapshot":
 { Args: Record<PropertyKey, never>; Returns: number

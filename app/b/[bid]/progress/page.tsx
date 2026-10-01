@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
 import { StartPlanForm } from "@/components/progress/start-plan-form";
 import { formatMetric, metricLabel } from "@/lib/interventions/catalog";
+import { LaunchPlaybook } from "@/components/progress/playbooks";
 import { formatDate } from "@/lib/utils";
 import { abandonPlan, completePlan, verifyResult } from "./actions";
 import { SolutionList } from "@/components/progress/solution-list";
@@ -40,6 +41,14 @@ export default async function ProgressPage({ params }: { params: Promise<{ bid: 
   const done = (key: string) => (key === "active_week" ? Number(a.active_days_30 ?? 0) >= 7 : Boolean(a[key]));
   const cur = business.currency;
 
+  // B34: playbooks for detected problems, and runs in progress.
+  const [{ data: suggestions }, { data: runs }] = await Promise.all([
+    supabase.rpc("suggest_playbooks", { p_business_id: bid }),
+    supabase.from("playbook_runs").select("id, playbook_key, status, current_step, result, stop_reason, playbooks(name), playbook_run_steps(step_no, solution_key, status)")
+      .eq("business_id", bid).order("started_at", { ascending: false }).limit(5),
+  ]);
+  const suggested = (suggestions ?? []) as unknown as { key: string; name: string; why: string; steps: string[]; recurring: boolean }[];
+
   return (
     <>
       <PageHeader eyebrow="Progress" title="From records to results"
@@ -56,6 +65,32 @@ export default async function ProgressPage({ params }: { params: Promise<{ bid: 
             <CardHeader><CardTitle>Plans that have worked for others</CardTitle><CardDescription>Counts come from businesses that ran each plan. An improvement after a plan isn&apos;t proof the plan caused it.</CardDescription></CardHeader>
             <SolutionList businessId={bid} rows={solutions} canStart />
           </Card>
+          {(suggested.length > 0 || !!runs?.length) && (
+            <Card aria-label="Playbooks">
+              <CardHeader><CardTitle>Playbooks</CardTitle><CardDescription>Several proven plans, one after another, for a problem that keeps coming back.</CardDescription></CardHeader>
+              <ul className="space-y-3 text-sm">
+                {suggested.map((p) => (
+                  <li key={p.key} className="flex flex-wrap items-center gap-3" aria-label={`Playbook ${p.name}`}>
+                    <span className="flex-1"><span className="font-medium">{p.name}</span>{p.recurring && <Badge tone="attention" className="ml-2">keeps coming back</Badge>}
+                      <span className="block text-xs text-muted-foreground">{p.why} · {p.steps.join(" → ")}</span></span>
+                    <LaunchPlaybook businessId={bid} playbook={p.key} />
+                  </li>
+                ))}
+                {runs?.map((r) => {
+                  const result = r.result as { improved?: boolean | null } | null;
+                  return (
+                    <li key={r.id} aria-label={`Playbook run ${r.playbooks?.name}`}>
+                      <span className="font-medium">{r.playbooks?.name}</span> <Badge tone={r.status === "running" ? "opportunity" : "neutral"}>{r.status}</Badge>
+                      {result && result.improved != null && <Badge tone={result.improved ? "brand" : "attention"} className="ml-1">{result.improved ? "improved" : "no improvement"}</Badge>}
+                      <ol className="mt-1 flex flex-wrap gap-2 text-xs">{[...r.playbook_run_steps].sort((a, b) => a.step_no - b.step_no).map((st) => (
+                        <li key={st.step_no} data-testid={`step-${st.step_no}`}>{st.step_no}. {st.solution_key.replaceAll("_", " ")}: {st.status}</li>))}</ol>
+                      {r.stop_reason && <p className="text-xs text-muted-foreground">{r.stop_reason}</p>}
+                    </li>
+                  );
+                })}
+              </ul>
+            </Card>
+          )}
           {plans?.map((p) => {
             const o = Array.isArray(p.outcomes) ? p.outcomes[0] : p.outcomes;
             const metric = { label: metricLabel(p.target_metric) };

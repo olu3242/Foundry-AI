@@ -90,3 +90,14 @@ export async function businessUpdate(formData: FormData) {
   await supabase.rpc("post_engagement_update", { p_engagement_id: engagementId, p_note: note });
   revalidatePath(`/b/${businessId}/progress`);
 }
+
+// B34: launch a multi-step playbook (each step is a normal, governed plan).
+export async function launchPlaybook(_: ActionState, formData: FormData): Promise<ActionState> {
+  const parsed = z.object({ businessId: z.uuid(), playbook: z.string().regex(/^[a-z_]{3,60}$/) }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return fail("Choose a playbook.");
+  const { supabase } = await requireBusiness(parsed.data.businessId, ["owner", "staff"]);
+  const { error } = await supabase.rpc("launch_playbook", { p_business_id: parsed.data.businessId, p_playbook_key: parsed.data.playbook });
+  if (error) return fail(friendlyDbError(error));
+  revalidatePath(`/b/${parsed.data.businessId}`, "layout");
+  return { ok: true, message: "Started. Step 1 is now one of your plans." };
+}
