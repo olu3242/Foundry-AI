@@ -58,6 +58,11 @@ export const handlers: Record<string, JobHandler> = {
     if (error) throw error;
     return { reminders: data };
   },
+  "datasets.build": async ({ admin }) => {
+    const { data, error } = await admin.rpc("build_all_datasets");
+    if (error) throw error;
+    return { datasets: data };
+  },
   "quality.scan": async ({ admin }) => {
     const { data, error } = await admin.rpc("scan_data_quality", {});
     if (error) throw error;

@@ -235,3 +235,12 @@ export async function addChannelCost(_: unknown, formData: FormData) {
   revalidatePath("/admin/channels");
   return { ok: true as const, message: "Recorded." };
 }
+
+// ─── B37 data layer ───────────────────────────────────────────────────────────
+export async function buildDataset(formData: FormData) {
+  const { key } = z.object({ key: z.string().regex(/^[a-z_]+$/) }).parse(Object.fromEntries(formData));
+  await requireUser("/admin");
+  const supabase = await createClient();
+  await supabase.rpc("build_dataset", { p_key: key });
+  revalidatePath("/admin/data");
+}

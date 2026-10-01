@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/page-header";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AddMemberForm, BusinessForm, IdentifierForm, JoinProgramForm } from "./forms";
-import { leaveProgram } from "./actions";
+import { leaveProgram, setDataSharing } from "./actions";
 import { togglePack } from "../pack/actions";
 import { AutonomySettings } from "@/components/agent/autonomy-settings";
 
@@ -69,6 +69,20 @@ export default async function SettingsPage({ params }: { params: Promise<{ bid: 
             <CardTitle><a href={`/b/${bid}/plan`} className="hover:underline">Plan &amp; usage →</a></CardTitle>
             <CardDescription>What your plan includes, what you&apos;ve used this month, and who pays.</CardDescription>
           </CardHeader>
+        </Card>
+        <Card aria-label="Network data sharing">
+          <CardHeader>
+            <CardTitle>Network learning</CardTitle>
+            <CardDescription>Foundry learns which plans work and builds comparisons from many businesses together, never showing yours on its own.
+              Groups smaller than five are never shown. You can opt out at any time.</CardDescription>
+          </CardHeader>
+          <div className="flex items-center gap-3 text-sm">
+            <Badge tone={business.data_sharing === "network" ? "brand" : "neutral"} data-testid="data-sharing">{business.data_sharing === "network" ? "Included" : "Opted out"}</Badge>
+            {isOwner && (
+              <form action={setDataSharing}><input type="hidden" name="businessId" value={bid} /><input type="hidden" name="network" value={business.data_sharing === "network" ? "false" : "true"} />
+                <button className="rounded-md border px-2 py-1 text-xs">{business.data_sharing === "network" ? "Opt out" : "Opt back in"}</button></form>
+            )}
+          </div>
         </Card>
         <Card aria-label="Business packs">
           <CardHeader>

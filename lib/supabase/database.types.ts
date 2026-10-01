@@ -419,13 +419,13 @@ isOneToOne: false
                   ]
                 },"businesses": {
                   Row: {
-                    "address": NonNullable<Json>,"archived_at": string | null,"country_code": string,"created_at": string,"created_by": string,"currency": string,"id": string,"locale": string | null,"name": string,"sector": string | null,"timezone": string,"updated_at": string
+                    "address": NonNullable<Json>,"archived_at": string | null,"country_code": string,"created_at": string,"created_by": string,"currency": string,"data_sharing": string,"id": string,"locale": string | null,"name": string,"sector": string | null,"timezone": string,"updated_at": string
                   }
                   Insert: {
-                    "address"?: NonNullable<Json>,"archived_at"?: string | null,"country_code"?: string,"created_at"?: string,"created_by": string,"currency"?: string,"id"?: string,"locale"?: string | null,"name": string,"sector"?: string | null,"timezone"?: string,"updated_at"?: string
+                    "address"?: NonNullable<Json>,"archived_at"?: string | null,"country_code"?: string,"created_at"?: string,"created_by": string,"currency"?: string,"data_sharing"?: string,"id"?: string,"locale"?: string | null,"name": string,"sector"?: string | null,"timezone"?: string,"updated_at"?: string
                   }
                   Update: {
-                    "address"?: NonNullable<Json>,"archived_at"?: string | null,"country_code"?: string,"created_at"?: string,"created_by"?: string,"currency"?: string,"id"?: string,"locale"?: string | null,"name"?: string,"sector"?: string | null,"timezone"?: string,"updated_at"?: string
+                    "address"?: NonNullable<Json>,"archived_at"?: string | null,"country_code"?: string,"created_at"?: string,"created_by"?: string,"currency"?: string,"data_sharing"?: string,"id"?: string,"locale"?: string | null,"name"?: string,"sector"?: string | null,"timezone"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -554,6 +554,51 @@ isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
     }
+                  ]
+                },"dataset_access_log": {
+                  Row: {
+                    "actor": string | null,"allowed": boolean,"at": string,"dataset_key": string,"id": number,"purpose": string
+                  }
+                  Insert: {
+                    "actor"?: string | null,"allowed": boolean,"at"?: string,"dataset_key": string,"id"?: never,"purpose": string
+                  }
+                  Update: {
+                    "actor"?: string | null,"allowed"?: boolean,"at"?: string,"dataset_key"?: string,"id"?: never,"purpose"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"dataset_builds": {
+                  Row: {
+                    "built_at": string,"businesses_used": number,"data": NonNullable<Json>,"dataset_key": string,"digest": string,"excluded_opt_out": number,"id": string,"rows": number,"suppressed": number,"version": number
+                  }
+                  Insert: {
+                    "built_at"?: string,"businesses_used": number,"data": NonNullable<Json>,"dataset_key": string,"digest": string,"excluded_opt_out": number,"id"?: string,"rows": number,"suppressed": number,"version": number
+                  }
+                  Update: {
+                    "built_at"?: string,"businesses_used"?: number,"data"?: NonNullable<Json>,"dataset_key"?: string,"digest"?: string,"excluded_opt_out"?: number,"id"?: string,"rows"?: number,"suppressed"?: number,"version"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "dataset_builds_dataset_key_fkey"
+      columns: ["dataset_key"]
+isOneToOne: false
+      referencedRelation: "datasets"
+      referencedColumns: ["key"]
+    }
+                  ]
+                },"datasets": {
+                  Row: {
+                    "allowed_uses": (string)[],"consent_rule": string,"features": NonNullable<Json>,"key": string,"min_group_size": number,"purpose": string,"sources": NonNullable<Json>,"transformation": string,"version": number
+                  }
+                  Insert: {
+                    "allowed_uses": (string)[],"consent_rule"?: string,"features": NonNullable<Json>,"key": string,"min_group_size"?: number,"purpose": string,"sources": NonNullable<Json>,"transformation": string,"version"?: number
+                  }
+                  Update: {
+                    "allowed_uses"?: (string)[],"consent_rule"?: string,"features"?: NonNullable<Json>,"key"?: string,"min_group_size"?: number,"purpose"?: string,"sources"?: NonNullable<Json>,"transformation"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    
                   ]
                 },"decisions": {
                   Row: {
@@ -883,6 +928,19 @@ isOneToOne: false
       referencedRelation: "solutions"
       referencedColumns: ["id"]
     }
+                  ]
+                },"feature_uses": {
+                  Row: {
+                    "consumer": string,"feature_key": string,"use": string
+                  }
+                  Insert: {
+                    "consumer": string,"feature_key": string,"use": string
+                  }
+                  Update: {
+                    "consumer"?: string,"feature_key"?: string,"use"?: string
+                  }
+                  Relationships: [
+                    
                   ]
                 },"financial_products": {
                   Row: {
@@ -2375,6 +2433,12 @@ isOneToOne: false
 "batch_nudge":
 { Args: { "p_business_ids": (string)[],"p_message": string }; Returns: number
                            },
+"build_all_datasets":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"build_dataset":
+{ Args: { "p_key": string }; Returns: string
+                           },
 "bulk_invite":
 { Args: { "p_contacts": (string)[],"p_program_id": string }; Returns: number
                            },
@@ -2540,6 +2604,9 @@ isOneToOne: false
 "fail_job":
 { Args: { "p_error": string,"p_job_id": string,"p_retryable"?: boolean }; Returns: Database["public"]['Enums']["job_status"]
                            },
+"feature_lineage":
+{ Args: { "p_feature_key": string }; Returns: Json
+                           },
 "give_pulse_feedback":
 { Args: { "p_business_id": string,"p_computed_on": string,"p_dimension": string,"p_note"?: string,"p_verdict": string }; Returns: undefined
                            },
@@ -2679,6 +2746,9 @@ isOneToOne: false
 "rate_billing":
 { Args: { "p_period"?: string }; Returns: number
                            },
+"read_dataset":
+{ Args: { "p_key": string,"p_purpose": string }; Returns: Json
+                           },
 "reap_stale_jobs":
 { Args: { "p_timeout"?: string }; Returns: number
                            },
@@ -2773,6 +2843,9 @@ isOneToOne: false
                            },
 "set_business_identifier":
 { Args: { "p_business_id": string,"p_type": string,"p_value": string }; Returns: undefined
+                           },
+"set_data_sharing":
+{ Args: { "p_business_id": string,"p_network": boolean }; Returns: undefined
                            },
 "set_experiment_status":
 { Args: { "p_id": string,"p_reason"?: string,"p_status": string }; Returns: undefined

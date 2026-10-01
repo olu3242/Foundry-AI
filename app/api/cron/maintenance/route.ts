@@ -26,6 +26,7 @@ export async function GET(request: Request) {
     await enqueue("experiments.evaluate", { dedupeKey: `experiments:${day}`, runAt: new Date(Date.now() + 40 * 60_000) });
     await enqueue("incidents.detect", { dedupeKey: `incidents:${day}`, runAt: new Date(Date.now() + 45 * 60_000) });
     await enqueue("packs.workflows", { dedupeKey: `packs:${day}`, runAt: new Date(Date.now() + 12 * 60_000) });
+    await enqueue("datasets.build", { dedupeKey: `datasets:${day}`, runAt: new Date(Date.now() + 50 * 60_000) });
     await enqueue("quality.scan", { dedupeKey: `quality:${day}`, runAt: new Date(Date.now() + 5 * 60_000) });
     await enqueue("retention.scan", { dedupeKey: `retention:${day}`, runAt: new Date(Date.now() + 25 * 60_000) });
     await enqueue("benchmarks.compute", { dedupeKey: `benchmarks:${day}`, runAt: new Date(Date.now() + 15 * 60_000) });

@@ -81,3 +81,11 @@ export async function setIdentifier(_: ActionState, formData: FormData): Promise
   revalidatePath(`/b/${p.data.businessId}/settings`);
   return { ok: true, message: "Saved." };
 }
+
+// B37: consent to anonymous network use (benchmarks, rankings, research datasets).
+export async function setDataSharing(formData: FormData) {
+  const { businessId, network } = z.object({ businessId: z.uuid(), network: z.enum(["true", "false"]) }).parse(Object.fromEntries(formData));
+  const { supabase } = await requireBusiness(businessId, ["owner"]);
+  await supabase.rpc("set_data_sharing", { p_business_id: businessId, p_network: network === "true" });
+  revalidatePath(`/b/${businessId}/settings`);
+}
