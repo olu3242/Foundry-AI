@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | Supabase project | `Foundry` · ref `qkuradblfrqebtfetyct` · eu-west-2 (London) · Postgres 17 | Created 2026-10-01 on the **Free** plan |
 | API URL | `https://qkuradblfrqebtfetyct.supabase.co` | Live |
-| Vercel project | `foundry-ai` (Eduradius LLC) | **Blocked**: the connector has no permission to create projects. Create it in the dashboard (import `olu3242/Foundry-AI`, Next.js, function region `lhr1`) |
+| Vercel project | `foundry` · `prj_GuTGP9RLUkaXcBwWvCjDRlTtB8eI` (Eduradius LLC) · https://foundry-iota-eight.vercel.app | Created by the owner. The only deployment (READY) builds `main` @ `9c8eddc` ("first commit": `README.md` only), **not the Foundry app**. Foundry is on PR #1 and is live only after a merge to `main` |
 
 ## Database: built only from the repo migration chain
 
@@ -48,11 +48,35 @@ Then `platform_settings.environment = "production"` was set (2026-10-01 05:15 UT
 
 > **Hosted smoke accounts.** From now on every business created on hosted is classed `real`. A smoke or golden-path test business must be demoted right after creation (`set_business_data_class(id, 'test', 'B51 smoke')`) so it can never become evidence. Evidence also needs consent, and is only harvested daily.
 
+## Vercel configuration (2026-10-01)
+
+- **Production environment variables, all non-secret** and scoped to *production only*. Previews must never point at the production database, or test traffic would become real businesses:
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (the public, RLS-protected key)
+  - `NEXT_PUBLIC_SITE_URL=https://foundry-iota-eight.vercel.app`
+  - `APP_ENV=production`
+- **Fails closed until the secrets are added in the dashboard.** Because `APP_ENV=production`, the server refuses to boot until these are present:
+  - `SUPABASE_SERVICE_ROLE_KEY`
+  - `CRON_SECRET` (≥ 32 chars)
+  - `PASSPORT_TOKEN_PEPPER` (≥ 32 chars)
+  - `ANTHROPIC_API_KEY`
+  - the provider groups
+
+## Hosted migrations after B51
+
+- `20260930004600`–`20260930004900` (B52–B60) were applied from the pinned commit `d40f69e`, with the same checksum-verified method.
+- **Drift check:**
+  - Both sides: 49 migrations, 121 tables, 1,207 columns, 147 policies, 356 functions.
+  - Function, policy and column hashes are identical to a fresh local database: **no drift**.
+- `security_report()` is clean.
+- `market_proof_certification()` returns `INSUFFICIENT_EVIDENCE` (0 real businesses).
+
 ## Open B51 items
 
 | Item | Status | Owner |
 | --- | --- | --- |
-| Vercel project + deployment, domain/TLS, security headers live | Blocked (permission) | You |
+| Merge PR #1 to `main` so production builds Foundry (or set the production branch) | Pending | You |
+| Domain/TLS, security headers, `/api/health` on the Foundry build | After merge + secrets | Me |
 | Production secrets in Vercel (AI, messaging, payments, FX, internal, Supabase server key) | Pending | You, in the dashboard |
 | Auth: email/OAuth is enough to deploy; SMS provider required before certifying phone OTP | Pending | You |
 | Scheduled jobs (`/api/cron/jobs` every minute, `/api/cron/maintenance` daily) + webhooks registered at providers | After deploy | Me |
