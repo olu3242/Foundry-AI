@@ -5,7 +5,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
-import { harvestEvidence } from "../actions";
+import { certifyMarketProof, harvestEvidence } from "../actions";
 import { EvidenceForm } from "./evidence-form";
 
 export const metadata: Metadata = { title: "Real-world evidence" };
@@ -24,6 +24,13 @@ export default async function EvidencePage() {
     supabase.from("real_world_certifications").select("taken_at, overall, technical").order("taken_at", { ascending: false }).limit(5),
   ]);
   const c = data as unknown as C;
+  const [{ data: mp }, { data: mpHistory }] = await Promise.all([
+    supabase.rpc("market_proof_certification"),
+    supabase.from("market_proof_certifications").select("taken_at, verdict").order("taken_at", { ascending: false }).limit(5),
+  ]);
+  const m = mp as unknown as { verdict: string; technical: string; real_businesses: number; environment: string; open_p0_p1_gaps: number; note: string;
+    proofs: { proof: string; status: string; n: number | null; value: number | null }[] };
+  const mtone = (st: string) => tone(st.replaceAll("_", " "));
   return (
     <>
       <PageHeader eyebrow="Admin · B46–B50" title="Real-world evidence and certification" description={c.note} />
@@ -39,6 +46,18 @@ export default async function EvidencePage() {
               <td>{x.n ?? 0}</td><td>{x.value ?? "—"}</td><td className="text-xs text-muted-foreground">n ≥ {x.threshold.min_n}, value ≥ {x.threshold.proven}</td></tr>))}</tbody></table>
         <form action={harvestEvidence} className="mt-4"><Button size="sm" variant="outline">Harvest evidence and certify now</Button></form>
         {!!history?.length && <p className="mt-2 text-xs text-muted-foreground">History: {history.map((h) => `${formatDate(h.taken_at)} ${h.overall} (technical ${h.technical})`).join(" · ")}</p>}
+      </Card>
+      <Card className="mb-6" aria-label="Market proof">
+        <CardHeader>
+          <CardTitle className="flex flex-wrap items-center gap-2">B60 market proof: <Badge tone={mtone(m.verdict)} data-testid="market-verdict">{m.verdict}</Badge></CardTitle>
+          <CardDescription>{m.note} · real businesses {m.real_businesses} · open P0/P1 gaps {m.open_p0_p1_gaps}</CardDescription>
+        </CardHeader>
+        <table className="w-full text-sm"><thead><tr className="text-left text-xs text-muted-foreground"><th>Proof</th><th>Status</th><th>n</th><th>Value</th></tr></thead>
+          <tbody>{m.proofs.map((x) => (
+            <tr key={x.proof} aria-label={`Proof ${x.proof}`}><td>{x.proof}</td><td><Badge tone={mtone(x.status)} data-testid="proof-status">{x.status}</Badge></td>
+              <td>{x.n ?? 0}</td><td>{x.value ?? "—"}</td></tr>))}</tbody></table>
+        <form action={certifyMarketProof} className="mt-4"><Button size="sm" variant="outline">Certify market proof now</Button></form>
+        {!!mpHistory?.length && <p className="mt-2 text-xs text-muted-foreground">History: {mpHistory.map((h) => `${formatDate(h.taken_at)} ${h.verdict}`).join(" · ")}</p>}
       </Card>
       <Card className="mb-6" aria-label="Evidence register">
         <CardHeader><CardTitle>Evidence register</CardTitle><CardDescription>Only real, consenting businesses. Harvested daily from system records; documented external evidence can be added below.</CardDescription></CardHeader>

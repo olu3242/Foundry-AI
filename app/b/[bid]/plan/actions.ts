@@ -49,3 +49,17 @@ export async function payCharge(_: ActionState, formData: FormData): Promise<Act
   }
   redirect(checkout);
 }
+
+/** B58: the owner accepts or rejects an offer (rejections carry a reason). Acceptance is not revenue. */
+export async function respondToOffer(_: ActionState, formData: FormData): Promise<ActionState> {
+  const parsed = z.object({ businessId: z.uuid(), offerId: z.uuid(), accept: z.enum(["true", "false"]),
+    reason: z.enum(["too_expensive", "no_value_yet", "no_cash_now", "prefers_free", "trust", "sponsor_pays", "other", ""]).optional(), note: z.string().max(500).optional() })
+    .safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return fail("Choose an answer.");
+  const { businessId, offerId, accept, reason, note } = parsed.data;
+  const { supabase } = await requireBusiness(businessId, ["owner"]);
+  const { error } = await supabase.rpc("respond_to_offer", { p_offer_id: offerId, p_accept: accept === "true", p_reason: reason || undefined, p_note: note || undefined });
+  if (error) return fail(friendlyDbError(error));
+  revalidatePath(`/b/${businessId}/plan`);
+  return { ok: true, message: accept === "true" ? "Accepted. Your plan is updated; the charge appears below when billed." : "Thanks — noted." };
+}

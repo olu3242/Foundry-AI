@@ -13,6 +13,7 @@ import { formatDate } from "@/lib/utils";
 import { abandonPlan, completePlan, verifyResult } from "./actions";
 import { SolutionList } from "@/components/progress/solution-list";
 import { loadSolutions } from "@/lib/solutions";
+import { AttributionForm, OutcomeContractForm } from "@/components/progress/contract-forms";
 
 export const metadata: Metadata = { title: "Progress" };
 
@@ -112,7 +113,9 @@ export default async function ProgressPage({ params }: { params: Promise<{ bid: 
                     </div>
                   );
                 })()}
-                <p className="text-sm text-muted-foreground">{metric?.label}: {formatMetric(p.target_metric, Number(p.baseline_value), cur)} at the start</p>
+                <p className="text-sm text-muted-foreground">{metric?.label}: {formatMetric(p.target_metric, Number(p.baseline_value), cur)} at the start
+                  {p.target_value != null && <span data-testid="contract"> · target {formatMetric(p.target_metric, Number(p.target_value), cur)}{p.contract_approved_at ? " (agreed)" : ""}</span>}</p>
+                {p.status === "active" && p.target_value == null && role === "owner" && <OutcomeContractForm businessId={bid} id={p.id} />}
                 {o && (
                   <div className="rounded-xl border p-3 text-sm">
                     <p>
@@ -123,6 +126,9 @@ export default async function ProgressPage({ params }: { params: Promise<{ bid: 
                       {o.status === "verified" ? <><ShieldCheck className="size-3.5 text-growth" aria-hidden /> Verified by {o.verifier_role === "program_admin" ? "the program" : "your partner"}</>
                         : o.status === "disputed" ? "Questioned by your partner" : "Measured from your records, waiting for a partner to check"}
                     </p>
+                    {o.status === "verified" && o.attribution !== "not_assessed" && (
+                      <p className="mt-1 text-xs" data-testid="attribution">Attribution: {o.attribution === "likely" ? "the plan likely caused it" : o.attribution === "contributed" ? "the plan contributed" : "unlikely to be the plan"} · {o.attribution_note}</p>)}
+                    {isVerifier && o.status === "verified" && o.attribution === "not_assessed" && <AttributionForm businessId={bid} id={o.id} />}
                     {isVerifier && o.status === "observed" && (
                       <div className="mt-2 flex gap-2">
                         {(["verified", "disputed"] as const).map((v) => (

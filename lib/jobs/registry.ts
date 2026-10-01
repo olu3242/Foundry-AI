@@ -47,12 +47,25 @@ export const handlers: Record<string, JobHandler> = {
     if (error) throw error;
     const { data: certification, error: certError } = await admin.rpc("certify_real_world");
     if (certError) throw certError;
-    return { harvest: data, certification };
+    const { data: marketProof, error: mpError } = await admin.rpc("certify_market_proof");
+    if (mpError) throw mpError;
+    return { harvest: data, certification, marketProof };
   },
   "pilots.advance": async ({ admin }) => {
+    // B52: operators added after businesses joined pick up the unassigned ones first.
+    const { data: pilots } = await admin.from("pilots").select("id").eq("status", "active");
+    let assigned = 0;
+    for (const p of pilots ?? []) {
+      const { data: n, error: assignError } = await admin.rpc("assign_pilot_operators", { p_pilot_id: p.id });
+      if (assignError) throw assignError;
+      assigned += n ?? 0;
+    }
     const { data, error } = await admin.rpc("advance_pilots");
     if (error) throw error;
-    return data;
+    // B54: daily record-maturity snapshot (R0–R3 progression) for pilot businesses.
+    const { data: maturity, error: maturityError } = await admin.rpc("snapshot_record_maturity");
+    if (maturityError) throw maturityError;
+    return { assigned, advance: data, maturity };
   },
   "ops.routine": async ({ admin }) => {
     const { data, error } = await admin.rpc("run_routine_ops", {});

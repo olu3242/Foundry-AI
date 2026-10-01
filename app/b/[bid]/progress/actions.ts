@@ -101,3 +101,29 @@ export async function launchPlaybook(_: ActionState, formData: FormData): Promis
   revalidatePath(`/b/${parsed.data.businessId}`, "layout");
   return { ok: true, message: "Started. Step 1 is now one of your plans." };
 }
+
+// B56: the owner approves the plan's outcome contract (target, optional cost and effort).
+export async function setOutcomeContract(_: ActionState, formData: FormData): Promise<ActionState> {
+  const parsed = z.object({ businessId: z.uuid(), id: z.uuid(), target: z.coerce.number(), cost: z.union([z.literal(""), z.coerce.number().int().min(0)]),
+    effort: z.union([z.literal(""), z.coerce.number().int().min(0)]) }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return fail("Enter a target number.");
+  const { businessId, id, target, cost, effort } = parsed.data;
+  const { supabase } = await requireBusiness(businessId, ["owner"]);
+  const { error } = await supabase.rpc("set_outcome_contract", { p_intervention_id: id, p_target_value: target,
+    p_cost_minor: cost === "" ? undefined : cost, p_business_effort_minutes: effort === "" ? undefined : effort });
+  if (error) return fail(friendlyDbError(error));
+  revalidatePath(`/b/${businessId}/progress`);
+  return { ok: true, message: "Target agreed." };
+}
+
+// B57: the verifying side judges attribution separately from verification.
+export async function assessAttribution(_: ActionState, formData: FormData): Promise<ActionState> {
+  const parsed = z.object({ businessId: z.uuid(), id: z.uuid(), attribution: z.enum(["likely", "contributed", "unlikely"]), note: z.string().trim().min(10).max(500) })
+    .safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return fail("Choose a judgement and explain what else could explain the change (10+ characters).");
+  const { supabase } = await requireBusiness(parsed.data.businessId, ["partner", "program_admin"]);
+  const { error } = await supabase.rpc("assess_attribution", { p_outcome_id: parsed.data.id, p_attribution: parsed.data.attribution, p_note: parsed.data.note });
+  if (error) return fail(friendlyDbError(error));
+  revalidatePath(`/b/${parsed.data.businessId}/progress`);
+  return { ok: true, message: "Attribution recorded." };
+}

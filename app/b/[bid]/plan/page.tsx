@@ -5,6 +5,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { Badge } from "@/components/ui/badge";
 import { ChoosePlanForm } from "@/components/billing/choose-plan-form";
 import { PayChargeForm } from "@/components/billing/pay-charge-form";
+import { OfferResponse } from "@/components/billing/offer-response";
 import { paystackConfigured } from "@/lib/payments/paystack";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/utils";
@@ -47,6 +48,8 @@ export default async function PlanPage({ params, searchParams }: { params: Promi
   const { data: payments } = await supabase.from("payment_requests").select("billable_event_id, status, payment_channel, created_at").eq("business_id", bid)
     .order("created_at", { ascending: false }).limit(30);
   const lastPayment = (id: string) => payments?.find((p) => p.billable_event_id === id);
+  const { data: offers } = await supabase.from("commercial_offers").select("id, offer_kind, payer_kind, plan_key, amount_minor, currency, expires_at")
+    .eq("business_id", bid).eq("status", "open").gt("expires_at", new Date().toISOString());
   const s = data as unknown as Status;
 
   return (
@@ -55,6 +58,17 @@ export default async function PlanPage({ params, searchParams }: { params: Promi
         description="What your plan includes this month and how much you've used. Limits reset on the 1st." />
       {payment && PAYMENT_NOTICE[payment] && (
         <p role="status" className="mb-4 rounded-lg border bg-muted/40 px-4 py-3 text-sm" data-testid="payment-notice">{PAYMENT_NOTICE[payment]}</p>
+      )}
+      {!!offers?.length && role === "owner" && (
+        <Card className="mb-4" aria-label="Offers">
+          <CardHeader><CardTitle>Offers for you</CardTitle><CardDescription>Your answer helps us price Foundry fairly. Accepting changes your plan; you pay only when a charge appears.</CardDescription></CardHeader>
+          <ul className="space-y-3 text-sm">{offers.map((o) => (
+            <li key={o.id} aria-label={`Offer ${o.plan_key ?? o.offer_kind}`}>
+              <p className="mb-1">{o.offer_kind === "plan" ? `${o.plan_key} plan` : o.offer_kind} · {formatMoney(o.amount_minor, o.currency)} a month{o.payer_kind !== "business" ? ` · paid by ${o.payer_kind}` : ""}
+                <span className="text-xs text-muted-foreground"> · until {formatDate(o.expires_at)}</span></p>
+              <OfferResponse businessId={bid} offerId={o.id} />
+            </li>))}</ul>
+        </Card>
       )}
       <div className="grid gap-4 lg:grid-cols-2">
         <Card aria-label="Current plan">

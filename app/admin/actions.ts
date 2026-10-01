@@ -348,3 +348,10 @@ export async function registerEvidence(_: unknown, formData: FormData) {
   revalidatePath("/admin/evidence");
   return { ok: true as const, message: "Evidence recorded." };
 }
+
+export async function certifyMarketProof() {
+  await requireUser("/admin");
+  const supabase = await createClient();
+  await supabase.rpc("certify_market_proof");
+  revalidatePath("/admin/evidence");
+}

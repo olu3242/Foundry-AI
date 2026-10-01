@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
 import { InviteForm, OperatorForm } from "@/components/pilots/forms";
+import { GapForm, GapUpdateForm, OfferForm, OperatorPulseForm, TouchForm } from "@/components/pilots/field";
 import { advancePilots, setPilotStatus } from "../actions";
 
 export const metadata: Metadata = { title: "Pilot" };
@@ -24,6 +25,17 @@ type Report = {
   evidence: { real_businesses: number; test_businesses: number; verified_outcomes: number; requirements_met: boolean };
 };
 
+type M = { value: number | null; state: string };
+type Portfolio = { business_id: string; name: string; class: string; stage: string; at_risk: boolean; days_since_record: number | null; unconfirmed_drafts: number;
+  pulse_alerts: number; open_escalations: number; active_interventions: number; outcomes_to_verify: number; last_touch_at: string | null; attention: number }[];
+
+const TILES: [string, string][] = [["invited", "Invited"], ["activated", "Activated"], ["capture_success", "Capture success"], ["verification", "Verified records"],
+  ["useful_pulse", "Useful Pulse"], ["interventions", "Interventions"], ["completion", "Completion"], ["measured_outcomes", "Measured outcomes"],
+  ["verified_outcomes", "Verified outcomes"], ["passport_progress", "Passport progress"], ["operator_load", "Businesses / operator"],
+  ["operator_minutes_per_business", "Operator min / business"], ["retention", "Retention"], ["revenue_usd", "Revenue (USD)"], ["cost_usd", "Cost (USD)"],
+  ["contribution_usd", "Contribution (USD)"], ["time_to_value_days", "Days to value"], ["time_to_verified_outcome_days", "Days to verified outcome"]];
+const show = (m?: M) => (!m ? "—" : m.state === "value" || m.state === "0" ? String(m.value) : m.state);
+
 export default async function PilotPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   await requireUser(`/pilots/${id}`);
@@ -32,6 +44,17 @@ export default async function PilotPage({ params }: { params: Promise<{ id: stri
   if (error || !data) notFound();
   const r = data as unknown as Report;
   const p = r.pilot;
+  const user = await requireUser(`/pilots/${id}`);
+  const [{ data: dash }, { data: portfolio }, { data: gaps }, { data: mine }, { data: plans }] = await Promise.all([
+    supabase.rpc("pilot_dashboard", { p_pilot_id: id }),
+    supabase.rpc("operator_portfolio", { p_pilot_id: id }),
+    supabase.from("pilot_gaps").select("*").eq("pilot_id", id).order("created_at", { ascending: false }),
+    supabase.from("pilot_operators").select("role").eq("pilot_id", id).eq("user_id", user.id),
+    supabase.from("billing_plans").select("key, name").eq("payer_kind", "business").eq("status", "active").gt("price_minor", 0),
+  ]);
+  const d = (dash ?? {}) as Record<string, M> & { real_businesses: number; test_businesses_excluded: number; record_maturity: Record<string, number> & { state?: string } };
+  const isOperator = (mine ?? []).some((m) => m.role === "operator");
+  const rows = (portfolio ?? []) as unknown as Portfolio;
   return (
     <SimpleShell>
       <PageHeader eyebrow={`Pilot · ${p.program}`} title={p.name}
@@ -66,6 +89,45 @@ export default async function PilotPage({ params }: { params: Promise<{ id: stri
           {isAdmin && <OperatorForm id={id} />}
         </Card>
       </div>
+      <Card className="mt-6" aria-label="Pilot dashboard">
+        <CardHeader><CardTitle>Pilot dashboard</CardTitle>
+          <CardDescription>Real businesses {d.real_businesses ?? 0} · test data excluded {d.test_businesses_excluded ?? 0}. 0 = measured zero · N/A = does not apply · UNKNOWN = not captured · INSUFFICIENT_EVIDENCE = no real businesses.</CardDescription></CardHeader>
+        <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-3 lg:grid-cols-6">
+          {TILES.map(([k, label]) => (
+            <div key={k} className="rounded-xl border p-3" aria-label={`Tile ${k}`}><dt className="text-xs text-muted-foreground">{label}</dt>
+              <dd className="font-semibold" data-testid="tile-value">{show(d[k])}</dd></div>))}
+          <div className="rounded-xl border p-3" aria-label="Tile record_maturity"><dt className="text-xs text-muted-foreground">Record maturity</dt>
+            <dd className="font-semibold" data-testid="tile-value">{d.record_maturity?.state ?? (["R0", "R1", "R2", "R3"].map((l) => `${l} ${d.record_maturity?.[l] ?? 0}`).join(" · "))}</dd></div>
+        </dl>
+      </Card>
+      <Card className="mt-6" aria-label="Portfolio">
+        <CardHeader><CardTitle>{isOperator ? "My portfolio" : "Portfolio"}</CardTitle>
+          <CardDescription>Everything that needs a person, most urgent first. Routine reminders are sent automatically; log what you do so operator effort is measured.</CardDescription></CardHeader>
+        <ul className="divide-y text-sm">{rows.map((b) => (
+          <li key={b.business_id} className="space-y-2 py-3" aria-label={`Portfolio ${b.name}`}>
+            <p className="flex flex-wrap items-center gap-2"><a className="font-medium hover:underline" href={`/b/${b.business_id}`}>{b.name}</a>
+              {b.class === "test" && <span className="text-xs text-muted-foreground">test data</span>}
+              <Badge tone="trust">{b.stage}</Badge>{b.at_risk && <Badge tone="attention">at risk</Badge>}
+              <span className="text-xs text-muted-foreground" data-testid="attention">
+                {b.days_since_record == null ? "no records yet" : `last record ${b.days_since_record}d ago`} · drafts {b.unconfirmed_drafts} · Pulse alerts {b.pulse_alerts} · escalations {b.open_escalations}
+                · plans {b.active_interventions} · results to verify {b.outcomes_to_verify}</span></p>
+            {(isOperator || isAdmin) && <TouchForm id={id} businessId={b.business_id} />}
+            {isOperator && <OperatorPulseForm id={id} businessId={b.business_id} />}
+            {(isOperator || isAdmin) && <OfferForm id={id} businessId={b.business_id} plans={plans ?? []} />}
+          </li>))}
+          {!rows.length && <li className="py-2 text-muted-foreground">No businesses assigned yet.</li>}</ul>
+      </Card>
+      <Card className="mt-6" aria-label="Pilot gaps">
+        <CardHeader><CardTitle>Pilot gaps</CardTitle><CardDescription>Field problems become structured gaps. Only P0/P1 interrupt the pilot; P2/P3 may be backlogged.</CardDescription></CardHeader>
+        <ul className="mb-4 divide-y text-sm">{(gaps ?? []).map((g) => (
+          <li key={g.gap_id} className="py-2" aria-label={`Gap ${g.gap_id}`}>
+            <span className="font-mono text-xs">{g.gap_id}</span> · {g.batch} · <Badge tone={g.severity === "P0" || g.severity === "P1" ? "attention" : "neutral"}>{g.severity}</Badge> {g.problem}
+            <span className="block text-xs text-muted-foreground">Evidence: {g.evidence} · status <b data-testid="gap-status">{g.status}</b>{g.root_cause ? ` · cause: ${g.root_cause}` : ""}{g.resolution ? ` · ${g.resolution}` : ""}</span>
+            {!["resolved", "wont_fix"].includes(g.status) && <GapUpdateForm id={id} gapId={g.gap_id} />}
+          </li>))}
+          {!gaps?.length && <li className="py-2 text-muted-foreground">No gaps recorded.</li>}</ul>
+        <GapForm id={id} />
+      </Card>
       <Card className="mt-6" aria-label="Businesses">
         <CardHeader><CardTitle>Businesses</CardTitle><CardDescription>At-risk first. Ineligible: {Object.entries(r.ineligible).map(([k, v]) => `${k} ${v}`).join(" · ") || "none"} · Failure reasons: {Object.entries(r.failure_reasons).map(([k, v]) => `${k.replaceAll("_", " ")} ${v}`).join(" · ") || "none"}</CardDescription></CardHeader>
         <ul className="divide-y text-sm">{r.businesses.map((b) => (
