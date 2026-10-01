@@ -18,7 +18,7 @@ export default async function ProgramsPage() {
     <SimpleShell>
       <PageHeader eyebrow="Programs" title="Cohorts you run or support"
         description="For sponsors, banks and agencies. Businesses join with a code and choose to share their records; they can leave at any time." />
-      <a href="/orgs" className="mb-4 inline-block text-sm font-medium text-primary hover:underline">Run several programs as one organization →</a>
+      <Link href="/orgs" className="mb-4 inline-block text-sm font-medium text-primary hover:underline">Run several programs as one organization →</Link>
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="glass divide-y">
           {!mine?.length && <p className="p-6 text-sm text-muted-foreground">You&apos;re not part of a program yet.</p>}
