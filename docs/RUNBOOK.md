@@ -63,3 +63,9 @@ Every outbound call that a customer or configuration can influence (webhooks, pr
 - **Refunds** reverse revenue only when the provider confirms them (`refund.processed`). The original revenue row is never edited.
 - **Stuck pending:** the hourly `payments.reconcile` job verifies with Paystack. Requests the provider never saw become `abandoned` after 24 hours.
 - **Currency:** online payment is offered only in the currencies listed in `PAYSTACK_CURRENCIES` (and enabled on the Paystack account). There is no FX conversion at checkout.
+
+## FX (`/admin/fx`)
+
+- **Don't publish USD totals until the page shows "USD reportable".** Rates are refreshed daily (`fx.refresh`) when `FX_PROVIDER`/`FX_API_KEY` are set. A rate older than `platform_settings.fx.max_age_hours` (36) is stale. The seeded rates are placeholders.
+- **History is fixed:** each revenue row stores its USD value, computed with the rate in force on the day the revenue happened, and the rate it used (`fx_rate_id`, `fx_placeholder`). Later rates never rewrite it.
+- **Charge in local currency:** set a market price for each plan, for example Growth in GHS. A second admin must approve it. There is no FX conversion at billing.

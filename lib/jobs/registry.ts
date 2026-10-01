@@ -7,6 +7,7 @@ import { baselineJob, measureOutcomeJob } from "@/lib/interventions/jobs";
 import { deliverWebhook } from "@/lib/integrations/webhook-job";
 import { sendMessageJob } from "@/lib/messaging/job";
 import { reconcilePaymentsJob } from "@/lib/payments/job";
+import { refreshFxJob } from "@/lib/fx/job";
 
 /**
  * Job type → handler. Types are `domain.action`. Feature batches register here;
@@ -40,6 +41,7 @@ export const handlers: Record<string, JobHandler> = {
   "webhook.deliver": deliverWebhook,
   "message.send": sendMessageJob,
   "payments.reconcile": reconcilePaymentsJob,
+  "fx.refresh": refreshFxJob,
   "ops.routine": async ({ admin }) => {
     const { data, error } = await admin.rpc("run_routine_ops", {});
     if (error) throw error;

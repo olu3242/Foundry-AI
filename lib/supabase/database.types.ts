@@ -291,6 +291,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"billing_plan_prices": {
+                  Row: {
+                    "currency": string,"overage_minor": NonNullable<Json>,"plan_id": string,"price_minor": number,"updated_at": string,"updated_by": string | null
+                  }
+                  Insert: {
+                    "currency": string,"overage_minor"?: NonNullable<Json>,"plan_id": string,"price_minor": number,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Update: {
+                    "currency"?: string,"overage_minor"?: NonNullable<Json>,"plan_id"?: string,"price_minor"?: number,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "billing_plan_prices_plan_id_fkey"
+      columns: ["plan_id"]
+isOneToOne: false
+      referencedRelation: "billing_plans"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "billing_plan_prices_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"billing_plans": {
                   Row: {
                     "created_at": string,"currency": string,"entitlements": NonNullable<Json>,"id": string,"key": string,"name": string,"overage_minor": NonNullable<Json>,"payer_kind": string,"price_minor": number,"status": string
@@ -1055,15 +1080,28 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"fx_rates": {
+                },"fx_rate_history": {
                   Row: {
-                    "as_of": string,"currency": string,"minor_units": number,"source": string,"usd_per_unit": number
+                    "currency": string,"effective_date": string,"fetched_at": string,"id": number,"is_placeholder": boolean,"source": string,"usd_per_unit": number
                   }
                   Insert: {
-                    "as_of"?: string,"currency": string,"minor_units"?: number,"source"?: string,"usd_per_unit": number
+                    "currency": string,"effective_date": string,"fetched_at"?: string,"id"?: never,"is_placeholder"?: boolean,"source": string,"usd_per_unit": number
                   }
                   Update: {
-                    "as_of"?: string,"currency"?: string,"minor_units"?: number,"source"?: string,"usd_per_unit"?: number
+                    "currency"?: string,"effective_date"?: string,"fetched_at"?: string,"id"?: never,"is_placeholder"?: boolean,"source"?: string,"usd_per_unit"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"fx_rates": {
+                  Row: {
+                    "as_of": string,"currency": string,"fetched_at": string | null,"is_placeholder": boolean,"minor_units": number,"source": string,"usd_per_unit": number
+                  }
+                  Insert: {
+                    "as_of"?: string,"currency": string,"fetched_at"?: string | null,"is_placeholder"?: boolean,"minor_units"?: number,"source"?: string,"usd_per_unit": number
+                  }
+                  Update: {
+                    "as_of"?: string,"currency"?: string,"fetched_at"?: string | null,"is_placeholder"?: boolean,"minor_units"?: number,"source"?: string,"usd_per_unit"?: number
                   }
                   Relationships: [
                     
@@ -2159,13 +2197,13 @@ isOneToOne: false
                   ]
                 },"revenue_events": {
                   Row: {
-                    "amount_minor": number,"billable_event_id": string | null,"business_id": string | null,"currency": string,"external_id": string | null,"id": string,"occurred_at": string,"program_id": string | null,"source": string
+                    "amount_minor": number,"billable_event_id": string | null,"business_id": string | null,"currency": string,"external_id": string | null,"fx_placeholder": boolean | null,"fx_rate_id": number | null,"id": string,"occurred_at": string,"program_id": string | null,"source": string,"usd_minor": number | null
                   }
                   Insert: {
-                    "amount_minor": number,"billable_event_id"?: string | null,"business_id"?: string | null,"currency": string,"external_id"?: string | null,"id"?: string,"occurred_at"?: string,"program_id"?: string | null,"source"?: string
+                    "amount_minor": number,"billable_event_id"?: string | null,"business_id"?: string | null,"currency": string,"external_id"?: string | null,"fx_placeholder"?: boolean | null,"fx_rate_id"?: number | null,"id"?: string,"occurred_at"?: string,"program_id"?: string | null,"source"?: string,"usd_minor"?: number | null
                   }
                   Update: {
-                    "amount_minor"?: number,"billable_event_id"?: string | null,"business_id"?: string | null,"currency"?: string,"external_id"?: string | null,"id"?: string,"occurred_at"?: string,"program_id"?: string | null,"source"?: string
+                    "amount_minor"?: number,"billable_event_id"?: string | null,"business_id"?: string | null,"currency"?: string,"external_id"?: string | null,"fx_placeholder"?: boolean | null,"fx_rate_id"?: number | null,"id"?: string,"occurred_at"?: string,"program_id"?: string | null,"source"?: string,"usd_minor"?: number | null
                   }
                   Relationships: [
                     {
@@ -2179,6 +2217,12 @@ isOneToOne: true
       columns: ["business_id"]
 isOneToOne: false
       referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "revenue_events_fx_rate_id_fkey"
+      columns: ["fx_rate_id"]
+isOneToOne: false
+      referencedRelation: "fx_rate_history"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "revenue_events_program_id_fkey"
@@ -2940,6 +2984,9 @@ isOneToOne: false
 "feature_lineage":
 { Args: { "p_feature_key": string }; Returns: Json
                            },
+"fx_status":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "give_pulse_feedback":
 { Args: { "p_business_id": string,"p_computed_on": string,"p_dimension": string,"p_note"?: string,"p_verdict": string }; Returns: undefined
                            },
@@ -3147,6 +3194,9 @@ isOneToOne: false
 "record_entry":
 { Args: { "p_business_id": string,"p_fields": Json,"p_kind": Database["public"]['Enums']["record_kind"] }; Returns: string
                            },
+"record_fx_rates":
+{ Args: { "p_effective_date": string,"p_rates": Json,"p_source": string }; Returns: number
+                           },
 "record_inbound_message":
 { Args: { "p_event_id": string,"p_from": string,"p_provider": string,"p_text": string }; Returns: string
                            },
@@ -3275,6 +3325,9 @@ isOneToOne: false
                            },
 "set_partner_capabilities":
 { Args: { "p_capabilities": (string)[],"p_program_id": string,"p_user_id": string }; Returns: undefined
+                           },
+"set_plan_price":
+{ Args: { "p_currency": string,"p_overage_minor"?: Json,"p_plan_key": string,"p_price_minor": number }; Returns: undefined
                            },
 "set_platform_setting":
 { Args: { "p_key": string,"p_value": Json }; Returns: undefined

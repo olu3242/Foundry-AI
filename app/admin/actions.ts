@@ -307,3 +307,19 @@ export async function refundPayment(_: ActionState, formData: FormData): Promise
   revalidatePath("/admin/payments");
   return { ok: true, message: "Refund submitted. Revenue is reversed when the provider confirms it." };
 }
+
+// ─── B44 market prices ────────────────────────────────────────────────────────
+export async function savePlanPrice(_: unknown, formData: FormData) {
+  const f = z.object({ plan: z.string().regex(/^[a-z0-9_]{2,40}$/), currency: z.string().regex(/^[A-Z]{3}$/), price_minor: z.coerce.number().int().min(0) })
+    .safeParse(Object.fromEntries(formData));
+  if (!f.success) return { ok: false as const, error: "Choose a plan, a currency code (e.g. GHS) and a price in minor units." };
+  await requireUser("/admin");
+  const supabase = await createClient();
+  const first = await supabase.rpc("set_plan_price", { p_plan_key: f.data.plan, p_currency: f.data.currency, p_price_minor: f.data.price_minor });
+  const { error, requested } = await orRequest(supabase, first.error, "plan_price", f.data.plan,
+    { currency: f.data.currency, price_minor: f.data.price_minor }, `Price ${f.data.plan} at ${f.data.price_minor} ${f.data.currency} minor`);
+  if (error) return { ok: false as const, error: error.message };
+  if (requested) return { ok: true as const, message: "Submitted for a second admin's approval." };
+  revalidatePath("/admin/fx");
+  return { ok: true as const, message: "Price saved." };
+}

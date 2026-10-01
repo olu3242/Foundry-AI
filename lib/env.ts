@@ -43,6 +43,10 @@ const serverSchema = z.object({
   // Paystack requires an email; phone-only owners get <digits>@this domain (a domain Foundry controls).
   PAYSTACK_CUSTOMER_EMAIL_DOMAIN: z.string().optional(),
   PAYSTACK_API_BASE: z.url().optional(),
+  // B44 FX feed. No provider = rates stay placeholders and USD totals are marked not reportable.
+  FX_PROVIDER: z.enum(["openexchangerates"]).optional(),
+  FX_API_KEY: z.string().optional(),
+  FX_API_BASE: z.url().optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverSchema>;
