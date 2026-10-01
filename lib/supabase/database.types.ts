@@ -1301,6 +1301,50 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"org_members": {
+                  Row: {
+                    "org_id": string,"role": string,"user_id": string
+                  }
+                  Insert: {
+                    "org_id": string,"role": string,"user_id": string
+                  }
+                  Update: {
+                    "org_id"?: string,"role"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "org_members_org_id_fkey"
+      columns: ["org_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "org_members_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"organizations": {
+                  Row: {
+                    "created_at": string,"created_by": string,"id": string,"kind": string,"name": string,"sla": NonNullable<Json>
+                  }
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string,"id"?: string,"kind"?: string,"name": string,"sla"?: NonNullable<Json>
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string,"id"?: string,"kind"?: string,"name"?: string,"sla"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "organizations_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"outcomes": {
                   Row: {
                     "baseline_value": number,"business_id": string,"delta": number,"evidence": NonNullable<Json>,"id": string,"improved": boolean,"intervention_id": string,"measured_at": string,"metric": string,"observed_value": number,"status": Database["public"]['Enums']["outcome_status"],"verification_note": string | null,"verified_at": string | null,"verified_by": string | null,"verifier_role": Database["public"]['Enums']["business_role"] | null,"window_end": string,"window_start": string
@@ -1678,13 +1722,13 @@ isOneToOne: false
                   ]
                 },"programs": {
                   Row: {
-                    "auto_route": boolean,"countries": (string)[],"created_at": string,"created_by": string,"current_period_end": string | null,"description": string | null,"ends_on": string | null,"goals": string | null,"id": string,"is_sandbox": boolean,"join_code": string,"kind": string,"name": string,"phase": string,"pilot_seats": number,"seats": number,"sectors": (string)[],"sponsor_name": string | null,"sponsored_plan_id": string | null,"starts_on": string | null,"status": string,"stripe_customer_id": string | null,"stripe_subscription_id": string | null,"subscription_status": string | null,"target_businesses": number | null,"updated_at": string
+                    "auto_route": boolean,"countries": (string)[],"created_at": string,"created_by": string,"current_period_end": string | null,"description": string | null,"ends_on": string | null,"goals": string | null,"id": string,"is_sandbox": boolean,"join_code": string,"kind": string,"name": string,"organization_id": string | null,"phase": string,"pilot_seats": number,"seats": number,"sectors": (string)[],"sponsor_name": string | null,"sponsored_plan_id": string | null,"starts_on": string | null,"status": string,"stripe_customer_id": string | null,"stripe_subscription_id": string | null,"subscription_status": string | null,"target_businesses": number | null,"updated_at": string
                   }
                   Insert: {
-                    "auto_route"?: boolean,"countries"?: (string)[],"created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"goals"?: string | null,"id"?: string,"is_sandbox"?: boolean,"join_code"?: string,"kind"?: string,"name": string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sectors"?: (string)[],"sponsor_name"?: string | null,"sponsored_plan_id"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"target_businesses"?: number | null,"updated_at"?: string
+                    "auto_route"?: boolean,"countries"?: (string)[],"created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"goals"?: string | null,"id"?: string,"is_sandbox"?: boolean,"join_code"?: string,"kind"?: string,"name": string,"organization_id"?: string | null,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sectors"?: (string)[],"sponsor_name"?: string | null,"sponsored_plan_id"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"target_businesses"?: number | null,"updated_at"?: string
                   }
                   Update: {
-                    "auto_route"?: boolean,"countries"?: (string)[],"created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"goals"?: string | null,"id"?: string,"is_sandbox"?: boolean,"join_code"?: string,"kind"?: string,"name"?: string,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sectors"?: (string)[],"sponsor_name"?: string | null,"sponsored_plan_id"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"target_businesses"?: number | null,"updated_at"?: string
+                    "auto_route"?: boolean,"countries"?: (string)[],"created_at"?: string,"created_by"?: string,"current_period_end"?: string | null,"description"?: string | null,"ends_on"?: string | null,"goals"?: string | null,"id"?: string,"is_sandbox"?: boolean,"join_code"?: string,"kind"?: string,"name"?: string,"organization_id"?: string | null,"phase"?: string,"pilot_seats"?: number,"seats"?: number,"sectors"?: (string)[],"sponsor_name"?: string | null,"sponsored_plan_id"?: string | null,"starts_on"?: string | null,"status"?: string,"stripe_customer_id"?: string | null,"stripe_subscription_id"?: string | null,"subscription_status"?: string | null,"target_businesses"?: number | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -1692,6 +1736,12 @@ isOneToOne: false
       columns: ["created_by"]
 isOneToOne: false
       referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "programs_organization_id_fkey"
+      columns: ["organization_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "programs_sponsored_plan_id_fkey"
@@ -2416,6 +2466,9 @@ isOneToOne: false
 "add_member":
 { Args: { "p_business_id": string,"p_contact": string,"p_role": Database["public"]['Enums']["business_role"] }; Returns: string
                            },
+"add_org_member":
+{ Args: { "p_contact": string,"p_org_id": string,"p_role": string }; Returns: string
+                           },
 "add_program_member":
 { Args: { "p_contact": string,"p_program_id": string,"p_role": Database["public"]['Enums']["program_role"] }; Returns: string
                            },
@@ -2448,6 +2501,9 @@ isOneToOne: false
                            },
 "assign_partner":
 { Args: { "p_business_id": string,"p_partner_user_id": string,"p_program_id": string }; Returns: undefined
+                           },
+"attach_program":
+{ Args: { "p_org_id": string,"p_program_id": string }; Returns: undefined
                            },
 "attest_claim":
 { Args: { "p_method": string,"p_note"?: string,"p_request_id": string,"p_result": string }; Returns: string
@@ -2568,6 +2624,9 @@ isOneToOne: false
 "create_financial_product":
 { Args: { "p_currency": string,"p_description"?: string,"p_eligibility": Json,"p_max": number,"p_min": number,"p_name": string,"p_product_type": string,"p_program_id": string }; Returns: string
                            },
+"create_organization":
+{ Args: { "p_kind"?: string,"p_name": string }; Returns: string
+                           },
 "create_program":
 { Args: { "p_description"?: string,"p_name": string,"p_sponsor_name"?: string }; Returns: string
                            },
@@ -2591,6 +2650,9 @@ isOneToOne: false
                            },
 "decision_quality":
 { Args: { "p_days"?: number }; Returns: Json
+                           },
+"delegate_program_role":
+{ Args: { "p_contact": string,"p_org_id": string,"p_program_id": string,"p_role": Database["public"]['Enums']["program_role"] }; Returns: string
                            },
 "deprecate_solution_version":
 { Args: { "p_reason": string,"p_version_id": string }; Returns: undefined
@@ -2719,6 +2781,12 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "business_id": string,"business_name": string,"detail": string,"item_key": string,"kind": string,"link": string,"severity": number,"since": string,"title": string
             }[]
+                           },
+"org_report":
+{ Args: { "p_org_id": string }; Returns: Json
+                           },
+"org_sponsor_plan":
+{ Args: { "p_org_id": string,"p_plan_key": string }; Returns: number
                            },
 "pack_benchmark":
 { Args: { "p_business_id": string,"p_metric": string }; Returns: Json
@@ -2857,6 +2925,9 @@ isOneToOne: false
 "run_routine_ops":
 { Args: { "p_business_id"?: string }; Returns: Json
                            },
+"save_org_policy":
+{ Args: { "p_definition": Json,"p_key": string,"p_note"?: string,"p_org_id": string }; Returns: string
+                           },
 "save_policy":
 { Args: { "p_definition": Json,"p_key": string,"p_note"?: string,"p_scope_id": string,"p_scope_type": string }; Returns: string
                            },
@@ -2880,6 +2951,9 @@ isOneToOne: false
                            },
 "set_experiment_status":
 { Args: { "p_id": string,"p_reason"?: string,"p_status": string }; Returns: undefined
+                           },
+"set_org_sla":
+{ Args: { "p_org_id": string,"p_sla": Json }; Returns: undefined
                            },
 "set_partner_capabilities":
 { Args: { "p_capabilities": (string)[],"p_program_id": string,"p_user_id": string }; Returns: undefined
