@@ -1,0 +1,183 @@
+import type { Metadata } from "next";
+import { requireBusiness, WRITER_ROLES } from "@/lib/auth/guards";
+import { PageHeader } from "@/components/page-header";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { AddMemberForm, BusinessForm, IdentifierForm, JoinProgramForm } from "./forms";
+import { leaveProgram, setDataSharing, setMessageConsent } from "./actions";
+import { togglePack } from "../pack/actions";
+import { AutonomySettings } from "@/components/agent/autonomy-settings";
+
+export const metadata: Metadata = { title: "Settings" };
+
+const ROLE_LABEL = { owner: "Owner", staff: "Staff", partner: "Business partner", program_admin: "Program admin" } as const;
+
+export default async function SettingsPage({ params }: { params: Promise<{ bid: string }> }) {
+  const { bid } = await params;
+  const { business, role, supabase } = await requireBusiness(bid);
+  const { data: team } = await supabase
+    .from("memberships")
+    .select("user_id, role, profiles:user_id (full_name, phone, email)")
+    .eq("business_id", bid)
+    .order("created_at");
+  const isOwner = role === "owner";
+  const [{ data: packs }, { data: myPacks }] = await Promise.all([
+    supabase.from("vertical_packs").select("key, name, definition").eq("status", "active").order("name"),
+    supabase.from("business_packs").select("pack_key").eq("business_id", bid),
+  ]);
+  const activePacks = new Set((myPacks ?? []).map((p) => p.pack_key));
+  const [{ data: market }, { data: identifiers }] = await Promise.all([
+    supabase.from("markets").select("name, identifier_types, jurisdiction").eq("country_code", business.country_code).maybeSingle(),
+    supabase.from("business_identifiers").select("type, value, verified").eq("business_id", bid),
+  ]);
+  const [{ data: consents }, { data: messages }] = await Promise.all([
+    supabase.from("communication_consents").select("channel, status").eq("business_id", bid),
+    supabase.from("messages").select("id, channel, status, suppression_reason, body, created_at").eq("business_id", bid).order("created_at", { ascending: false }).limit(5),
+  ]);
+  const consentOn = (c: string) => consents?.some((x) => x.channel === c && x.status === "opted_in") ?? false;
+  const [{ data: policies }, { data: enrollments }] = await Promise.all([
+    supabase.from("autonomy_policies").select("action_type, level").eq("business_id", bid),
+    WRITER_ROLES.includes(role) ? supabase.rpc("program_access_for_business", { p_business_id: bid }) : Promise.resolve({ data: [] }),
+  ]);
+
+  return (
+    <>
+      <PageHeader eyebrow="Settings" title="Business and team" />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Business</CardTitle>
+            <CardDescription>{business.country_code} · amounts in {business.currency}</CardDescription>
+          </CardHeader>
+          <BusinessForm businessId={bid} name={business.name} sector={business.sector} canEdit={isOwner} />
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Team</CardTitle>
+            <CardDescription>People who can see or record for this business.</CardDescription>
+          </CardHeader>
+          <ul className="mb-6 divide-y">
+            {(team ?? []).map((m) => {
+              const p = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles;
+              return (
+                <li key={m.user_id} className="flex items-center justify-between py-3 text-sm">
+                  <span className="truncate">{p?.full_name || p?.email || (p?.phone ? `+${p.phone}` : "Member")}</span>
+                  <Badge tone={m.role === "owner" ? "brand" : "neutral"}>{ROLE_LABEL[m.role]}</Badge>
+                </li>
+              );
+            })}
+          </ul>
+          {isOwner && <AddMemberForm businessId={bid} />}
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle><a href={`/b/${bid}/plan`} className="hover:underline">Plan &amp; usage →</a></CardTitle>
+            <CardDescription>What your plan includes, what you&apos;ve used this month, and who pays.</CardDescription>
+          </CardHeader>
+        </Card>
+        <Card aria-label="Network data sharing">
+          <CardHeader>
+            <CardTitle>Network learning</CardTitle>
+            <CardDescription>Foundry learns which plans work and builds comparisons from many businesses together, never showing yours on its own.
+              Groups smaller than five are never shown. You can opt out at any time.</CardDescription>
+          </CardHeader>
+          <div className="flex items-center gap-3 text-sm">
+            <Badge tone={business.data_sharing === "network" ? "brand" : "neutral"} data-testid="data-sharing">{business.data_sharing === "network" ? "Included" : "Opted out"}</Badge>
+            {isOwner && (
+              <form action={setDataSharing}><input type="hidden" name="businessId" value={bid} /><input type="hidden" name="network" value={business.data_sharing === "network" ? "false" : "true"} />
+                <button className="rounded-md border px-2 py-1 text-xs">{business.data_sharing === "network" ? "Opt out" : "Opt back in"}</button></form>
+            )}
+          </div>
+        </Card>
+        <Card aria-label="Messages from Foundry">
+          <CardHeader>
+            <CardTitle>Messages from Foundry</CardTitle>
+            <CardDescription>Reminders and record requests sent to the owner&apos;s phone, never to your customers. Nothing is sent unless you turn a channel on,
+              never during quiet hours, and at most a few a day. Reply STOP at any time to stop all messages.</CardDescription>
+          </CardHeader>
+          <ul className="mb-3 space-y-2 text-sm">{(["whatsapp", "sms"] as const).map((c) => (
+            <li key={c} className="flex items-center gap-3" aria-label={`Channel ${c}`}>
+              <span className="flex-1">{c === "whatsapp" ? "WhatsApp" : "SMS"}</span>
+              <Badge tone={consentOn(c) ? "brand" : "neutral"} data-testid={`consent-${c}`}>{consentOn(c) ? "On" : "Off"}</Badge>
+              {isOwner && (
+                <form action={setMessageConsent}><input type="hidden" name="businessId" value={bid} /><input type="hidden" name="channel" value={c} />
+                  <input type="hidden" name="optIn" value={consentOn(c) ? "false" : "true"} />
+                  <button className="rounded-md border px-2 py-1 text-xs">{consentOn(c) ? "Turn off" : "Turn on"}</button></form>
+              )}
+            </li>))}</ul>
+          {!!messages?.length && (
+            <ul className="divide-y text-xs" aria-label="Recent messages">{messages.map((m) => (
+              <li key={m.id} className="flex gap-2 py-1.5"><span className="flex-1 truncate text-muted-foreground">{m.body ?? m.suppression_reason?.replaceAll("_", " ")}</span>
+                <Badge tone={m.status === "failed" ? "attention" : m.status === "delivered" || m.status === "read" ? "brand" : "neutral"} data-testid="message-status">{m.status}</Badge></li>))}
+            </ul>
+          )}
+        </Card>
+        <Card aria-label="Business packs">
+          <CardHeader>
+            <CardTitle>Business packs</CardTitle>
+            <CardDescription>Extra signals, records and plans for your kind of business.</CardDescription>
+          </CardHeader>
+          <ul className="space-y-2 text-sm">{packs?.map((p) => (
+            <li key={p.key} className="flex flex-wrap items-center gap-2" aria-label={`Pack ${p.name}`}>
+              <span className="flex-1">{activePacks.has(p.key) ? <a className="font-medium hover:underline" href={`/b/${bid}/pack/${p.key}`}>{p.name} →</a> : p.name}
+                <span className="block text-xs text-muted-foreground">{(p.definition as { description?: string }).description}</span></span>
+              {isOwner && (
+                <form action={togglePack}><input type="hidden" name="businessId" value={bid} /><input type="hidden" name="pack" value={p.key} />
+                  <input type="hidden" name="on" value={activePacks.has(p.key) ? "false" : "true"} />
+                  <button className="rounded-md border px-2 py-1 text-xs">{activePacks.has(p.key) ? "Turn off" : "Turn on"}</button></form>
+              )}
+            </li>))}</ul>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Registration numbers</CardTitle>
+            <CardDescription>Used in {market?.name ?? business.country_code}. They help partners recognise your business.</CardDescription>
+          </CardHeader>
+          <ul className="mb-3 space-y-1 text-sm">
+            {(identifiers ?? []).map((i) => <li key={i.type}>{(market?.identifier_types as { key: string; label: string }[] | undefined)?.find((t) => t.key === i.type)?.label ?? i.type}: <span className="font-mono">{i.value}</span></li>)}
+          </ul>
+          {isOwner && (
+            <IdentifierForm businessId={bid} types={(market?.identifier_types ?? []) as { key: string; label: string }[]}
+              current={Object.fromEntries((identifiers ?? []).map((i) => [i.type, i.value]))} />
+          )}
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Programs</CardTitle>
+            <CardDescription>Cohorts, accelerators and lender programs you share your records with.</CardDescription>
+          </CardHeader>
+          {!!enrollments?.length && (
+            <ul className="mb-4 divide-y text-sm">
+              {enrollments.map((e) => (
+                <li key={e.program_id} className="flex items-center gap-3 py-2">
+                  <span className="flex-1">{e.program_name}
+                    <span className="block text-xs text-muted-foreground">
+                      Sharing since {new Date(e.consented_at).toLocaleDateString("en", { dateStyle: "medium" })} · seen by {e.admins} program admin(s)
+                      {e.assigned_partners.length ? ` and ${e.assigned_partners.join(", ")}` : ""}
+                    </span>
+                  </span>
+                  {isOwner && (
+                    <form action={leaveProgram}>
+                      <input type="hidden" name="businessId" value={bid} /><input type="hidden" name="programId" value={e.program_id} />
+                      <button className="text-xs font-medium text-destructive hover:underline">Leave and stop sharing</button>
+                    </form>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+          {isOwner ? <JoinProgramForm businessId={bid} /> : <p className="text-sm text-muted-foreground">Only the owner can join programs.</p>}
+        </Card>
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>How much Foundry does on its own</CardTitle>
+            <CardDescription>
+              From L0 (off) to L5 (acts within limits). Some levels aren&apos;t available yet: Foundry never writes to your books or messages a customer without you.
+            </CardDescription>
+          </CardHeader>
+          <AutonomySettings businessId={bid} canEdit={isOwner} policies={Object.fromEntries((policies ?? []).map((p) => [p.action_type, p.level]))} />
+        </Card>
+      </div>
+    </>
+  );
+}

@@ -1,0 +1,11 @@
+{
+  "name": "Foundry AI",
+  "short_name": "Foundry",
+  "description": "Run better. Sell more. Keep more. Prove it. Grow.",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#07140E",
+  "theme_color": "#006B3A",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
