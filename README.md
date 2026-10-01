@@ -39,6 +39,31 @@ Extensions B11–B20 build on the above (each migration's header lists what it r
 | B19 Multi-market | `…1700_markets.sql`, `app/admin/markets` | Markets as configuration: currency, timezone, language, identifiers, jurisdiction, connectors, data residency; en/fr UI |
 | B20 Scale + funding readiness | `…1800_scale.sql`, `app/admin/scale`, `/api/admin/evidence` | Product/ops/solutions/economics/impact (VEI)/distribution/data-moat metrics, cohort retention, cost inputs, security + integrity certification, evidence pack |
 
+Extensions B21–B40 add commercial, operating, intelligence and moat layers on the same primitives:
+
+| Batch | Where | Adds |
+| --- | --- | --- |
+| B21 Commercialization | `…1900_commercial.sql`, `app/b/[bid]/plan`, `app/admin/commercial` | Plans, entitlements (business / sponsor / partner payers), metered usage, billable events, settlement (manual rails + Stripe), revenue trace |
+| B22 Retention | `…2000_retention.sql`, `app/admin/retention` | Value-based health, risk + continuation, evidence-backed recovery actions in the operator queue, recovery rate |
+| B23 Autonomous operations | `…2100_autonomous_ops.sql` | Record requests, plan reminders, verification routing under A0–A5 authority; escalations; reversible auto-routing |
+| B24 Trust network | `…2200_trust_network.sql`, `app/verify`, `app/admin/trust` | Approved verifiers attest to specific claims with minimum, time-boxed evidence; disputes, corrections, history; no blanket trust |
+| B25 Data quality | `…2300_data_quality.sql`, `app/b/[bid]/quality` | Duplicate / conflict / gap / staleness detection, reconciliation, correction lineage, quality dimensions (unknown stays unknown) |
+| B26 Forecasting | `…2400_forecasting.sql`, `app/b/[bid]/outlook` | Reproducible outlooks (sales, cash pressure, stock, collections, plan scenarios) with basis, interval, assumptions, confidence |
+| B27 API platform | `…2500_api_platform.sql`, `app/api/v1` | Versioned API, hashed scoped keys, signed webhooks with retries, sandbox programs, per-key rate limits, call audit |
+| B28 Policy engine | `…2600_policy_engine.sql`, `app/admin/policies` | Versioned layered policies (global → market → organization → program → provider → solution), decision log |
+| B29 Experimentation | `…2700_experimentation.sql`, `app/admin/experiments` | Randomized sticky assignment of solution variants, CI + p-value, guardrails, termination, history; finance/legal protected |
+| B30 Scale OS | `…2800_control_plane.sql`, `app/admin/control` | Control plane across all areas, incidents from live signals, required interventions |
+| B31 Vertical packs | `…2900_vertical_packs.sql`, `app/b/[bid]/pack/[key]`, `app/admin/packs` | Verticals as configuration (entities, metrics, Pulse rules, solutions, workflows); first pack: fresh produce |
+| B32 Business memory | `…3000_business_memory.sql`, `app/b/[bid]/memory` | Longitudinal timeline labelled verified / confirmed / observed / derived / inferred; history in recommendations |
+| B33 Decision engine | `…3100_decision_engine.sql`, `app/b/[bid]/decisions` | Signal → options → evidence → risk → expected value → authority → decision → result, replayable |
+| B34 Playbooks | `…3200_playbooks.sql` | Multi-solution playbooks launched from detected problems; governed steps; playbook outcome |
+| B35 Distribution economics | `…3300_channel_economics.sql`, `app/admin/channels` | Channel funnel to revenue/cost; CAC and payback only with acquisition-cost evidence |
+| B36 Partner performance | `…3400_partner_performance.sql`, `app/admin/partners` | Partner, provider and verifier metrics for governance; documented routing score |
+| B37 Data layer | `…3500_data_layer.sql`, `app/admin/data` | Consented, purpose-bound derived datasets with SOURCE → TRANSFORMATION → FEATURE → USE lineage; owner opt-out |
+| B38 Intelligence quality | `…3600_intelligence_quality.sql`, `app/admin/intelligence` | Forecast backtests, Pulse precision, decision quality, drift across all intelligence |
+| B39 Enterprise control | `…3700_enterprise_control.sql`, `app/orgs` | Organizations over many programs, delegated admins, org sponsorship + policy, aggregated reporting, SLA telemetry |
+| B40 Certification | `…3800_moat_certification.sql`, `app/admin/certification`, `docs/B40_CERTIFICATION.md` | Moat dimensions + closed-loop evidence check |
+
 Platform admins (solution review, learning, markets, scale) are granted in SQL: `insert into platform_admins (user_id) values ('<uuid>');`
 
 ## Local development
@@ -82,7 +107,7 @@ Server variables are validated with zod on first use (`lib/env.ts`), so `next bu
 
 ```bash
 npm run check        # eslint + tsc + vitest (pure logic: money, dates, pulse, matching, autonomy, extraction mapping)
-npm run db:test      # pgTAP: 201 assertions incl. security/performance certification (RLS everywhere, no anon access, pinned search_path, business_id indexes)
+npm run db:test      # pgTAP: 464 assertions incl. security/performance certification (RLS everywhere, no anon access, pinned search_path, business_id indexes)
 npm run e2e          # Playwright against the local stack (set PW_CHROMIUM_PATH to use a preinstalled Chromium)
 ```
 
@@ -127,6 +152,7 @@ CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests and a productio
 - No CSP header yet; it needs a nonce strategy for Next.js inline scripts.
 - Growth suggestions are rule-based (`rules-v1`) for explainability. Model-written coaching can layer on top through the same inbox and autonomy gates.
 - Next.js bundles an older `postcss` flagged by `npm audit` (build-time only). Clears when upgrading Next.
+- B21–B40 debt and gaps are tracked in `docs/B40_CERTIFICATION.md` (P0/P1 register).
 
 ## Design tokens
 
