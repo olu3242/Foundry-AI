@@ -53,6 +53,11 @@ export const handlers: Record<string, JobHandler> = {
     if (error) throw error;
     return data;
   },
+  "packs.workflows": async ({ admin }) => {
+    const { data, error } = await admin.rpc("run_pack_workflows", {});
+    if (error) throw error;
+    return { reminders: data };
+  },
   "quality.scan": async ({ admin }) => {
     const { data, error } = await admin.rpc("scan_data_quality", {});
     if (error) throw error;

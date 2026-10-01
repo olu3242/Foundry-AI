@@ -13,6 +13,7 @@ export const metadata: Metadata = { title: "Pulse" };
 export default async function PulsePage({ params }: { params: Promise<{ bid: string }> }) {
   const { bid } = await params;
   const { supabase } = await requireBusiness(bid);
+  const { data: packLinks } = await supabase.from("business_packs").select("pack_key, vertical_packs(name)").eq("business_id", bid);
   const { data: latest } = await supabase
     .from("pulse_snapshots").select("computed_on").eq("business_id", bid).order("computed_on", { ascending: false }).limit(1).maybeSingle();
   const { data: rows } = latest
@@ -40,7 +41,10 @@ export default async function PulsePage({ params }: { params: Promise<{ bid: str
         description="Nine signals from your own records. Each one says what it's based on and what to do next. This is not a credit score."
         actions={refresh}
       />
-      <a href={`/b/${bid}/outlook`} className="mb-4 inline-block text-sm font-medium text-primary hover:underline">Outlook: what&apos;s likely next →</a>
+      <div className="mb-4 flex flex-wrap gap-4 text-sm font-medium">
+        <a href={`/b/${bid}/outlook`} className="text-primary hover:underline">Outlook: what&apos;s likely next →</a>
+        {packLinks?.map((p) => <a key={p.pack_key} href={`/b/${bid}/pack/${p.pack_key}`} className="text-primary hover:underline">{p.vertical_packs?.name} signals →</a>)}
+      </div>
       {!ordered.length ? (
         <p className="glass p-6 text-sm text-muted-foreground">Pulse appears after your first records. Record a few sales and expenses, then press Refresh.</p>
       ) : (

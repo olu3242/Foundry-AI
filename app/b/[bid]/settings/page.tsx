@@ -5,6 +5,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { Badge } from "@/components/ui/badge";
 import { AddMemberForm, BusinessForm, IdentifierForm, JoinProgramForm } from "./forms";
 import { leaveProgram } from "./actions";
+import { togglePack } from "../pack/actions";
 import { AutonomySettings } from "@/components/agent/autonomy-settings";
 
 export const metadata: Metadata = { title: "Settings" };
@@ -20,6 +21,11 @@ export default async function SettingsPage({ params }: { params: Promise<{ bid: 
     .eq("business_id", bid)
     .order("created_at");
   const isOwner = role === "owner";
+  const [{ data: packs }, { data: myPacks }] = await Promise.all([
+    supabase.from("vertical_packs").select("key, name, definition").eq("status", "active").order("name"),
+    supabase.from("business_packs").select("pack_key").eq("business_id", bid),
+  ]);
+  const activePacks = new Set((myPacks ?? []).map((p) => p.pack_key));
   const [{ data: market }, { data: identifiers }] = await Promise.all([
     supabase.from("markets").select("name, identifier_types, jurisdiction").eq("country_code", business.country_code).maybeSingle(),
     supabase.from("business_identifiers").select("type, value, verified").eq("business_id", bid),
@@ -63,6 +69,22 @@ export default async function SettingsPage({ params }: { params: Promise<{ bid: 
             <CardTitle><a href={`/b/${bid}/plan`} className="hover:underline">Plan &amp; usage →</a></CardTitle>
             <CardDescription>What your plan includes, what you&apos;ve used this month, and who pays.</CardDescription>
           </CardHeader>
+        </Card>
+        <Card aria-label="Business packs">
+          <CardHeader>
+            <CardTitle>Business packs</CardTitle>
+            <CardDescription>Extra signals, records and plans for your kind of business.</CardDescription>
+          </CardHeader>
+          <ul className="space-y-2 text-sm">{packs?.map((p) => (
+            <li key={p.key} className="flex flex-wrap items-center gap-2" aria-label={`Pack ${p.name}`}>
+              <span className="flex-1">{activePacks.has(p.key) ? <a className="font-medium hover:underline" href={`/b/${bid}/pack/${p.key}`}>{p.name} →</a> : p.name}
+                <span className="block text-xs text-muted-foreground">{(p.definition as { description?: string }).description}</span></span>
+              {isOwner && (
+                <form action={togglePack}><input type="hidden" name="businessId" value={bid} /><input type="hidden" name="pack" value={p.key} />
+                  <input type="hidden" name="on" value={activePacks.has(p.key) ? "false" : "true"} />
+                  <button className="rounded-md border px-2 py-1 text-xs">{activePacks.has(p.key) ? "Turn off" : "Turn on"}</button></form>
+              )}
+            </li>))}</ul>
         </Card>
         <Card>
           <CardHeader>

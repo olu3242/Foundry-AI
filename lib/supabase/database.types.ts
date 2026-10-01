@@ -367,6 +367,37 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"business_packs": {
+                  Row: {
+                    "activated_at": string,"activated_by": string | null,"business_id": string,"pack_key": string
+                  }
+                  Insert: {
+                    "activated_at"?: string,"activated_by"?: string | null,"business_id": string,"pack_key": string
+                  }
+                  Update: {
+                    "activated_at"?: string,"activated_by"?: string | null,"business_id"?: string,"pack_key"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "business_packs_activated_by_fkey"
+      columns: ["activated_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "business_packs_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "business_packs_pack_key_fkey"
+      columns: ["pack_key"]
+isOneToOne: false
+      referencedRelation: "vertical_packs"
+      referencedColumns: ["key"]
+    }
+                  ]
                 },"businesses": {
                   Row: {
                     "address": NonNullable<Json>,"archived_at": string | null,"country_code": string,"created_at": string,"created_by": string,"currency": string,"id": string,"locale": string | null,"name": string,"sector": string | null,"timezone": string,"updated_at": string
@@ -1800,13 +1831,13 @@ isOneToOne: false
                   ]
                 },"solutions": {
                   Row: {
-                    "commercial_terms": string | null,"created_at": string,"currency": string | null,"default_window_days": number,"delivery": string,"id": string,"key": string,"name": string,"price_minor": number | null,"pricing_model": string,"provider_id": string | null,"review_note": string | null,"reviewed_at": string | null,"reviewed_by": string | null,"status": Database["public"]['Enums']["solution_status"],"summary": string,"target_dimension": string | null,"target_metric": string
+                    "commercial_terms": string | null,"created_at": string,"currency": string | null,"default_window_days": number,"delivery": string,"id": string,"key": string,"name": string,"price_minor": number | null,"pricing_model": string,"provider_id": string | null,"review_note": string | null,"reviewed_at": string | null,"reviewed_by": string | null,"status": Database["public"]['Enums']["solution_status"],"summary": string,"target_dimension": string | null,"target_metric": string,"vertical_pack": string | null
                   }
                   Insert: {
-                    "commercial_terms"?: string | null,"created_at"?: string,"currency"?: string | null,"default_window_days"?: number,"delivery"?: string,"id"?: string,"key": string,"name": string,"price_minor"?: number | null,"pricing_model"?: string,"provider_id"?: string | null,"review_note"?: string | null,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"status"?: Database["public"]['Enums']["solution_status"],"summary": string,"target_dimension"?: string | null,"target_metric": string
+                    "commercial_terms"?: string | null,"created_at"?: string,"currency"?: string | null,"default_window_days"?: number,"delivery"?: string,"id"?: string,"key": string,"name": string,"price_minor"?: number | null,"pricing_model"?: string,"provider_id"?: string | null,"review_note"?: string | null,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"status"?: Database["public"]['Enums']["solution_status"],"summary": string,"target_dimension"?: string | null,"target_metric": string,"vertical_pack"?: string | null
                   }
                   Update: {
-                    "commercial_terms"?: string | null,"created_at"?: string,"currency"?: string | null,"default_window_days"?: number,"delivery"?: string,"id"?: string,"key"?: string,"name"?: string,"price_minor"?: number | null,"pricing_model"?: string,"provider_id"?: string | null,"review_note"?: string | null,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"status"?: Database["public"]['Enums']["solution_status"],"summary"?: string,"target_dimension"?: string | null,"target_metric"?: string
+                    "commercial_terms"?: string | null,"created_at"?: string,"currency"?: string | null,"default_window_days"?: number,"delivery"?: string,"id"?: string,"key"?: string,"name"?: string,"price_minor"?: number | null,"pricing_model"?: string,"provider_id"?: string | null,"review_note"?: string | null,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"status"?: Database["public"]['Enums']["solution_status"],"summary"?: string,"target_dimension"?: string | null,"target_metric"?: string,"vertical_pack"?: string | null
                   }
                   Relationships: [
                     {
@@ -1821,6 +1852,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "solutions_vertical_pack_fkey"
+      columns: ["vertical_pack"]
+isOneToOne: false
+      referencedRelation: "vertical_packs"
+      referencedColumns: ["key"]
     }
                   ]
                 },"stock_movements": {
@@ -2022,6 +2059,50 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"vertical_packs": {
+                  Row: {
+                    "definition": NonNullable<Json>,"key": string,"name": string,"status": string,"updated_at": string,"version": number
+                  }
+                  Insert: {
+                    "definition": NonNullable<Json>,"key": string,"name": string,"status"?: string,"updated_at"?: string,"version"?: number
+                  }
+                  Update: {
+                    "definition"?: NonNullable<Json>,"key"?: string,"name"?: string,"status"?: string,"updated_at"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"vertical_records": {
+                  Row: {
+                    "business_id": string,"created_at": string,"created_by": string | null,"data": NonNullable<Json>,"entity": string,"id": string,"occurred_at": string,"pack_key": string,"provenance": Database["public"]['Enums']["provenance"],"voided_at": string | null
+                  }
+                  Insert: {
+                    "business_id": string,"created_at"?: string,"created_by"?: string | null,"data": NonNullable<Json>,"entity": string,"id"?: string,"occurred_at"?: string,"pack_key": string,"provenance"?: Database["public"]['Enums']["provenance"],"voided_at"?: string | null
+                  }
+                  Update: {
+                    "business_id"?: string,"created_at"?: string,"created_by"?: string | null,"data"?: NonNullable<Json>,"entity"?: string,"id"?: string,"occurred_at"?: string,"pack_key"?: string,"provenance"?: Database["public"]['Enums']["provenance"],"voided_at"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "vertical_records_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "vertical_records_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "vertical_records_pack_key_fkey"
+      columns: ["pack_key"]
+isOneToOne: false
+      referencedRelation: "vertical_packs"
+      referencedColumns: ["key"]
+    }
+                  ]
                 },"webhook_deliveries": {
                   Row: {
                     "attempts": number,"created_at": string,"delivered_at": string | null,"event_id": number | null,"event_type": string,"id": string,"last_error": string | null,"payload": NonNullable<Json>,"response_status": number | null,"status": string,"subscription_id": string
@@ -2077,6 +2158,9 @@ isOneToOne: false
                            },
 "acknowledge_incident":
 { Args: { "p_id": string }; Returns: undefined
+                           },
+"activate_pack":
+{ Args: { "p_business_id": string,"p_on"?: boolean,"p_pack_key": string }; Returns: undefined
                            },
 "activate_policy":
 { Args: { "p_policy_id": string }; Returns: undefined
@@ -2327,6 +2411,9 @@ isOneToOne: false
 "leave_program":
 { Args: { "p_business_id": string,"p_program_id": string }; Returns: undefined
                            },
+"measure_metric":
+{ Args: { "p_business_id": string,"p_metric": string }; Returns: number
+                           },
 "my_business_role":
 { Args: { "p_business_id": string }; Returns: Database["public"]['Enums']["business_role"]
                            },
@@ -2337,6 +2424,12 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "business_id": string,"business_name": string,"detail": string,"item_key": string,"kind": string,"link": string,"severity": number,"since": string,"title": string
             }[]
+                           },
+"pack_benchmark":
+{ Args: { "p_business_id": string,"p_metric": string }; Returns: Json
+                           },
+"pack_pulse":
+{ Args: { "p_business_id": string }; Returns: Json
                            },
 "partner_sponsor_business":
 { Args: { "p_active"?: boolean,"p_business_id": string,"p_provider_id": string }; Returns: undefined
@@ -2394,6 +2487,9 @@ isOneToOne: false
 "record_entry":
 { Args: { "p_business_id": string,"p_fields": Json,"p_kind": Database["public"]['Enums']["record_kind"] }; Returns: string
                            },
+"record_pack_entry":
+{ Args: { "p_business_id": string,"p_data": Json,"p_entity": string,"p_occurred_at"?: string,"p_pack_key": string }; Returns: string
+                           },
 "record_webhook_attempt":
 { Args: { "p_delivery_id": string,"p_error": string,"p_final": boolean,"p_status": number }; Returns: undefined
                            },
@@ -2444,6 +2540,9 @@ isOneToOne: false
                            },
 "rollup_metrics":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"run_pack_workflows":
+{ Args: { "p_business_id"?: string }; Returns: number
                            },
 "run_routine_ops":
 { Args: { "p_business_id"?: string }; Returns: Json
@@ -2514,6 +2613,9 @@ isOneToOne: false
                            },
 "upsert_market":
 { Args: { "p_market": Json }; Returns: undefined
+                           },
+"upsert_pack":
+{ Args: { "p_definition": Json,"p_key": string,"p_name": string }; Returns: undefined
                            },
 "verification_history":
 { Args: { "p_business_id": string }; Returns: Json

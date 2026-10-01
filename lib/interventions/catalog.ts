@@ -26,12 +26,20 @@ export const DIMENSION_METRIC: Record<string, MetricKey> = {
   evidence_strength: "records_verified_30",
 };
 
+/** B31: vertical pack metrics are "pack:<pack>:<metric>" ratios configured in the database. */
+export const isPackMetric = (metric: string) => metric.startsWith("pack:");
+
+export function metricLabel(metric: string) {
+  return METRICS[metric as MetricKey]?.label ?? (isPackMetric(metric) ? metric.split(":")[2]!.replaceAll("_", " ") : metric);
+}
+
 export function formatMetric(metric: string, value: number, currency: string) {
+  if (isPackMetric(metric)) return `${Math.round(value * 1000) / 10}%`;
   const m = METRICS[metric as MetricKey];
   return m?.money ? formatMoney(Math.round(value), currency) : String(Math.round(value * 10) / 10);
 }
 
-export function isImprovement(metric: string, delta: number) {
-  const m = METRICS[metric as MetricKey];
-  return m ? (m.direction === "up" ? delta > 0 : delta < 0) : false;
+export function isImprovement(metric: string, delta: number, direction?: "up" | "down" | string) {
+  const d = METRICS[metric as MetricKey]?.direction ?? direction;
+  return d ? (d === "up" ? delta > 0 : delta < 0) : false;
 }

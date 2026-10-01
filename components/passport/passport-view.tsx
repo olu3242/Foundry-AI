@@ -2,7 +2,7 @@ import { BadgeCheck, Building2, FileCheck2, Landmark, PenLine, ShieldCheck } fro
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
 import { DIMENSION_LABEL, type Dimension } from "@/lib/pulse/score";
-import { METRICS, formatMetric, type MetricKey } from "@/lib/interventions/catalog";
+import { formatMetric, metricLabel } from "@/lib/interventions/catalog";
 import type { PassportFacts, PassportPulse, PassportSection, Provenance } from "@/lib/passport/facts";
 
 export const LADDER: { level: Provenance; label: string; description: string; Icon: typeof PenLine }[] = [
@@ -120,7 +120,7 @@ export function PassportView({ facts, pulse, sections }: { facts: PassportFacts;
                 <ShieldCheck className="size-4 text-growth" aria-hidden />
                 <span className="font-medium">{o.title}</span>
                 <span className="text-muted-foreground">
-                  {METRICS[o.metric as MetricKey]?.label}: {formatMetric(o.metric, o.baseline, facts.currency)} → {formatMetric(o.metric, o.observed, facts.currency)}
+                  {metricLabel(o.metric)}: {formatMetric(o.metric, o.baseline, facts.currency)} → {formatMetric(o.metric, o.observed, facts.currency)}
                 </span>
                 <span className="ml-auto text-xs text-muted-foreground">checked by {o.verifier_role === "program_admin" ? "a program" : "a partner"} · {date(o.at)}</span>
               </li>

@@ -6,12 +6,15 @@ import { formatMoney } from "@/lib/money";
 /** Active solutions with their latest active version and funnel (B13). */
 export async function loadSolutions(supabase: ServerSupabase, businessId?: string): Promise<SolutionRow[]> {
   const [{ data: solutions }, { data: stats }, { data: experiments }] = await Promise.all([
-    supabase.from("solutions").select("id, key, name, summary, target_metric, default_window_days, delivery, pricing_model, price_minor, currency, providers(name), solution_versions(id, version, status)").eq("status", "active").order("name"),
+    supabase.from("solutions").select("id, key, name, summary, target_metric, default_window_days, delivery, pricing_model, price_minor, currency, providers(name), solution_versions(id, version, status), vertical_pack").eq("status", "active").order("name"),
     supabase.rpc("solution_effectiveness", {}),
     // B29: while an experiment runs, the business sees its assigned arm's version.
     businessId ? supabase.rpc("experiment_versions_for", { p_business_id: businessId }) : Promise.resolve({ data: [] }),
   ]);
-  return (solutions ?? []).flatMap((s) => {
+  // B31: vertical pack solutions only for businesses that use that pack.
+  const { data: packs } = businessId ? await supabase.from("business_packs").select("pack_key").eq("business_id", businessId) : { data: [] };
+  const myPacks = new Set((packs ?? []).map((p) => p.pack_key));
+  return (solutions ?? []).filter((s) => !s.vertical_pack || myPacks.has(s.vertical_pack)).flatMap((s) => {
     const assigned = experiments?.find((e) => e.solution_id === s.id)?.solution_version_id;
     const v = s.solution_versions.find((x) => x.id === assigned)
       ?? s.solution_versions.filter((x) => x.status === "active").sort((a, b) => b.version - a.version)[0];

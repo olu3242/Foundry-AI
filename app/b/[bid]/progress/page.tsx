@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
 import { StartPlanForm } from "@/components/progress/start-plan-form";
-import { METRICS, formatMetric, type MetricKey } from "@/lib/interventions/catalog";
+import { formatMetric, metricLabel } from "@/lib/interventions/catalog";
 import { formatDate } from "@/lib/utils";
 import { abandonPlan, completePlan, verifyResult } from "./actions";
 import { SolutionList } from "@/components/progress/solution-list";
@@ -56,7 +56,7 @@ export default async function ProgressPage({ params }: { params: Promise<{ bid: 
           </Card>
           {plans?.map((p) => {
             const o = Array.isArray(p.outcomes) ? p.outcomes[0] : p.outcomes;
-            const metric = METRICS[p.target_metric as MetricKey];
+            const metric = { label: metricLabel(p.target_metric) };
             return (
               <article key={p.id} className="glass space-y-3 p-4" aria-label={p.title}>
                 <header className="flex flex-wrap items-center gap-2">

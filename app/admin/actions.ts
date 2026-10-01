@@ -203,3 +203,22 @@ export async function acknowledgeIncident(formData: FormData) {
   await supabase.rpc("acknowledge_incident", { p_id: id });
   revalidatePath("/admin/control");
 }
+
+// ─── B31 vertical packs ───────────────────────────────────────────────────────
+export async function savePack(_: unknown, formData: FormData) {
+  await requireUser("/admin");
+  const f = z.object({ key: z.string().regex(/^[a-z_]{3,40}$/), name: z.string().trim().min(3).max(120), definition: z.string().max(50_000) })
+    .safeParse(Object.fromEntries(formData));
+  if (!f.success) return { ok: false as const, error: "Key (lowercase/underscores), name and definition are required." };
+  let definition: Json;
+  try {
+    definition = JSON.parse(f.data.definition) as Json;
+  } catch {
+    return { ok: false as const, error: "The definition must be valid JSON." };
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("upsert_pack", { p_key: f.data.key, p_name: f.data.name, p_definition: definition });
+  if (error) return { ok: false as const, error: error.message };
+  revalidatePath("/admin/packs");
+  return { ok: true as const, message: "Pack saved. Businesses can turn it on in Settings." };
+}

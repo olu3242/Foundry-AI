@@ -30,17 +30,23 @@ export const measureOutcomeJob: JobHandler = async ({ job, admin }) => {
   const { data: metrics, error } = await admin.rpc("pulse_metrics", { p_business_id: i.business_id });
   if (error) throw error;
   const m = metrics as Record<string, number>;
-  const observed = Number(m[i.target_metric] ?? 0);
+  // B31: vertical pack metrics are measured by the configured pack engine.
+  let observed = Number(m[i.target_metric] ?? 0);
+  if (i.target_metric.startsWith("pack:")) {
+    const { data: v, error: e } = await admin.rpc("measure_metric", { p_business_id: i.business_id, p_metric: i.target_metric });
+    if (e) throw e;
+    observed = Number(v ?? 0);
+  }
   const baseline = Number(i.baseline_value);
   const delta = observed - baseline;
   const { error: upsertError } = await admin.from("outcomes").upsert({
     intervention_id: i.id, business_id: i.business_id, metric: i.target_metric,
-    baseline_value: baseline, observed_value: observed, delta, improved: isImprovement(i.target_metric, delta),
+    baseline_value: baseline, observed_value: observed, delta, improved: isImprovement(i.target_metric, delta, i.expected_direction),
     window_start: i.started_at, window_end: new Date().toISOString(),
     evidence: { records_30: m.records_30, records_verified_30: m.records_verified_30, records_captured_30: m.records_captured_30, active_days_30: m.active_days_30 },
   }, { onConflict: "intervention_id" });
   if (upsertError) throw upsertError;
   await admin.from("events").insert({ business_id: i.business_id, type: "outcome.observed", actor_type: "system", entity_type: "intervention", entity_id: i.id,
-    payload: { metric: i.target_metric, delta, improved: isImprovement(i.target_metric, delta) } });
+    payload: { metric: i.target_metric, delta, improved: isImprovement(i.target_metric, delta, i.expected_direction) } });
   return { delta };
 };

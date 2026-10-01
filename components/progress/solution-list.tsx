@@ -1,6 +1,6 @@
 import { StartPlanForm } from "@/components/progress/start-plan-form";
 import { StartProviderForm } from "@/components/marketplace/start-provider-form";
-import { METRICS, type MetricKey } from "@/lib/interventions/catalog";
+import { metricLabel } from "@/lib/interventions/catalog";
 
 export type SolutionRow = {
   key: string; name: string; summary: string; target_metric: string; default_window_days: number;
@@ -18,7 +18,7 @@ export function SolutionList({ businessId, rows, canStart }: { businessId: strin
             <div className="min-w-0 flex-1">
               <p className="font-medium">{s.name} <span className="text-xs text-muted-foreground">v{s.version}{s.provider ? ` · by ${s.provider}` : ""}{s.price ? ` · ${s.price}` : ""}</span></p>
               <p className="text-sm text-muted-foreground">{s.summary}</p>
-              <p className="text-xs text-muted-foreground">Moves: {METRICS[s.target_metric as MetricKey]?.label} · {s.default_window_days} days</p>
+              <p className="text-xs text-muted-foreground">Moves: {metricLabel(s.target_metric)} · {s.default_window_days} days</p>
             </div>
             {canStart && (s.provider_led
               ? <StartProviderForm businessId={businessId} versionId={s.version_id} provider={s.provider ?? "the provider"} />

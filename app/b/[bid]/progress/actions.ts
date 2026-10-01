@@ -13,7 +13,7 @@ const metricKeys = Object.keys(METRICS) as [MetricKey, ...MetricKey[]];
 
 export async function startPlan(_: ActionState, formData: FormData): Promise<ActionState> {
   const parsed = z.object({
-    businessId: z.uuid(), title: z.string().trim().min(3).max(160), metric: z.enum(metricKeys),
+    businessId: z.uuid(), title: z.string().trim().min(3).max(160), metric: z.union([z.enum(metricKeys), z.string().regex(/^pack:[a-z_]+:[a-z_]+$/)]),
     windowDays: z.coerce.number().int().min(1).max(180), sourceActionId: z.uuid().optional(), solutionVersionId: z.uuid().optional(),
   }).safeParse(Object.fromEntries([...formData.entries()].filter(([, v]) => v !== "")));
   if (!parsed.success) return fail("Please check the plan details.");
