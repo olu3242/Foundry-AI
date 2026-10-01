@@ -44,6 +44,7 @@ export default async function ProgressPage({ params }: { params: Promise<{ bid: 
     <>
       <PageHeader eyebrow="Progress" title="From records to results"
         description="Plans you run, what changed, and who has checked it. Results are measured from your own records; a partner confirms them." />
+      <a href={`/b/${bid}/memory`} className="mb-4 inline-block text-sm font-medium text-primary hover:underline">Your business history →</a>
       <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
         <div className="space-y-4">
           <Card>

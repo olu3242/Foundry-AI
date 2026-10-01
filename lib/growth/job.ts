@@ -5,6 +5,11 @@ import type { Json } from "@/lib/supabase/database.types";
 import { growthActions, type Debtor } from "./rules";
 import { rankSolutions, type Ranked } from "@/lib/learning/rank";
 
+type MemoryContext = {
+  prior_plans: { title: string; when: string; status: string; result: { improved: boolean; delta: number; layer: string } | null }[];
+  declined: number; recurring: { at_risk: number; checks: number } | null;
+};
+
 /** Lineage: bump when rules or ranking change so evaluation can compare versions. */
 export const GENERATOR = "rules-v2-ranked";
 
@@ -65,12 +70,30 @@ export const growthJob: JobHandler = async ({ job, admin }) => {
   }
 
   const drafts = growthActions({ businessName: business.name, currency: business.currency, pulse: pulse ?? [], debtors: [...debtors.values()], stock });
+  // B32: recommendations carry the business's own history on the topic (facts only, with evidence layers).
+  await admin.rpc("refresh_business_memory", { p_business_id: bid });
+  const memory = new Map<string, MemoryContext>();
+  for (const dim of new Set(drafts.filter((d) => d.action_type === "growth.recommend").map((d) => String(d.payload.dimension)))) {
+    const { data } = await admin.rpc("memory_context", { p_business_id: bid, p_topic: dim });
+    if (data) memory.set(dim, data as unknown as MemoryContext);
+  }
   for (const d of drafts) {
     const sol = d.action_type === "growth.recommend" ? byDimension.get(String(d.payload.dimension)) : null;
     if (sol) {
       d.payload = { ...d.payload, solution_key: sol.key, solution_version_id: sol.version_id, metric: sol.target_metric, window_days: sol.default_window_days, plan_title: sol.name };
       (d as typeof d & { rank?: Ranked }).rank = sol.rank;
       d.body = `${d.body} Suggested plan: ${sol.name}. ${sol.summary}`;
+    }
+    const ctx = d.action_type === "growth.recommend" ? memory.get(String(d.payload.dimension)) : undefined;
+    if (ctx) {
+      d.payload = { ...d.payload, history: ctx as unknown as Json };
+      const last = ctx.prior_plans[0];
+      if (last) {
+        const when = new Date(last.when).toLocaleDateString("en", { month: "short", year: "numeric" });
+        const res = last.result ? (last.result.improved ? `it improved (${last.result.layer})` : `it did not improve (${last.result.layer})`) : `it was ${last.status}`;
+        d.body = `${d.body} Last time (${when}) you ran "${last.title}": ${res}.`;
+      }
+      if (ctx.recurring) d.body = `${d.body} This has come up ${ctx.recurring.at_risk} times in your last ${ctx.recurring.checks} Pulse checks.`;
     }
   }
   const levelOf = new Map((policies ?? []).map((p) => [p.action_type, p.level]));

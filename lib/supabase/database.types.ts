@@ -367,6 +367,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"business_memory": {
+                  Row: {
+                    "business_id": string,"detail": NonNullable<Json>,"id": string,"kind": string,"layer": string,"occurred_at": string,"refreshed_at": string,"source_id": string,"source_type": string,"title": string,"topic": string | null
+                  }
+                  Insert: {
+                    "business_id": string,"detail"?: NonNullable<Json>,"id"?: string,"kind": string,"layer": string,"occurred_at": string,"refreshed_at"?: string,"source_id": string,"source_type": string,"title": string,"topic"?: string | null
+                  }
+                  Update: {
+                    "business_id"?: string,"detail"?: NonNullable<Json>,"id"?: string,"kind"?: string,"layer"?: string,"occurred_at"?: string,"refreshed_at"?: string,"source_id"?: string,"source_type"?: string,"title"?: string,"topic"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "business_memory_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"business_packs": {
                   Row: {
                     "activated_at": string,"activated_by": string | null,"business_id": string,"pack_key": string
@@ -2414,6 +2433,29 @@ isOneToOne: false
 "measure_metric":
 { Args: { "p_business_id": string,"p_metric": string }; Returns: number
                            },
+"memory_context":
+{ Args: { "p_business_id": string,"p_topic": string }; Returns: Json
+                           },
+"memory_timeline":
+{ Args: { "p_business_id": string,"p_include_inferred"?: boolean,"p_limit"?: number }; Returns: {
+              "business_id": string,
+"detail": NonNullable<Json>,
+"id": string,
+"kind": string,
+"layer": string,
+"occurred_at": string,
+"refreshed_at": string,
+"source_id": string,
+"source_type": string,
+"title": string,
+"topic": string | null
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "business_memory"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
 "my_business_role":
 { Args: { "p_business_id": string }; Returns: Database["public"]['Enums']["business_role"]
                            },
@@ -2492,6 +2534,9 @@ isOneToOne: false
                            },
 "record_webhook_attempt":
 { Args: { "p_delivery_id": string,"p_error": string,"p_final": boolean,"p_status": number }; Returns: undefined
+                           },
+"refresh_business_memory":
+{ Args: { "p_business_id": string }; Returns: number
                            },
 "register_provider":
 { Args: { "p_contact": string,"p_description"?: string,"p_kind": string,"p_name": string }; Returns: string
