@@ -530,6 +530,43 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"decisions": {
+                  Row: {
+                    "agent_action_id": string | null,"authority": NonNullable<Json>,"business_id": string,"chosen": string | null,"created_at": string,"decided_at": string | null,"decided_by": string | null,"decided_by_user": string | null,"evidence": NonNullable<Json>,"id": string,"inputs_digest": string,"intervention_id": string | null,"method_version": string,"options": NonNullable<Json>,"recommended": string | null,"result": Json | null,"signal": NonNullable<Json>,"status": string,"topic": string
+                  }
+                  Insert: {
+                    "agent_action_id"?: string | null,"authority": NonNullable<Json>,"business_id": string,"chosen"?: string | null,"created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"decided_by_user"?: string | null,"evidence": NonNullable<Json>,"id"?: string,"inputs_digest": string,"intervention_id"?: string | null,"method_version"?: string,"options": NonNullable<Json>,"recommended"?: string | null,"result"?: Json | null,"signal": NonNullable<Json>,"status"?: string,"topic": string
+                  }
+                  Update: {
+                    "agent_action_id"?: string | null,"authority"?: NonNullable<Json>,"business_id"?: string,"chosen"?: string | null,"created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"decided_by_user"?: string | null,"evidence"?: NonNullable<Json>,"id"?: string,"inputs_digest"?: string,"intervention_id"?: string | null,"method_version"?: string,"options"?: NonNullable<Json>,"recommended"?: string | null,"result"?: Json | null,"signal"?: NonNullable<Json>,"status"?: string,"topic"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "decisions_agent_action_id_fkey"
+      columns: ["agent_action_id"]
+isOneToOne: false
+      referencedRelation: "agent_actions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "decisions_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "decisions_decided_by_user_fkey"
+      columns: ["decided_by_user"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "decisions_intervention_id_fkey"
+      columns: ["intervention_id"]
+isOneToOne: false
+      referencedRelation: "interventions"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"engagement_updates": {
                   Row: {
                     "created_at": string,"created_by": string,"engagement_id": string,"id": string,"note": string
@@ -2327,6 +2364,9 @@ isOneToOne: false
 "create_business":
 { Args: { "p_country_code"?: string,"p_currency"?: string,"p_name": string,"p_sector"?: string,"p_timezone"?: string }; Returns: string
                            },
+"create_decision":
+{ Args: { "p_agent_action_id"?: string,"p_business_id": string,"p_topic": string }; Returns: string
+                           },
 "create_experiment":
 { Args: { "p_arms": Json,"p_eligibility"?: Json,"p_guardrails"?: Json,"p_hypothesis": string,"p_key": string,"p_max_duration_days"?: number,"p_min_per_arm"?: number,"p_name": string,"p_primary_metric"?: string,"p_solution_id": string,"p_surface": string }; Returns: string
                            },
@@ -2354,6 +2394,9 @@ isOneToOne: false
 "decide_evidence_package":
 { Args: { "p_amount_minor"?: number,"p_note"?: string,"p_package_id": string,"p_status": Database["public"]['Enums']["package_status"] }; Returns: undefined
                            },
+"decision_quality":
+{ Args: { "p_days"?: number }; Returns: Json
+                           },
 "deprecate_solution_version":
 { Args: { "p_reason": string,"p_version_id": string }; Returns: undefined
                            },
@@ -2379,6 +2422,9 @@ isOneToOne: false
 { Args: { "p_business_id": string }; Returns: {
               "solution_id": string,"solution_version_id": string
             }[]
+                           },
+"explain_decision":
+{ Args: { "p_id": string }; Returns: Json
                            },
 "extraction_eval":
 { Args: { "p_days"?: number }; Returns: {

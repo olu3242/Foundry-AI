@@ -114,7 +114,7 @@ export const growthJob: JobHandler = async ({ job, admin }) => {
       continue;
     }
     const auto = mode === "auto_notify";
-    const { error } = await admin.from("agent_actions").insert({
+    const { data: inserted, error } = await admin.from("agent_actions").insert({
       business_id: bid, agent_run_id: run?.id ?? null, action_type: d.action_type, autonomy_level: level,
       title: d.title, body: d.body, payload: d.payload as { [key: string]: Json }, source: d.source, dedupe_key: d.dedupe_key,
       status: auto ? "executed" : "proposed", executed_at: auto ? new Date().toISOString() : null,
@@ -125,12 +125,25 @@ export const growthJob: JobHandler = async ({ job, admin }) => {
         ? { method: (d as typeof d & { rank?: Ranked }).rank!.method, completed: (d as typeof d & { rank?: Ranked }).rank!.completed, verified_improved: (d as typeof d & { rank?: Ranked }).rank!.verified_improved }
         : null,
       expires_at: new Date(Date.now() + 14 * 86_400_000).toISOString(),
-    });
+    }).select("id").maybeSingle();
     if (error && error.code !== "23505") throw error;
+    // B33: every recommendation is backed by a canonical, replayable decision object.
+    if (inserted && d.action_type === "growth.recommend") {
+      const { error: decisionError } = await admin.rpc("create_decision", { p_business_id: bid, p_topic: String(d.payload.dimension), p_agent_action_id: inserted.id });
+      if (decisionError) throw decisionError;
+    }
     if (!error && auto) {
       counts.notified += 1;
       await admin.from("events").insert({ business_id: bid, type: "agent.notified", actor_type: "agent", entity_type: "agent_action", payload: { title: d.title, action_type: d.action_type } });
     } else if (!error) counts.proposed += 1;
+  }
+  // Retry-safe: any open recommendation without its decision object gets one now.
+  const { data: undecided } = await admin.from("agent_actions").select("id, payload, decisions(id)").eq("business_id", bid)
+    .eq("action_type", "growth.recommend").eq("status", "proposed");
+  for (const a of undecided ?? []) {
+    if (a.decisions.length) continue;
+    const { error: decisionError } = await admin.rpc("create_decision", { p_business_id: bid, p_topic: String((a.payload as { dimension?: string }).dimension), p_agent_action_id: a.id });
+    if (decisionError) throw decisionError;
   }
   if (counts.proposed) {
     await admin.from("events").insert({ business_id: bid, type: "agent.proposed", actor_type: "agent", payload: { count: counts.proposed } });
