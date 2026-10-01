@@ -892,6 +892,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"evidence_register": {
+                  Row: {
+                    "batch": string,"business_id": string | null,"claim": string,"confidence": string,"consent_scope": string,"created_at": string,"date": string,"evidence_id": string,"origin": string,"outcome": string | null,"recorded_by": string | null,"rejected_reason": string | null,"source": string,"verification_state": string
+                  }
+                  Insert: {
+                    "batch": string,"business_id"?: string | null,"claim": string,"confidence": string,"consent_scope": string,"created_at"?: string,"date": string,"evidence_id": string,"origin"?: string,"outcome"?: string | null,"recorded_by"?: string | null,"rejected_reason"?: string | null,"source": string,"verification_state": string
+                  }
+                  Update: {
+                    "batch"?: string,"business_id"?: string | null,"claim"?: string,"confidence"?: string,"consent_scope"?: string,"created_at"?: string,"date"?: string,"evidence_id"?: string,"origin"?: string,"outcome"?: string | null,"recorded_by"?: string | null,"rejected_reason"?: string | null,"source"?: string,"verification_state"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "evidence_register_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "evidence_register_recorded_by_fkey"
+      columns: ["recorded_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"expenses": {
                   Row: {
                     "amount_minor": number,"business_id": string,"category": string,"created_at": string,"created_by": string | null,"currency": string,"description": string | null,"id": string,"occurred_at": string,"payment_method": Database["public"]['Enums']["payment_method"],"provenance": Database["public"]['Enums']["provenance"],"source_capture_id": string | null,"source_draft_id": string | null,"supersedes": string | null,"supplier": string | null,"updated_at": string,"voided_at": string | null
@@ -2226,6 +2251,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"real_world_certifications": {
+                  Row: {
+                    "id": string,"overall": string,"result": NonNullable<Json>,"taken_at": string,"taken_by": string | null,"technical": string
+                  }
+                  Insert: {
+                    "id"?: string,"overall": string,"result": NonNullable<Json>,"taken_at"?: string,"taken_by"?: string | null,"technical": string
+                  }
+                  Update: {
+                    "id"?: string,"overall"?: string,"result"?: NonNullable<Json>,"taken_at"?: string,"taken_by"?: string | null,"technical"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "real_world_certifications_taken_by_fkey"
+      columns: ["taken_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"record_corrections": {
                   Row: {
                     "action": string,"after": Json | null,"before": Json | null,"business_id": string,"corrected_at": string,"corrected_by": string,"id": string,"issue_id": string | null,"reason": string | null,"replacement_id": string | null,"subject_id": string,"subject_type": string
@@ -2938,6 +2982,9 @@ isOneToOne: false
               "collected_minor": number,"customers_served": number,"expenses_minor": number,"net_minor": number,"receivable_minor": number,"sales_count": number,"sales_minor": number
             }[]
                            },
+"certify_real_world":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
 "channel_economics":
 { Args: { "p_months"?: number }; Returns: Json
                            },
@@ -3113,6 +3160,9 @@ isOneToOne: false
                            },
 "give_pulse_feedback":
 { Args: { "p_business_id": string,"p_computed_on": string,"p_dimension": string,"p_note"?: string,"p_verdict": string }; Returns: undefined
+                           },
+"harvest_evidence":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "hit_rate_limit":
 { Args: { "p_key": string,"p_limit": number,"p_window_seconds": number }; Returns: boolean
@@ -3313,6 +3363,12 @@ isOneToOne: false
 "read_dataset":
 { Args: { "p_key": string,"p_purpose": string }; Returns: Json
                            },
+"real_world_certification":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"real_world_evidence":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "reap_stale_jobs":
 { Args: { "p_timeout"?: string }; Returns: number
                            },
@@ -3354,6 +3410,9 @@ isOneToOne: false
 "refresh_business_memory":
 { Args: { "p_business_id": string }; Returns: number
                            },
+"register_evidence":
+{ Args: { "p_batch": string,"p_business_id": string,"p_claim": string,"p_confidence": string,"p_date": string,"p_outcome": string,"p_source": string,"p_verification_state": string }; Returns: string
+                           },
 "register_provider":
 { Args: { "p_contact": string,"p_description"?: string,"p_kind": string,"p_name": string }; Returns: string
                            },
@@ -3362,6 +3421,9 @@ isOneToOne: false
                            },
 "reject_draft":
 { Args: { "p_draft_id": string }; Returns: undefined
+                           },
+"reject_evidence":
+{ Args: { "p_evidence_id": string,"p_reason": string }; Returns: undefined
                            },
 "reproduce_forecast":
 { Args: { "p_forecast_id": string }; Returns: Json

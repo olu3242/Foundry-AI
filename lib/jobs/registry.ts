@@ -42,6 +42,13 @@ export const handlers: Record<string, JobHandler> = {
   "message.send": sendMessageJob,
   "payments.reconcile": reconcilePaymentsJob,
   "fx.refresh": refreshFxJob,
+  "evidence.harvest": async ({ admin }) => {
+    const { data, error } = await admin.rpc("harvest_evidence");
+    if (error) throw error;
+    const { data: certification, error: certError } = await admin.rpc("certify_real_world");
+    if (certError) throw certError;
+    return { harvest: data, certification };
+  },
   "pilots.advance": async ({ admin }) => {
     const { data, error } = await admin.rpc("advance_pilots");
     if (error) throw error;

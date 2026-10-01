@@ -323,3 +323,28 @@ export async function savePlanPrice(_: unknown, formData: FormData) {
   revalidatePath("/admin/fx");
   return { ok: true as const, message: "Price saved." };
 }
+
+// ─── B46–B50 evidence ─────────────────────────────────────────────────────────
+export async function harvestEvidence() {
+  await requireUser("/admin");
+  const supabase = await createClient();
+  await supabase.rpc("harvest_evidence");
+  await supabase.rpc("certify_real_world");
+  revalidatePath("/admin/evidence");
+}
+
+export async function registerEvidence(_: unknown, formData: FormData) {
+  const f = z.object({
+    business_id: z.union([z.uuid(), z.literal("")]), batch: z.enum(["B46", "B47", "B48", "B49"]), claim: z.string().trim().min(5).max(500),
+    source: z.string().trim().min(5).max(300), date: z.iso.date(), verification_state: z.enum(["observed", "operator_verified", "partner_verified", "third_party_verified"]),
+    outcome: z.string().trim().max(120), confidence: z.enum(["low", "medium", "high"]),
+  }).safeParse(Object.fromEntries(formData));
+  if (!f.success) return { ok: false as const, error: "Fill in the claim, source, date, verification and confidence." };
+  await requireUser("/admin");
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("register_evidence", { p_business_id: (f.data.business_id || null) as string, p_batch: f.data.batch, p_claim: f.data.claim,
+    p_source: f.data.source, p_date: f.data.date, p_verification_state: f.data.verification_state, p_outcome: f.data.outcome, p_confidence: f.data.confidence });
+  if (error) return { ok: false as const, error: error.message };
+  revalidatePath("/admin/evidence");
+  return { ok: true as const, message: "Evidence recorded." };
+}

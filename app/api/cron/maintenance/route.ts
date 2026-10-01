@@ -20,6 +20,7 @@ export async function GET(request: Request) {
       await enqueue("pulse.compute", { businessId: b.id, dedupeKey: `pulse:${b.id}`, payload: { day } });
     }
     await enqueue("fx.refresh", { dedupeKey: `fx:${day}` });
+    await enqueue("evidence.harvest", { dedupeKey: `evidence:${day}`, runAt: new Date(Date.now() + 70 * 60_000) });
     await enqueue("pilots.advance", { dedupeKey: `pilots:${day}`, runAt: new Date(Date.now() + 55 * 60_000) });
     await enqueue("metrics.rollup", { dedupeKey: `metrics:${day}`, runAt: new Date(Date.now() + 30 * 60_000) });
     await enqueue("learning.snapshot", { dedupeKey: `learning:${day}`, runAt: new Date(Date.now() + 20 * 60_000) });
