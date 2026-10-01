@@ -19,8 +19,8 @@ export function ExperimentForm({ solutions }: { solutions: Sol[] }) {
       <Input name="hypothesis" aria-label="Hypothesis" placeholder="Adding a WhatsApp step improves results" required className="sm:col-span-2" />
       <Select name="solutionId" aria-label="Solution" value={sid} onChange={(e) => setSid(e.target.value)}>{solutions.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</Select>
       <div className="flex gap-2">
-        <Select name="control" aria-label="Control version">{versions.map((v) => <option key={v.id} value={v.id}>control: v{v.version}</option>)}</Select>
-        <Select name="treatment" aria-label="Treatment version" defaultValue={versions.at(-1)?.id}>{versions.map((v) => <option key={v.id} value={v.id}>treatment: v{v.version}</option>)}</Select>
+        <Select key={`c-${sid}`} name="control" aria-label="Control version">{versions.map((v) => <option key={v.id} value={v.id}>control: v{v.version}</option>)}</Select>
+        <Select key={`t-${sid}`} name="treatment" aria-label="Treatment version" defaultValue={versions.at(-1)?.id}>{versions.map((v) => <option key={v.id} value={v.id}>treatment: v{v.version}</option>)}</Select>
       </div>
       <Input name="controlWeight" type="number" min={0} max={100} defaultValue={50} aria-label="Control share (%)" />
       <Select name="metric" aria-label="Primary metric"><option value="improved_rate">Improved rate</option><option value="completion_rate">Completion rate</option></Select>

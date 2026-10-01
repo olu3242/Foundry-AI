@@ -1,11 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { createFreshBusiness, ensureBusiness, makePlatformAdmin, signInWithPhone, TEST_PHONES } from "./helpers";
+import { createFreshBusiness, ensureBusiness, makePlatformAdmin, service, signInWithPhone, TEST_PHONES } from "./helpers";
 
 test("B29 a solution change runs as a randomized experiment with sticky assignment and measured results", async ({ page, browser }) => {
   test.setTimeout(150_000);
   await signInWithPhone(page, TEST_PHONES.kola);
   await ensureBusiness(page, "Kola Foods");
   await makePlatformAdmin(TEST_PHONES.kola);
+  // Fixture reset: only one experiment may run per solution; stop leftovers from earlier runs.
+  await service("experiments?status=eq.running", { method: "PATCH", body: JSON.stringify({ status: "stopped", ended_at: new Date().toISOString() }) });
   await page.goto("/admin/experiments");
 
   const variant = page.getByLabel("Publish a variant");
@@ -21,6 +23,7 @@ test("B29 a solution change runs as a randomized experiment with sticky assignme
   await form.getByLabel("Hypothesis").fill("A WhatsApp offer step brings more customers back");
   await form.getByLabel("Solution", { exact: true }).selectOption({ label: "Win back customers" });
   const treatment = await form.getByLabel("Treatment version").locator("option").last().textContent();
+  await form.getByLabel("Treatment version").selectOption({ label: treatment! });
   // Everyone to treatment so the assertion below is deterministic.
   await form.getByLabel("Control share (%)").fill("0");
   await form.getByRole("button", { name: "Create experiment" }).click();
