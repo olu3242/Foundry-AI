@@ -24,7 +24,10 @@ export const handlers: Record<string, JobHandler> = {
   "learning.snapshot": async ({ admin }) => {
     const { data, error } = await admin.rpc("take_eval_snapshot");
     if (error) throw error;
-    return { rows: data };
+    // B38: forecasts (backtests), decisions and Pulse precision join the same drift history.
+    const { data: more, error: moreError } = await admin.rpc("take_intelligence_snapshot");
+    if (moreError) throw moreError;
+    return { rows: data, intelligence: more };
   },
   "benchmarks.compute": async ({ admin }) => {
     const { data, error } = await admin.rpc("compute_benchmarks");

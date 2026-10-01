@@ -961,6 +961,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"forecast_evaluations": {
+                  Row: {
+                    "abs_pct_error": number | null,"actual": number | null,"business_id": string,"evaluated_at": string,"forecast_id": string,"high": number | null,"horizon_end": string,"in_interval": boolean | null,"kind": string,"low": number | null,"point": number | null
+                  }
+                  Insert: {
+                    "abs_pct_error"?: number | null,"actual"?: number | null,"business_id": string,"evaluated_at"?: string,"forecast_id": string,"high"?: number | null,"horizon_end": string,"in_interval"?: boolean | null,"kind": string,"low"?: number | null,"point"?: number | null
+                  }
+                  Update: {
+                    "abs_pct_error"?: number | null,"actual"?: number | null,"business_id"?: string,"evaluated_at"?: string,"forecast_id"?: string,"high"?: number | null,"horizon_end"?: string,"in_interval"?: boolean | null,"kind"?: string,"low"?: number | null,"point"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "forecast_evaluations_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "forecast_evaluations_forecast_id_fkey"
+      columns: ["forecast_id"]
+isOneToOne: true
+      referencedRelation: "forecasts"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"forecasts": {
                   Row: {
                     "as_of": string,"assumptions": NonNullable<Json>,"basis": string,"business_id": string,"confidence": string,"horizon_days": number,"id": string,"input_digest": string,"inputs": NonNullable<Json>,"kind": string,"method": string,"method_version": string,"request": string | null,"result": Json | null,"subject_id": string | null
@@ -2585,6 +2610,9 @@ isOneToOne: false
 "evaluate_experiments":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"evaluate_forecasts":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "experiment_report":
 { Args: { "p_id": string }; Returns: Json
                            },
@@ -2615,6 +2643,9 @@ isOneToOne: false
                            },
 "integrity_report":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"intelligence_quality":
+{ Args: { "p_days"?: number }; Returns: Json
                            },
 "join_program":
 { Args: { "p_business_id": string,"p_consent": boolean,"p_join_code": string }; Returns: string
@@ -2897,6 +2928,9 @@ isOneToOne: false
 { Args: { "p_business_id": string }; Returns: Json
                            },
 "take_eval_snapshot":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"take_intelligence_snapshot":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
 "upsert_market":
