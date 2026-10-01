@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { publicEnv } from "@/lib/env";
 
-const PROTECTED = ["/app", "/b/", "/onboarding", "/partner", "/programs", "/admin", "/providers", "/join", "/verify", "/orgs"];
+const PROTECTED = ["/app", "/b/", "/onboarding", "/partner", "/programs", "/admin", "/providers", "/join", "/verify", "/orgs", "/pilots"];
 
 /** B41: strict, per-request nonce CSP (Next applies the nonce to its own scripts). */
 export function contentSecurityPolicy(nonce: string) {

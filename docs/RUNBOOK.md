@@ -9,6 +9,7 @@
   - test overrides (`*_API_BASE`, `ALLOW_PRIVATE_EGRESS`)
   - incomplete provider credentials
   - non-live payment keys
+- `platform_settings.environment = "production"`, set once on the production database only. Only then are new businesses classed `real`. Anything created anywhere else (local, staging, demo) is `test` and can never count as pilot, outcome, commercial or certification evidence. A test business can't be promoted to real outside production.
 - `platform_settings.dual_approval = true`. This is the default; it is turned off only by the local seed. Changing it needs an approved change request.
 - Two or more platform admins exist, so changes can be approved.
 - Supabase Auth phone provider is configured. Cron jobs (`/api/cron/jobs`, `/api/cron/maintenance`) are scheduled with `CRON_SECRET`.
@@ -69,3 +70,11 @@ Every outbound call that a customer or configuration can influence (webhooks, pr
 - **Don't publish USD totals until the page shows "USD reportable".** Rates are refreshed daily (`fx.refresh`) when `FX_PROVIDER`/`FX_API_KEY` are set. A rate older than `platform_settings.fx.max_age_hours` (36) is stale. The seeded rates are placeholders.
 - **History is fixed:** each revenue row stores its USD value, computed with the rate in force on the day the revenue happened, and the rate it used (`fx_rate_id`, `fx_placeholder`). Later rates never rewrite it.
 - **Charge in local currency:** set a market price for each plan, for example Growth in GHS. A second admin must approve it. There is no FX conversion at billing.
+
+## Pilots (`/pilots`)
+
+- **Set up:** a pilot sits on a program. Create the program, then the pilot with the program's join code, market, cohort size, dates, escalation window, success metrics and checkpoints. Then press Start.
+- **Joining:** owners join with the program code and consent. Eligibility (market, sector, pack, cohort full) is checked automatically.
+- **Stages:** a daily `pilots.advance` job moves businesses through onboarded → activated → recording → diagnosed → intervention → outcome → retained. Stages only move forward.
+- **Escalation:** businesses quiet longer than the escalation window are marked at risk. A `pilot_stalled` escalation goes to the program's attention queue.
+- **When a pilot completes:** businesses that didn't reach outcome get a failure reason (never activated, stopped recording, …). Operators can override it.

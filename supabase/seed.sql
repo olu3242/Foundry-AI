@@ -21,3 +21,4 @@ values
 
 -- B41: dual approval is ON by default (production). Local development runs single-admin.
 update public.platform_settings set value = 'false' where key = 'dual_approval';
+update public.platform_settings set value = '"local"' where key = 'environment';
