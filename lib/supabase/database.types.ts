@@ -461,6 +461,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"channel_costs": {
+                  Row: {
+                    "amount_usd": number,"channel": string,"created_at": string,"created_by": string | null,"id": string,"month": string,"note": string,"program_id": string | null
+                  }
+                  Insert: {
+                    "amount_usd": number,"channel": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"month": string,"note": string,"program_id"?: string | null
+                  }
+                  Update: {
+                    "amount_usd"?: number,"channel"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"month"?: string,"note"?: string,"program_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "channel_costs_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "channel_costs_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"cost_inputs": {
                   Row: {
                     "amount_usd": number,"category": string,"created_at": string,"id": string,"month": string,"note": string | null
@@ -2299,6 +2324,9 @@ isOneToOne: false
 "activation_status":
 { Args: { "p_business_id": string }; Returns: Json
                            },
+"add_channel_cost":
+{ Args: { "p_amount_usd": number,"p_channel": string,"p_month": string,"p_note": string,"p_program_id"?: string }; Returns: string
+                           },
 "add_cost_input":
 { Args: { "p_amount_usd": number,"p_category": string,"p_month": string,"p_note"?: string }; Returns: undefined
                            },
@@ -2359,6 +2387,9 @@ isOneToOne: false
 { Args: { "p_business_id": string,"p_from": string,"p_to": string }; Returns: {
               "collected_minor": number,"customers_served": number,"expenses_minor": number,"net_minor": number,"receivable_minor": number,"sales_count": number,"sales_minor": number
             }[]
+                           },
+"channel_economics":
+{ Args: { "p_months"?: number }; Returns: Json
                            },
 "check_policy":
 { Args: { "p_business_id": string,"p_key": string,"p_params"?: Json }; Returns: Json

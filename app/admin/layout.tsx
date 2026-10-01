@@ -12,7 +12,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <SimpleShell admin>
       <nav aria-label="Admin" className="mb-6 flex flex-wrap gap-x-4 gap-y-2 text-sm">
-        {[["/admin/control", "Control"], ["/admin/scale", "Scale"], ["/admin/commercial", "Commercial"], ["/admin/retention", "Retention"], ["/admin/trust", "Trust"], ["/admin/policies", "Policies"], ["/admin/experiments", "Experiments"], ["/admin/packs", "Packs"], ["/admin/solutions", "Solutions"], ["/admin/learning", "Learning"], ["/admin/markets", "Markets"]].map(([href, label]) => (
+        {[["/admin/control", "Control"], ["/admin/scale", "Scale"], ["/admin/commercial", "Commercial"], ["/admin/channels", "Channels"], ["/admin/retention", "Retention"], ["/admin/trust", "Trust"], ["/admin/policies", "Policies"], ["/admin/experiments", "Experiments"], ["/admin/packs", "Packs"], ["/admin/solutions", "Solutions"], ["/admin/learning", "Learning"], ["/admin/markets", "Markets"]].map(([href, label]) => (
           <a key={href} href={href} className="font-medium text-muted-foreground hover:text-foreground">{label}</a>
         ))}
       </nav>

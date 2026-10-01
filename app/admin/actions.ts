@@ -222,3 +222,16 @@ export async function savePack(_: unknown, formData: FormData) {
   revalidatePath("/admin/packs");
   return { ok: true as const, message: "Pack saved. Businesses can turn it on in Settings." };
 }
+
+// ─── B35 channel economics ────────────────────────────────────────────────────
+export async function addChannelCost(_: unknown, formData: FormData) {
+  await requireUser("/admin");
+  const f = z.object({ channel: z.enum(["partner_invite", "program_invite", "program_code", "organic"]), month: z.string().regex(/^\d{4}-\d{2}$/),
+    amount: z.coerce.number().min(0), note: z.string().trim().min(3).max(300) }).safeParse(Object.fromEntries(formData));
+  if (!f.success) return { ok: false as const, error: "Channel, month, amount and what the money was for are required." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("add_channel_cost", { p_channel: f.data.channel, p_month: `${f.data.month}-01`, p_amount_usd: f.data.amount, p_note: f.data.note });
+  if (error) return { ok: false as const, error: error.message };
+  revalidatePath("/admin/channels");
+  return { ok: true as const, message: "Recorded." };
+}
