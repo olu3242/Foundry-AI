@@ -187,3 +187,19 @@ export async function evaluateExperiments() {
   await supabase.rpc("evaluate_experiments");
   revalidatePath("/admin/experiments");
 }
+
+// ─── B30 control plane ────────────────────────────────────────────────────────
+export async function detectIncidents() {
+  await requireUser("/admin");
+  const supabase = await createClient();
+  await supabase.rpc("detect_incidents");
+  revalidatePath("/admin/control");
+}
+
+export async function acknowledgeIncident(formData: FormData) {
+  const { id } = z.object({ id: z.uuid() }).parse(Object.fromEntries(formData));
+  await requireUser("/admin");
+  const supabase = await createClient();
+  await supabase.rpc("acknowledge_incident", { p_id: id });
+  revalidatePath("/admin/control");
+}

@@ -836,6 +836,25 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"incidents": {
+                  Row: {
+                    "acknowledged_by": string | null,"detail": NonNullable<Json>,"fingerprint": string,"id": string,"last_seen_at": string,"opened_at": string,"resolved_at": string | null,"severity": string,"source": string,"status": string,"title": string
+                  }
+                  Insert: {
+                    "acknowledged_by"?: string | null,"detail"?: NonNullable<Json>,"fingerprint": string,"id"?: string,"last_seen_at"?: string,"opened_at"?: string,"resolved_at"?: string | null,"severity": string,"source": string,"status"?: string,"title": string
+                  }
+                  Update: {
+                    "acknowledged_by"?: string | null,"detail"?: NonNullable<Json>,"fingerprint"?: string,"id"?: string,"last_seen_at"?: string,"opened_at"?: string,"resolved_at"?: string | null,"severity"?: string,"source"?: string,"status"?: string,"title"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "incidents_acknowledged_by_fkey"
+      columns: ["acknowledged_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"integration_calls": {
                   Row: {
                     "at": string,"error": string | null,"id": number,"identity_id": string | null,"latency_ms": number | null,"method": string,"path": string,"program_id": string | null,"request_id": string | null,"status": number
@@ -2056,6 +2075,9 @@ isOneToOne: false
             "abandon_intervention":
 { Args: { "p_intervention_id": string,"p_reason": string }; Returns: undefined
                            },
+"acknowledge_incident":
+{ Args: { "p_id": string }; Returns: undefined
+                           },
 "activate_policy":
 { Args: { "p_policy_id": string }; Returns: undefined
                            },
@@ -2190,6 +2212,9 @@ isOneToOne: false
 "consume_entitlement":
 { Args: { "p_business_id": string,"p_correlation_id": string,"p_feature": string }; Returns: boolean
                            },
+"control_plane":
+{ Args: { "p_days"?: number }; Returns: Json
+                           },
 "correct_attestation":
 { Args: { "p_attestation_id": string,"p_note": string,"p_result": string }; Returns: string
                            },
@@ -2228,6 +2253,9 @@ isOneToOne: false
                            },
 "deprecate_solution_version":
 { Args: { "p_reason": string,"p_version_id": string }; Returns: undefined
+                           },
+"detect_incidents":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "dispute_attestation":
 { Args: { "p_attestation_id": string,"p_reason": string }; Returns: string
