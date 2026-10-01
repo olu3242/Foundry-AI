@@ -511,6 +511,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"communication_consents": {
+                  Row: {
+                    "business_id": string,"channel": string,"id": string,"phone": string,"recorded_by": string | null,"source": string,"status": string,"updated_at": string
+                  }
+                  Insert: {
+                    "business_id": string,"channel": string,"id"?: string,"phone": string,"recorded_by"?: string | null,"source": string,"status": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "business_id"?: string,"channel"?: string,"id"?: string,"phone"?: string,"recorded_by"?: string | null,"source"?: string,"status"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "communication_consents_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "communication_consents_recorded_by_fkey"
+      columns: ["recorded_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"cost_inputs": {
                   Row: {
                     "amount_usd": number,"category": string,"created_at": string,"id": string,"month": string,"note": string | null
@@ -1191,6 +1216,69 @@ isOneToOne: false
       columns: ["user_id"]
 isOneToOne: false
       referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"message_events": {
+                  Row: {
+                    "business_id": string | null,"detail": NonNullable<Json>,"id": number,"kind": string,"message_id": string | null,"occurred_at": string,"provider": string,"provider_event_id": string | null,"status": string | null
+                  }
+                  Insert: {
+                    "business_id"?: string | null,"detail"?: NonNullable<Json>,"id"?: never,"kind": string,"message_id"?: string | null,"occurred_at"?: string,"provider": string,"provider_event_id"?: string | null,"status"?: string | null
+                  }
+                  Update: {
+                    "business_id"?: string | null,"detail"?: NonNullable<Json>,"id"?: never,"kind"?: string,"message_id"?: string | null,"occurred_at"?: string,"provider"?: string,"provider_event_id"?: string | null,"status"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "message_events_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "message_events_message_id_fkey"
+      columns: ["message_id"]
+isOneToOne: false
+      referencedRelation: "messages"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"message_templates": {
+                  Row: {
+                    "body": string,"channel": string,"created_at": string,"id": string,"key": string,"locale": string,"params": (string)[],"provider_template": string | null,"status": string,"version": number
+                  }
+                  Insert: {
+                    "body": string,"channel": string,"created_at"?: string,"id"?: string,"key": string,"locale"?: string,"params"?: (string)[],"provider_template"?: string | null,"status"?: string,"version"?: number
+                  }
+                  Update: {
+                    "body"?: string,"channel"?: string,"created_at"?: string,"id"?: string,"key"?: string,"locale"?: string,"params"?: (string)[],"provider_template"?: string | null,"status"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"messages": {
+                  Row: {
+                    "attempts": number,"body": string | null,"business_id": string,"channel": string | null,"correlation_id": string,"created_at": string,"delivered_at": string | null,"id": string,"last_error": string | null,"phone": string | null,"provider": string | null,"provider_message_id": string | null,"send_after": string,"sent_at": string | null,"source_id": string | null,"source_type": string,"status": string,"suppression_reason": string | null,"template_id": string | null,"variables": NonNullable<Json>
+                  }
+                  Insert: {
+                    "attempts"?: number,"body"?: string | null,"business_id": string,"channel"?: string | null,"correlation_id": string,"created_at"?: string,"delivered_at"?: string | null,"id"?: string,"last_error"?: string | null,"phone"?: string | null,"provider"?: string | null,"provider_message_id"?: string | null,"send_after"?: string,"sent_at"?: string | null,"source_id"?: string | null,"source_type": string,"status"?: string,"suppression_reason"?: string | null,"template_id"?: string | null,"variables"?: NonNullable<Json>
+                  }
+                  Update: {
+                    "attempts"?: number,"body"?: string | null,"business_id"?: string,"channel"?: string | null,"correlation_id"?: string,"created_at"?: string,"delivered_at"?: string | null,"id"?: string,"last_error"?: string | null,"phone"?: string | null,"provider"?: string | null,"provider_message_id"?: string | null,"send_after"?: string,"sent_at"?: string | null,"source_id"?: string | null,"source_type"?: string,"status"?: string,"suppression_reason"?: string | null,"template_id"?: string | null,"variables"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "messages_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "messages_template_id_fkey"
+      columns: ["template_id"]
+isOneToOne: false
+      referencedRelation: "message_templates"
       referencedColumns: ["id"]
     }
                   ]
@@ -2821,6 +2909,12 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"message_for_send":
+{ Args: { "p_message_id": string }; Returns: Json
+                           },
+"messaging_overview":
+{ Args: { "p_days"?: number }; Returns: Json
+                           },
 "moat_certification":
 { Args: { "p_days"?: number }; Returns: Json
                            },
@@ -2911,6 +3005,15 @@ isOneToOne: false
                            },
 "record_entry":
 { Args: { "p_business_id": string,"p_fields": Json,"p_kind": Database["public"]['Enums']["record_kind"] }; Returns: string
+                           },
+"record_inbound_message":
+{ Args: { "p_event_id": string,"p_from": string,"p_provider": string,"p_text": string }; Returns: string
+                           },
+"record_message_receipt":
+{ Args: { "p_detail": Json,"p_event_id": string,"p_provider": string,"p_provider_message_id": string,"p_status": string }; Returns: boolean
+                           },
+"record_message_send":
+{ Args: { "p_error": string,"p_final": boolean,"p_message_id": string,"p_provider": string,"p_provider_message_id": string }; Returns: undefined
                            },
 "record_pack_entry":
 { Args: { "p_business_id": string,"p_data": Json,"p_entity": string,"p_occurred_at"?: string,"p_pack_key": string }; Returns: string
@@ -3011,6 +3114,9 @@ isOneToOne: false
 "set_experiment_status":
 { Args: { "p_id": string,"p_reason"?: string,"p_status": string }; Returns: undefined
                            },
+"set_message_consent":
+{ Args: { "p_business_id": string,"p_channel": string,"p_opt_in": boolean }; Returns: undefined
+                           },
 "set_org_sla":
 { Args: { "p_org_id": string,"p_sla": Json }; Returns: undefined
                            },
@@ -3062,6 +3168,9 @@ isOneToOne: false
                            },
 "suggest_playbooks":
 { Args: { "p_business_id": string }; Returns: Json
+                           },
+"suppress_message":
+{ Args: { "p_message_id": string,"p_reason": string }; Returns: undefined
                            },
 "take_eval_snapshot":
 { Args: Record<PropertyKey, never>; Returns: number

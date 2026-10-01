@@ -5,6 +5,7 @@ import { growthJob } from "@/lib/growth/job";
 import { marketMatchJob } from "@/lib/market/job";
 import { baselineJob, measureOutcomeJob } from "@/lib/interventions/jobs";
 import { deliverWebhook } from "@/lib/integrations/webhook-job";
+import { sendMessageJob } from "@/lib/messaging/job";
 
 /**
  * Job type → handler. Types are `domain.action`. Feature batches register here;
@@ -36,6 +37,7 @@ export const handlers: Record<string, JobHandler> = {
   },
   "outcome.measure": measureOutcomeJob,
   "webhook.deliver": deliverWebhook,
+  "message.send": sendMessageJob,
   "ops.routine": async ({ admin }) => {
     const { data, error } = await admin.rpc("run_routine_ops", {});
     if (error) throw error;

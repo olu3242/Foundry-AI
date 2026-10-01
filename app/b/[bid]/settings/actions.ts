@@ -89,3 +89,11 @@ export async function setDataSharing(formData: FormData) {
   await supabase.rpc("set_data_sharing", { p_business_id: businessId, p_network: network === "true" });
   revalidatePath(`/b/${businessId}/settings`);
 }
+
+export async function setMessageConsent(formData: FormData) {
+  const { businessId, channel, optIn } = z.object({ businessId: z.uuid(), channel: z.enum(["whatsapp", "sms"]), optIn: z.enum(["true", "false"]) })
+    .parse(Object.fromEntries(formData));
+  const { supabase } = await requireBusiness(businessId, ["owner"]);
+  await supabase.rpc("set_message_consent", { p_business_id: businessId, p_channel: channel, p_opt_in: optIn === "true" });
+  revalidatePath(`/b/${businessId}/settings`);
+}
