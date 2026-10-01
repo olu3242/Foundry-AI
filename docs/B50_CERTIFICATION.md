@@ -20,7 +20,7 @@ Totals for the final run:
 - pgTAP: **559 assertions across 44 files**.
 - Unit tests: **69**.
 - Lint, typecheck, DB lint and production build: clean.
-- Full Playwright suite: see the PR description.
+- **Playwright, 47 specs:** a single 30-minute serial run passed 43. The other 4 (`marketplace`, `pilot`, `scale`, `trust`) failed on dev-server connection resets and timeouts while I was changing the local database mid-run. All 4 passed on an immediate rerun, so it was not one clean pass.
 - Security certification (`18_certification`) still passes with every new table: RLS on, no anon grants, pinned `search_path`, `business_id` indexed.
 
 ## 2. Real-world certification
