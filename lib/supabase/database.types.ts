@@ -1570,13 +1570,13 @@ isOneToOne: false
                   ]
                 },"program_members": {
                   Row: {
-                    "created_at": string,"program_id": string,"role": Database["public"]['Enums']["program_role"],"user_id": string
+                    "capabilities": (string)[],"created_at": string,"program_id": string,"role": Database["public"]['Enums']["program_role"],"user_id": string
                   }
                   Insert: {
-                    "created_at"?: string,"program_id": string,"role": Database["public"]['Enums']["program_role"],"user_id": string
+                    "capabilities"?: (string)[],"created_at"?: string,"program_id": string,"role": Database["public"]['Enums']["program_role"],"user_id": string
                   }
                   Update: {
-                    "created_at"?: string,"program_id"?: string,"role"?: Database["public"]['Enums']["program_role"],"user_id"?: string
+                    "capabilities"?: (string)[],"created_at"?: string,"program_id"?: string,"role"?: Database["public"]['Enums']["program_role"],"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -2628,6 +2628,9 @@ isOneToOne: false
 "pack_pulse":
 { Args: { "p_business_id": string }; Returns: Json
                            },
+"partner_performance":
+{ Args: { "p_days"?: number,"p_program_id"?: string }; Returns: Json
+                           },
 "partner_sponsor_business":
 { Args: { "p_active"?: boolean,"p_business_id": string,"p_provider_id": string }; Returns: undefined
                            },
@@ -2744,6 +2747,9 @@ isOneToOne: false
 "rollup_metrics":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"route_candidates":
+{ Args: { "p_need"?: string,"p_program_id": string }; Returns: Json
+                           },
 "run_pack_workflows":
 { Args: { "p_business_id"?: string }; Returns: number
                            },
@@ -2770,6 +2776,9 @@ isOneToOne: false
                            },
 "set_experiment_status":
 { Args: { "p_id": string,"p_reason"?: string,"p_status": string }; Returns: undefined
+                           },
+"set_partner_capabilities":
+{ Args: { "p_capabilities": (string)[],"p_program_id": string,"p_user_id": string }; Returns: undefined
                            },
 "set_program_auto_route":
 { Args: { "p_on": boolean,"p_program_id": string }; Returns: undefined

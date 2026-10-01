@@ -200,3 +200,13 @@ export async function createSandbox(formData: FormData) {
   const { data } = await supabase.rpc("create_sandbox_program", { p_program_id: programId });
   if (data) redirect(`/programs/${data}`);
 }
+
+// B36: documented partner capabilities (used by routing).
+export async function setCapabilities(formData: FormData) {
+  const { programId, userId } = z.object({ programId: z.uuid(), userId: z.uuid() }).parse(Object.fromEntries(formData));
+  const caps = formData.getAll("capabilities").map(String);
+  await requireUser(`/programs/${programId}`);
+  const supabase = await createClient();
+  await supabase.rpc("set_partner_capabilities", { p_program_id: programId, p_user_id: userId, p_capabilities: caps });
+  revalidatePath(`/programs/${programId}`);
+}

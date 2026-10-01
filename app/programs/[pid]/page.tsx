@@ -16,7 +16,7 @@ import { PortfolioTable } from "@/components/programs/portfolio-table";
 import { loadPortfolio } from "@/lib/programs/portfolio";
 import { billingConfigured } from "@/lib/billing/stripe";
 import { formatDate } from "@/lib/utils";
-import { assignPartner, createSandbox, decidePackage, revokeApiKey, revertAutomation, setAutoRoute, sponsorPlan, startCheckout } from "../actions";
+import { assignPartner, setCapabilities, createSandbox, decidePackage, revokeApiKey, revertAutomation, setAutoRoute, sponsorPlan, startCheckout } from "../actions";
 import { CreateKeyForm, CreateWebhookForm } from "@/components/programs/api-access";
 import { ProductForm } from "@/components/finance/lender";
 import { PassportView } from "@/components/passport/passport-view";
@@ -46,6 +46,13 @@ export default async function ProgramPage({ params, searchParams }: { params: Pr
     webhooks: { id: string; url: string; event_types: string[]; identity: string; delivered: number; failed: number; pending: number }[];
     calls: { method: string; path: string; status: number; latency_ms: number; at: string }[];
   } | null;
+  const [{ data: perf }, { data: candidates }] = isAdmin
+    ? await Promise.all([supabase.rpc("partner_performance", { p_days: 90, p_program_id: pid }), supabase.rpc("route_candidates", { p_program_id: pid })])
+    : [{ data: null }, { data: null }];
+  const perfPartners = ((perf as { program_partners?: Record<string, unknown>[] } | null)?.program_partners ?? []) as
+    { user_id: string; name: string | null; capabilities: string[]; volume: number; completion_rate: number | null; verifications: number;
+      verify_turnaround_hours: number | null; improved_rate: number | null; escalation_hours: number | null; disputed: number }[];
+  const chosen = ((candidates ?? []) as { user_id: string; chosen: boolean }[]).find((c) => c.chosen)?.user_id;
   const { data: sponsorPlans } = await supabase.from("billing_plans").select("id, key, name, price_minor, currency").eq("payer_kind", "sponsor").eq("status", "active");
 
   const [{ data: enrollments }, { data: members }, { data: assignments }] = await Promise.all([
@@ -152,6 +159,25 @@ export default async function ProgramPage({ params, searchParams }: { params: Pr
           )}
           {isAdmin && (
             <Card><CardHeader><CardTitle>Program settings</CardTitle></CardHeader><ProgramSettingsForm program={program} /></Card>
+          )}
+          {isAdmin && !!perfPartners.length && (
+            <Card aria-label="Partner performance">
+              <CardHeader><CardTitle>Partner performance</CardTitle>
+                <CardDescription>For routing and support, not a public ranking. Routing prefers declared capability, a fast verification record and spare capacity.</CardDescription></CardHeader>
+              <ul className="divide-y text-sm">{perfPartners.map((p) => (
+                <li key={p.user_id} className="space-y-1 py-2" aria-label={`Partner ${p.name ?? p.user_id}`}>
+                  <p className="flex flex-wrap items-center gap-2"><span className="font-medium">{p.name ?? "Partner"}</span>
+                    {p.user_id === chosen && <Badge tone="insight">next to receive verification work</Badge>}</p>
+                  <p className="text-xs text-muted-foreground">{p.volume} businesses · {p.verifications} verified · turnaround {p.verify_turnaround_hours ?? "—"}h ·
+                    completion {p.completion_rate == null ? "—" : `${Math.round(p.completion_rate * 100)}%`} · disputes {p.disputed}</p>
+                  <form action={setCapabilities} className="flex flex-wrap items-center gap-2 text-xs">
+                    <input type="hidden" name="programId" value={pid} /><input type="hidden" name="userId" value={p.user_id} />
+                    {["verification", "bookkeeping", "sales", "finance_readiness", "field_visits"].map((c) => (
+                      <label key={c} className="flex items-center gap-1"><input type="checkbox" name="capabilities" value={c} defaultChecked={p.capabilities.includes(c)} />{c.replace("_", " ")}</label>))}
+                    <Button size="sm" variant="ghost">Save</Button>
+                  </form>
+                </li>))}</ul>
+            </Card>
           )}
           {isAdmin && api && (
             <Card aria-label="API access">
