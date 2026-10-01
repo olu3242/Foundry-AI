@@ -6,6 +6,15 @@ import { requireUser } from "@/lib/auth/guards";
 import { createClient } from "@/lib/supabase/server";
 import type { Json } from "@/lib/supabase/database.types";
 
+// B41: when dual approval is on, a sensitive change becomes a change request for a second admin.
+type Supa = Awaited<ReturnType<typeof createClient>>;
+async function orRequest(supabase: Supa, error: { message: string } | null, kind: string, target: string, payload: Json, reason: string) {
+  if (!error?.message.startsWith("This change needs a second approver")) return { error };
+  const { error: reqError } = await supabase.rpc("request_change", { p_kind: kind, p_target: target, p_payload: payload, p_reason: reason });
+  revalidatePath("/admin/changes");
+  return { error: reqError, requested: !reqError };
+}
+
 export async function deprecateVersion(formData: FormData) {
   const { versionId, reason } = z.object({ versionId: z.uuid(), reason: z.string().trim().min(3).max(300) }).parse(Object.fromEntries(formData));
   await requireUser("/admin");
@@ -41,12 +50,15 @@ export async function saveMarket(_: unknown, formData: FormData) {
     return { ok: false as const, error: "Identifier types must be JSON, e.g. [{\"key\":\"ursb\",\"label\":\"URSB\",\"pattern\":\"^[0-9]{6,14}$\"}]" };
   }
   const supabase = await createClient();
-  const { error } = await supabase.rpc("upsert_market", { p_market: {
+  const market = {
     country_code: f.country_code, name: f.name, currency: f.currency, default_timezone: f.default_timezone, default_locale: f.default_locale || "en",
     languages: list(f.languages), phone_prefix: f.phone_prefix, identifier_types: identifierTypes,
     connectors: { mobile_money: list(f.mobile_money) }, data_residency: f.data_residency || "any", status: f.status || "beta",
-  } });
+  };
+  const first = await supabase.rpc("upsert_market", { p_market: market });
+  const { error, requested } = await orRequest(supabase, first.error, "market_upsert", String(f.country_code), market, `Market ${f.name}`);
   if (error) return { ok: false as const, error: error.message };
+  if (requested) return { ok: true as const, message: "Submitted for a second admin's approval." };
   revalidatePath("/admin/markets");
   return { ok: true as const, message: `Saved ${f.name}.` };
 }
@@ -130,7 +142,13 @@ export async function savePolicy(_: unknown, formData: FormData) {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("save_policy", { p_key: f.data.key, p_scope_type: f.data.scopeType, p_scope_id: f.data.scopeId ?? "", p_definition: definition, p_note: f.data.note || undefined });
   if (error) return { ok: false as const, error: error.message };
-  if (f.data.activate && data) await supabase.rpc("activate_policy", { p_policy_id: data });
+  if (f.data.activate && data) {
+    const act = await supabase.rpc("activate_policy", { p_policy_id: data });
+    const { error: actError, requested } = await orRequest(supabase, act.error, "policy_activation", data, {}, f.data.note || `Activate ${f.data.key}`);
+    if (actError) return { ok: false as const, error: actError.message };
+    revalidatePath("/admin/policies");
+    if (requested) return { ok: true as const, message: "Saved. Activation submitted for a second admin's approval." };
+  }
   revalidatePath("/admin/policies");
   return { ok: true as const, message: f.data.activate ? "Saved and activated." : "Saved as draft." };
 }
@@ -139,7 +157,8 @@ export async function activatePolicy(formData: FormData) {
   const { id, op } = z.object({ id: z.uuid(), op: z.enum(["activate", "retire"]) }).parse(Object.fromEntries(formData));
   await requireUser("/admin");
   const supabase = await createClient();
-  await supabase.rpc(op === "activate" ? "activate_policy" : "retire_policy", { p_policy_id: id });
+  const r = await supabase.rpc(op === "activate" ? "activate_policy" : "retire_policy", { p_policy_id: id });
+  if (op === "activate") await orRequest(supabase, r.error, "policy_activation", id, {}, "Activate policy version");
   revalidatePath("/admin/policies");
 }
 
@@ -217,8 +236,10 @@ export async function savePack(_: unknown, formData: FormData) {
     return { ok: false as const, error: "The definition must be valid JSON." };
   }
   const supabase = await createClient();
-  const { error } = await supabase.rpc("upsert_pack", { p_key: f.data.key, p_name: f.data.name, p_definition: definition });
+  const first = await supabase.rpc("upsert_pack", { p_key: f.data.key, p_name: f.data.name, p_definition: definition });
+  const { error, requested } = await orRequest(supabase, first.error, "pack_upsert", f.data.key, { name: f.data.name, definition }, `Pack ${f.data.name}`);
   if (error) return { ok: false as const, error: error.message };
+  if (requested) return { ok: true as const, message: "Submitted for a second admin's approval." };
   revalidatePath("/admin/packs");
   return { ok: true as const, message: "Pack saved. Businesses can turn it on in Settings." };
 }
@@ -243,4 +264,21 @@ export async function buildDataset(formData: FormData) {
   const supabase = await createClient();
   await supabase.rpc("build_dataset", { p_key: key });
   revalidatePath("/admin/data");
+}
+
+// ─── B41 approvals and job failures ───────────────────────────────────────────
+export async function decideChange(formData: FormData) {
+  const { id, decision, note } = z.object({ id: z.uuid(), decision: z.enum(["approve", "reject"]), note: z.string().max(500).optional() }).parse(Object.fromEntries(formData));
+  await requireUser("/admin");
+  const supabase = await createClient();
+  await supabase.rpc("decide_change", { p_id: id, p_approve: decision === "approve", p_note: note || undefined });
+  revalidatePath("/admin/changes");
+}
+
+export async function requeueJob(formData: FormData) {
+  const { id } = z.object({ id: z.uuid() }).parse(Object.fromEntries(formData));
+  await requireUser("/admin");
+  const supabase = await createClient();
+  await supabase.rpc("requeue_job", { p_job_id: id });
+  revalidatePath("/admin/jobs");
 }

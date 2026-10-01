@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,7 +18,9 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // B41: reading the request makes every page dynamic, so each response carries its CSP nonce.
+  await headers();
   return (
     <html lang="en">
       <body className="min-h-dvh bg-aurora bg-no-repeat">

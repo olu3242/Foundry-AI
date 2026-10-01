@@ -461,6 +461,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"change_requests": {
+                  Row: {
+                    "decided_at": string | null,"decided_by": string | null,"decision_note": string | null,"error": string | null,"id": string,"kind": string,"payload": NonNullable<Json>,"reason": string,"requested_at": string,"requested_by": string,"status": string,"target": string
+                  }
+                  Insert: {
+                    "decided_at"?: string | null,"decided_by"?: string | null,"decision_note"?: string | null,"error"?: string | null,"id"?: string,"kind": string,"payload"?: NonNullable<Json>,"reason": string,"requested_at"?: string,"requested_by"?: string,"status"?: string,"target": string
+                  }
+                  Update: {
+                    "decided_at"?: string | null,"decided_by"?: string | null,"decision_note"?: string | null,"error"?: string | null,"id"?: string,"kind"?: string,"payload"?: NonNullable<Json>,"reason"?: string,"requested_at"?: string,"requested_by"?: string,"status"?: string,"target"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "change_requests_decided_by_fkey"
+      columns: ["decided_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "change_requests_requested_by_fkey"
+      columns: ["requested_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"channel_costs": {
                   Row: {
                     "amount_usd": number,"channel": string,"created_at": string,"created_by": string | null,"id": string,"month": string,"note": string,"program_id": string | null
@@ -1472,6 +1497,25 @@ isOneToOne: false
       foreignKeyName: "platform_admins_user_id_fkey"
       columns: ["user_id"]
 isOneToOne: true
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"platform_settings": {
+                  Row: {
+                    "key": string,"updated_at": string,"updated_by": string | null,"value": NonNullable<Json>
+                  }
+                  Insert: {
+                    "key": string,"updated_at"?: string,"updated_by"?: string | null,"value": NonNullable<Json>
+                  }
+                  Update: {
+                    "key"?: string,"updated_at"?: string,"updated_by"?: string | null,"value"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "platform_settings_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
     }
@@ -2645,6 +2689,9 @@ isOneToOne: false
 "decide_action":
 { Args: { "p_action_id": string,"p_decision": string,"p_result"?: Json }; Returns: undefined
                            },
+"decide_change":
+{ Args: { "p_approve": boolean,"p_id": string,"p_note"?: string }; Returns: string
+                           },
 "decide_evidence_package":
 { Args: { "p_amount_minor"?: number,"p_note"?: string,"p_package_id": string,"p_status": Database["public"]['Enums']["package_status"] }; Returns: undefined
                            },
@@ -2708,6 +2755,9 @@ isOneToOne: false
                            },
 "intelligence_quality":
 { Args: { "p_days"?: number }; Returns: Json
+                           },
+"job_overview":
+{ Args: { "p_hours"?: number }; Returns: Json
                            },
 "join_program":
 { Args: { "p_business_id": string,"p_consent": boolean,"p_join_code": string }; Returns: string
@@ -2883,8 +2933,14 @@ isOneToOne: false
 "reproduce_forecast":
 { Args: { "p_forecast_id": string }; Returns: Json
                            },
+"request_change":
+{ Args: { "p_kind": string,"p_payload": Json,"p_reason": string,"p_target": string }; Returns: string
+                           },
 "request_verification":
 { Args: { "p_business_id": string,"p_claim_type": string,"p_consent": boolean,"p_params": Json,"p_verifier_id": string }; Returns: string
+                           },
+"requeue_job":
+{ Args: { "p_job_id": string }; Returns: undefined
                            },
 "resolve_dispute":
 { Args: { "p_decision": string,"p_dispute_id": string,"p_resolution": string }; Returns: undefined
@@ -2961,6 +3017,9 @@ isOneToOne: false
 "set_partner_capabilities":
 { Args: { "p_capabilities": (string)[],"p_program_id": string,"p_user_id": string }; Returns: undefined
                            },
+"set_platform_setting":
+{ Args: { "p_key": string,"p_value": Json }; Returns: undefined
+                           },
 "set_program_auto_route":
 { Args: { "p_on": boolean,"p_program_id": string }; Returns: undefined
                            },
@@ -3009,6 +3068,9 @@ isOneToOne: false
                            },
 "take_intelligence_snapshot":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"update_dataset":
+{ Args: { "p_allowed_uses": (string)[],"p_key": string,"p_min_group_size": number }; Returns: undefined
                            },
 "upsert_market":
 { Args: { "p_market": Json }; Returns: undefined

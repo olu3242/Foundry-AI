@@ -1,5 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
+-- Single-admin path (dual approval itself is certified in 39_hardening).
+update public.platform_settings set value = 'false' where key = 'dual_approval';
 select plan(14);
 
 insert into auth.users (id, email, aud, role) values

@@ -18,3 +18,6 @@ values
    'A two-evening workshop on pricing, stock control and cash flow for small business owners.',
    'training', array[]::text[], array[]::text[], 0, 'self_reported',
    null, null, null, current_date + 21, 'learn@example.org', true);
+
+-- B41: dual approval is ON by default (production). Local development runs single-admin.
+update public.platform_settings set value = 'false' where key = 'dual_approval';
