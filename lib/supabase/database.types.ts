@@ -2771,6 +2771,9 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"moat_certification":
+{ Args: { "p_days"?: number }; Returns: Json
+                           },
 "my_business_role":
 { Args: { "p_business_id": string }; Returns: Database["public"]['Enums']["business_role"]
                            },
