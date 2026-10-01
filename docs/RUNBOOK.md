@@ -13,6 +13,12 @@
 - `platform_settings.dual_approval = true`. This is the default; it is turned off only by the local seed. Changing it needs an approved change request.
 - Two or more platform admins exist, so changes can be approved.
 - Supabase Auth phone provider is configured. Cron jobs (`/api/cron/jobs`, `/api/cron/maintenance`) are scheduled with `CRON_SECRET`.
+- **The job queue must run every minute before real pilot participants join (P1).**
+  - `vercel.json` ships Hobby-compatible daily schedules: maintenance at 02:17 UTC, queue at 03:45 UTC. Vercel Hobby rejects sub-daily crons.
+  - Captures, Pulse and market matching run inline, so they're unaffected.
+  - Running only once a day delays outbound WhatsApp/SMS, webhook deliveries, retries, payment reconciliation and plan-outcome measurement.
+  - Before B52, either upgrade the Vercel team to Pro and set `/api/cron/jobs` back to `* * * * *`, or have an external scheduler call `GET /api/cron/jobs` every minute with `Authorization: Bearer $CRON_SECRET`.
+  - `/api/health` reports `overdue_10m > 0` when the queue isn't being drained.
 - The messaging and payment provider webhooks point at the deployment (§ Rails).
 
 ## Severity and response

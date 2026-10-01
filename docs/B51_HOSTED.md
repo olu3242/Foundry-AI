@@ -75,6 +75,7 @@ Then `platform_settings.environment = "production"` was set (2026-10-01 05:15 UT
 
 | Item | Status | Owner |
 | --- | --- | --- |
+| Job queue every minute: Vercel Hobby rejects `* * * * *`, so `vercel.json` is daily (queue 03:45 UTC). Before B52, move to Vercel Pro or an external minute scheduler (see RUNBOOK) | **P1 before B52** | You |
 | Merge PR #1 to `main` so production builds Foundry (or set the production branch) | Pending | You |
 | Domain/TLS, security headers, `/api/health` on the Foundry build | After merge + secrets | Me |
 | Production secrets in Vercel (AI, messaging, payments, FX, internal, Supabase server key) | Pending | You, in the dashboard |
