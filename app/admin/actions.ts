@@ -5,6 +5,9 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth/guards";
 import { createClient } from "@/lib/supabase/server";
 import type { Json } from "@/lib/supabase/database.types";
+import { fail, friendlyDbError, type ActionState } from "@/lib/actions";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { createRefund } from "@/lib/payments/paystack";
 
 // B41: when dual approval is on, a sensitive change becomes a change request for a second admin.
 type Supa = Awaited<ReturnType<typeof createClient>>;
@@ -281,4 +284,26 @@ export async function requeueJob(formData: FormData) {
   const supabase = await createClient();
   await supabase.rpc("requeue_job", { p_job_id: id });
   revalidatePath("/admin/jobs");
+}
+
+// ─── B43 payments ─────────────────────────────────────────────────────────────
+export async function refundPayment(_: ActionState, formData: FormData): Promise<ActionState> {
+  const parsed = z.object({ id: z.uuid(), amount: z.coerce.number().int().positive(), reason: z.string().trim().min(5).max(300) }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return fail("Enter the amount (minor units) and a reason.");
+  await requireUser("/admin");
+  const supabase = await createClient();
+  const { data: refundId, error } = await supabase.rpc("request_payment_refund", { p_payment_request_id: parsed.data.id, p_amount_minor: parsed.data.amount, p_reason: parsed.data.reason });
+  if (error) return fail(friendlyDbError(error));
+  const admin = createAdminClient();
+  const { data: pr } = await admin.from("payment_requests").select("provider_transaction_id").eq("id", parsed.data.id).single();
+  try {
+    const refund = await createRefund(pr!.provider_transaction_id!, parsed.data.amount);
+    await admin.rpc("record_refund_submission", { p_refund_id: refundId as string, p_provider_refund_id: String(refund.id), p_error: "" });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    await admin.rpc("record_refund_submission", { p_refund_id: refundId as string, p_provider_refund_id: "", p_error: message });
+    return fail(`The provider refused the refund: ${message}`);
+  }
+  revalidatePath("/admin/payments");
+  return { ok: true, message: "Refund submitted. Revenue is reversed when the provider confirms it." };
 }

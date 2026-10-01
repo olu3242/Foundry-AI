@@ -1570,6 +1570,105 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"payment_events": {
+                  Row: {
+                    "business_id": string | null,"created_at": string,"detail": NonNullable<Json>,"id": number,"kind": string,"payment_request_id": string | null,"provider": string,"provider_event_id": string | null,"status": string | null
+                  }
+                  Insert: {
+                    "business_id"?: string | null,"created_at"?: string,"detail"?: NonNullable<Json>,"id"?: never,"kind": string,"payment_request_id"?: string | null,"provider": string,"provider_event_id"?: string | null,"status"?: string | null
+                  }
+                  Update: {
+                    "business_id"?: string | null,"created_at"?: string,"detail"?: NonNullable<Json>,"id"?: never,"kind"?: string,"payment_request_id"?: string | null,"provider"?: string,"provider_event_id"?: string | null,"status"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "payment_events_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "payment_events_payment_request_id_fkey"
+      columns: ["payment_request_id"]
+isOneToOne: false
+      referencedRelation: "payment_requests"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"payment_refunds": {
+                  Row: {
+                    "amount_minor": number,"business_id": string,"created_at": string,"currency": string,"id": string,"payment_request_id": string,"processed_at": string | null,"provider_refund_id": string | null,"reason": string,"requested_by": string | null,"revenue_event_id": string | null,"status": string
+                  }
+                  Insert: {
+                    "amount_minor": number,"business_id": string,"created_at"?: string,"currency": string,"id"?: string,"payment_request_id": string,"processed_at"?: string | null,"provider_refund_id"?: string | null,"reason": string,"requested_by"?: string | null,"revenue_event_id"?: string | null,"status"?: string
+                  }
+                  Update: {
+                    "amount_minor"?: number,"business_id"?: string,"created_at"?: string,"currency"?: string,"id"?: string,"payment_request_id"?: string,"processed_at"?: string | null,"provider_refund_id"?: string | null,"reason"?: string,"requested_by"?: string | null,"revenue_event_id"?: string | null,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "payment_refunds_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "payment_refunds_payment_request_id_fkey"
+      columns: ["payment_request_id"]
+isOneToOne: false
+      referencedRelation: "payment_requests"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "payment_refunds_requested_by_fkey"
+      columns: ["requested_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "payment_refunds_revenue_event_id_fkey"
+      columns: ["revenue_event_id"]
+isOneToOne: false
+      referencedRelation: "revenue_events"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"payment_requests": {
+                  Row: {
+                    "access_code": string | null,"amount_minor": number,"billable_event_id": string,"business_id": string,"checkout_url": string | null,"created_at": string,"currency": string,"failure_reason": string | null,"id": string,"last_verified_at": string | null,"paid_amount_minor": number | null,"paid_at": string | null,"paid_currency": string | null,"payment_channel": string | null,"provider": string,"provider_transaction_id": string | null,"reference": string,"refunded_minor": number,"requested_by": string | null,"revenue_event_id": string | null,"status": string
+                  }
+                  Insert: {
+                    "access_code"?: string | null,"amount_minor": number,"billable_event_id": string,"business_id": string,"checkout_url"?: string | null,"created_at"?: string,"currency": string,"failure_reason"?: string | null,"id"?: string,"last_verified_at"?: string | null,"paid_amount_minor"?: number | null,"paid_at"?: string | null,"paid_currency"?: string | null,"payment_channel"?: string | null,"provider": string,"provider_transaction_id"?: string | null,"reference": string,"refunded_minor"?: number,"requested_by"?: string | null,"revenue_event_id"?: string | null,"status"?: string
+                  }
+                  Update: {
+                    "access_code"?: string | null,"amount_minor"?: number,"billable_event_id"?: string,"business_id"?: string,"checkout_url"?: string | null,"created_at"?: string,"currency"?: string,"failure_reason"?: string | null,"id"?: string,"last_verified_at"?: string | null,"paid_amount_minor"?: number | null,"paid_at"?: string | null,"paid_currency"?: string | null,"payment_channel"?: string | null,"provider"?: string,"provider_transaction_id"?: string | null,"reference"?: string,"refunded_minor"?: number,"requested_by"?: string | null,"revenue_event_id"?: string | null,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "payment_requests_billable_event_id_fkey"
+      columns: ["billable_event_id"]
+isOneToOne: false
+      referencedRelation: "billable_events"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "payment_requests_business_id_fkey"
+      columns: ["business_id"]
+isOneToOne: false
+      referencedRelation: "businesses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "payment_requests_requested_by_fkey"
+      columns: ["requested_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "payment_requests_revenue_event_id_fkey"
+      columns: ["revenue_event_id"]
+isOneToOne: false
+      referencedRelation: "revenue_events"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"platform_admins": {
                   Row: {
                     "created_at": string,"user_id": string
@@ -2631,6 +2730,12 @@ isOneToOne: false
 "api_send_test_event":
 { Args: { "p_identity_id": string }; Returns: number
                            },
+"apply_payment_result":
+{ Args: { "p_amount_minor": number,"p_channel": string,"p_currency": string,"p_detail": Json,"p_event_id": string,"p_kind": string,"p_paid_at": string,"p_reference": string,"p_status": string,"p_transaction_id": string }; Returns: string
+                           },
+"apply_refund_result":
+{ Args: { "p_amount_minor": number,"p_detail": Json,"p_event_id": string,"p_provider_refund_id": string,"p_status": string,"p_transaction_id": string }; Returns: string
+                           },
 "assign_partner":
 { Args: { "p_business_id": string,"p_partner_user_id": string,"p_program_id": string }; Returns: undefined
                            },
@@ -2758,6 +2863,9 @@ isOneToOne: false
                            },
 "create_organization":
 { Args: { "p_kind"?: string,"p_name": string }; Returns: string
+                           },
+"create_payment_request":
+{ Args: { "p_billable_event_id": string }; Returns: Json
                            },
 "create_program":
 { Args: { "p_description"?: string,"p_name": string,"p_sponsor_name"?: string }; Returns: string
@@ -2950,6 +3058,39 @@ isOneToOne: false
 "passport_facts":
 { Args: { "p_business_id": string }; Returns: Json
                            },
+"payment_reconciliation":
+{ Args: { "p_days"?: number }; Returns: Json
+                           },
+"payments_to_verify":
+{ Args: { "p_limit"?: number }; Returns: {
+              "access_code": string | null,
+"amount_minor": number,
+"billable_event_id": string,
+"business_id": string,
+"checkout_url": string | null,
+"created_at": string,
+"currency": string,
+"failure_reason": string | null,
+"id": string,
+"last_verified_at": string | null,
+"paid_amount_minor": number | null,
+"paid_at": string | null,
+"paid_currency": string | null,
+"payment_channel": string | null,
+"provider": string,
+"provider_transaction_id": string | null,
+"reference": string,
+"refunded_minor": number,
+"requested_by": string | null,
+"revenue_event_id": string | null,
+"status": string
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "payment_requests"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
 "playbook_effectiveness":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -3018,6 +3159,15 @@ isOneToOne: false
 "record_pack_entry":
 { Args: { "p_business_id": string,"p_data": Json,"p_entity": string,"p_occurred_at"?: string,"p_pack_key": string }; Returns: string
                            },
+"record_payment_dispute":
+{ Args: { "p_detail": Json,"p_event_id": string,"p_status": string,"p_transaction_id": string }; Returns: string
+                           },
+"record_payment_initialized":
+{ Args: { "p_access_code": string,"p_checkout_url": string,"p_error": string,"p_id": string }; Returns: undefined
+                           },
+"record_refund_submission":
+{ Args: { "p_error": string,"p_provider_refund_id": string,"p_refund_id": string }; Returns: undefined
+                           },
 "record_webhook_attempt":
 { Args: { "p_delivery_id": string,"p_error": string,"p_final": boolean,"p_status": number }; Returns: undefined
                            },
@@ -3038,6 +3188,9 @@ isOneToOne: false
                            },
 "request_change":
 { Args: { "p_kind": string,"p_payload": Json,"p_reason": string,"p_target": string }; Returns: string
+                           },
+"request_payment_refund":
+{ Args: { "p_amount_minor": number,"p_payment_request_id": string,"p_reason": string }; Returns: string
                            },
 "request_verification":
 { Args: { "p_business_id": string,"p_claim_type": string,"p_consent": boolean,"p_params": Json,"p_verifier_id": string }; Returns: string

@@ -4,6 +4,8 @@ import { PageHeader } from "@/components/page-header";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ChoosePlanForm } from "@/components/billing/choose-plan-form";
+import { PayChargeForm } from "@/components/billing/pay-charge-form";
+import { paystackConfigured } from "@/lib/payments/paystack";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/utils";
 
@@ -23,20 +25,37 @@ type Status = {
   available_plans: { key: string; name: string; price_minor: number; currency: string; entitlements: Record<string, number> }[];
 };
 
-export default async function PlanPage({ params }: { params: Promise<{ bid: string }> }) {
+const PAYMENT_NOTICE: Record<string, string> = {
+  paid: "Payment received. Thank you.",
+  pending: "We're waiting for the payment to be confirmed. This page updates when it is.",
+  failed: "The payment didn't go through. You can try again.",
+  abandoned: "The payment wasn't completed. You can try again.",
+  mismatch: "We received a different amount than expected. Our team will contact you.",
+  duplicate: "This charge was already paid. Our team will refund the extra payment.",
+};
+
+export default async function PlanPage({ params, searchParams }: { params: Promise<{ bid: string }>; searchParams: Promise<{ payment?: string }> }) {
   const { bid } = await params;
+  const { payment } = await searchParams;
+  const online = paystackConfigured();
   const { role, supabase } = await requireBusiness(bid);
   const [{ data }, { data: charges }] = await Promise.all([
     supabase.rpc("entitlement_status", { p_business_id: bid }),
     supabase.from("billable_events").select("id, description, amount_minor, currency, status, created_at").eq("business_id", bid).eq("payer_kind", "business")
       .order("created_at", { ascending: false }).limit(12),
   ]);
+  const { data: payments } = await supabase.from("payment_requests").select("billable_event_id, status, payment_channel, created_at").eq("business_id", bid)
+    .order("created_at", { ascending: false }).limit(30);
+  const lastPayment = (id: string) => payments?.find((p) => p.billable_event_id === id);
   const s = data as unknown as Status;
 
   return (
     <>
       <PageHeader eyebrow="Plan & usage" title={s.plan.name}
         description="What your plan includes this month and how much you've used. Limits reset on the 1st." />
+      {payment && PAYMENT_NOTICE[payment] && (
+        <p role="status" className="mb-4 rounded-lg border bg-muted/40 px-4 py-3 text-sm" data-testid="payment-notice">{PAYMENT_NOTICE[payment]}</p>
+      )}
       <div className="grid gap-4 lg:grid-cols-2">
         <Card aria-label="Current plan">
           <CardHeader>
@@ -72,9 +91,13 @@ export default async function PlanPage({ params }: { params: Promise<{ bid: stri
           <CardHeader><CardTitle>Charges</CardTitle></CardHeader>
           <ul className="divide-y text-sm">
             {charges.map((c) => (
-              <li key={c.id} className="flex items-center gap-3 py-2">
-                <span className="flex-1">{c.description}</span><span>{formatMoney(c.amount_minor, c.currency)}</span>
-                <Badge tone={c.status === "paid" ? "brand" : "neutral"}>{c.status}</Badge>
+              <li key={c.id} className="flex flex-wrap items-center gap-3 py-2" aria-label={`Charge ${c.description}`}>
+                <span className="flex-1">{c.description}
+                  {lastPayment(c.id) && <span className="block text-xs text-muted-foreground">Last payment: {lastPayment(c.id)!.status.replaceAll("_", " ")}
+                    {lastPayment(c.id)!.payment_channel ? ` · ${lastPayment(c.id)!.payment_channel!.replaceAll("_", " ")}` : ""}</span>}</span>
+                <span>{formatMoney(c.amount_minor, c.currency)}</span>
+                <Badge tone={c.status === "paid" ? "brand" : "neutral"} data-testid="charge-status">{c.status}</Badge>
+                {c.status === "open" && online && (role === "owner" || role === "staff") && <PayChargeForm businessId={bid} chargeId={c.id} />}
               </li>
             ))}
           </ul>

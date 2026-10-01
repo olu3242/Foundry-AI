@@ -36,7 +36,7 @@ export function configIssues(env: Record<string, string | undefined>): ConfigIss
   const groups: Record<string, string[]> = {
     WHATSAPP_PHONE_NUMBER_ID: ["WHATSAPP_ACCESS_TOKEN", "WHATSAPP_APP_SECRET", "WHATSAPP_VERIFY_TOKEN"],
     AFRICASTALKING_USERNAME: ["AFRICASTALKING_API_KEY", "AFRICASTALKING_CALLBACK_TOKEN"],
-    PAYSTACK_SECRET_KEY: [],
+    PAYSTACK_SECRET_KEY: ["PAYSTACK_CUSTOMER_EMAIL_DOMAIN"],
     FX_PROVIDER: ["FX_API_KEY"],
   };
   for (const [enabler, deps] of Object.entries(groups)) {

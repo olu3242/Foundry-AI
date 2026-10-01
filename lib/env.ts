@@ -37,6 +37,12 @@ const serverSchema = z.object({
   AFRICASTALKING_SENDER_ID: z.string().optional(),
   AFRICASTALKING_CALLBACK_TOKEN: z.string().optional(),
   AFRICASTALKING_API_BASE: z.url().optional(),
+  // B43 payment rails. No key = online payment is not offered (manual references still work).
+  PAYSTACK_SECRET_KEY: z.string().optional(),
+  PAYSTACK_CURRENCIES: z.string().default("GHS,NGN"),
+  // Paystack requires an email; phone-only owners get <digits>@this domain (a domain Foundry controls).
+  PAYSTACK_CUSTOMER_EMAIL_DOMAIN: z.string().optional(),
+  PAYSTACK_API_BASE: z.url().optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverSchema>;
