@@ -5,6 +5,7 @@ import { log, reportError } from "@/lib/telemetry";
 import type { Json } from "@/lib/supabase/database.types";
 import { readFlow } from "@/lib/orchestration/envelope";
 import { evaluateFlowExecution } from "@/lib/orchestration/guard";
+import { resolveCapability } from "@/lib/capabilities/registry";
 import { handlers } from "./registry";
 import { PermanentJobError, type Job } from "./types";
 
@@ -23,6 +24,12 @@ async function execute(job: Job, worker: string) {
     if (!gate.allowed) {
       throw new PermanentJobError(`Foundry flow execution denied: ${gate.reason}`);
     }
+    const capability = resolveCapability(flow?.capability);
+    if (!capability.allowed) {
+      const error = new Error(`Foundry capability unavailable: ${capability.reason}`);
+      if (!capability.retryable) throw new PermanentJobError(error.message);
+      throw error;
+    }
     const result = await Promise.race([
       handler({ job, admin, signal: controller.signal }),
       new Promise<never>((_, reject) =>
@@ -34,6 +41,7 @@ async function execute(job: Job, worker: string) {
       worker, job_id: job.id, type: job.type, attempt: job.attempts, ms: Math.round(performance.now() - started),
       flow_id: flow?.flow_id, flow_type: flow?.flow_type, correlation_id: flow?.correlation_id,
       authority_mode: flow?.authority_mode, capability: flow?.capability?.kind,
+      capability_provider: capability.allowed ? capability.provider : undefined,
     });
     return "succeeded" as const;
   } catch (error) {
