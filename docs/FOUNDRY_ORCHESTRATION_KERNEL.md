@@ -37,3 +37,14 @@ Runtime success/failure telemetry now includes flow/correlation/authority/capabi
 4. External execution must preserve provider/target-system evidence through the existing domain mechanism.
 5. A retry keeps the same flow identity because the envelope is part of the durable job payload.
 6. Existing B1–B60 domain state remains the source of truth; the kernel coordinates rather than duplicates it.
+
+## Runtime enforcement
+
+Kernel-aware jobs are fail-closed before their domain handler runs:
+
+- `authority_mode=blocked` -> denied.
+- `approval_required=true` with non-auto authority -> denied until an approval transition clears the requirement.
+- only `ready` or `executing` stages may enter a handler.
+- legacy jobs without an envelope remain compatible during migration.
+
+A denial is permanent for that queued job; callers must create/update the governed flow and enqueue a new executable job rather than relying on retries to bypass authority.
