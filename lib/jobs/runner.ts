@@ -6,6 +6,7 @@ import type { Json } from "@/lib/supabase/database.types";
 import { readFlow } from "@/lib/orchestration/envelope";
 import { evaluateFlowExecution } from "@/lib/orchestration/guard";
 import { resolveCapability } from "@/lib/capabilities/registry";
+import { hasExecutionEvidence } from "@/lib/capabilities/evidence";
 import { handlers } from "./registry";
 import { PermanentJobError, type Job } from "./types";
 
@@ -36,6 +37,9 @@ async function execute(job: Job, worker: string) {
         controller.signal.addEventListener("abort", () => reject(new Error(`Timed out after ${JOB_TIMEOUT_MS}ms`))),
       ),
     ]);
+    if (!hasExecutionEvidence(flow, result)) {
+      throw new PermanentJobError("Foundry capability execution returned insufficient evidence");
+    }
     await admin.rpc("complete_job", { p_job_id: job.id, p_result: (result ?? null) as Json });
     log("info", "job.succeeded", {
       worker, job_id: job.id, type: job.type, attempt: job.attempts, ms: Math.round(performance.now() - started),
