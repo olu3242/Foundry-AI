@@ -92,6 +92,17 @@ describe("POST /api/waitlist", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
+  it("does not trust forwarded host headers to authorize another origin", async () => {
+    const forged = request(validPayload, "https://attacker.test");
+    forged.headers.set("x-forwarded-host", "attacker.test");
+    forged.headers.set("x-forwarded-proto", "https");
+    const response = await POST(forged);
+
+    expect(response.status).toBe(403);
+    expect(dependencies.rateLimit).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it("rejects malformed and unconsented payloads", async () => {
     const response = await POST(request({ ...validPayload, consent: undefined }));
 

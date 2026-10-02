@@ -18,14 +18,8 @@ function isSameOrigin(request: Request) {
   if (!origin) return false;
 
   const requestUrl = new URL(request.url);
-  const host = ((request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? requestUrl.host)
-    .split(",")[0] ?? "").trim().toLowerCase();
-  const protocol = ((request.headers.get("x-forwarded-proto") ?? requestUrl.protocol.slice(0, -1))
-    .split(",")[0] ?? "").trim().toLowerCase();
-
   try {
-    const originUrl = new URL(origin);
-    return originUrl.host.toLowerCase() === host && originUrl.protocol === `${protocol}:`;
+    return new URL(origin).origin === requestUrl.origin;
   } catch {
     return false;
   }
