@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { publicEnv } from "@/lib/env";
+import { publicEnv } from "../env";
 
 const PROTECTED = ["/app", "/b/", "/onboarding", "/partner", "/programs", "/admin", "/providers", "/join", "/verify", "/orgs", "/pilots"];
 
