@@ -82,6 +82,11 @@ export const handlers: Record<string, JobHandler> = {
     if (error) throw error;
     return { experiments: data };
   },
+  "runtime.reconcile": async ({ admin }) => {
+    const { data, error } = await admin.rpc("reconcile_foundry_runtime", {});
+    if (error) throw error;
+    return data;
+  },
   "incidents.detect": async ({ admin }) => {
     const { data, error } = await admin.rpc("detect_incidents");
     if (error) throw error;
