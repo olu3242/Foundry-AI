@@ -23,6 +23,7 @@ export async function GET(request: Request) {
         payload: { day },
         flow: {
           flow_type: "business.daily_intelligence",
+          stage: "ready",
           triggered_by: "cron.maintenance",
           authority_mode: "auto",
           approval_required: false,
@@ -46,6 +47,7 @@ export async function GET(request: Request) {
       runAt: new Date(Date.now() + 12 * 60_000),
       flow: {
         flow_type: "business.pack_workflows",
+        stage: "ready",
         triggered_by: "cron.maintenance",
         authority_mode: "auto",
         approval_required: false,
