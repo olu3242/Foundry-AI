@@ -14,7 +14,7 @@ export type ExperimentPlan = {
   alpha: number;
 };
 
-function inverseNormal(p: number) {
+function inverseNormal(p: number): number {
   if (!(p > 0 && p < 1)) throw new Error("Probability must be between 0 and 1");
   const a = [-39.69683028665376, 220.9460984245205, -275.9285104469687, 138.357751867269, -30.66479806614716, 2.506628277459239];
   const b = [-54.47609879822406, 161.5858368580409, -155.6989798598866, 66.80131188771972, -13.28068155288572];
