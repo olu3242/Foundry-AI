@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { log, reportError } from "@/lib/telemetry";
 import type { Json } from "@/lib/supabase/database.types";
 import { readFlow } from "@/lib/orchestration/envelope";
+import { evaluateFlowExecution } from "@/lib/orchestration/guard";
 import { handlers } from "./registry";
 import { PermanentJobError, type Job } from "./types";
 
@@ -18,6 +19,10 @@ async function execute(job: Job, worker: string) {
   const timer = setTimeout(() => controller.abort(), JOB_TIMEOUT_MS);
   try {
     if (!handler) throw new PermanentJobError(`No handler for job type "${job.type}"`);
+    const gate = evaluateFlowExecution(flow);
+    if (!gate.allowed) {
+      throw new PermanentJobError(`Foundry flow execution denied: ${gate.reason}`);
+    }
     const result = await Promise.race([
       handler({ job, admin, signal: controller.signal }),
       new Promise<never>((_, reject) =>
