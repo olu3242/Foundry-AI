@@ -48,3 +48,13 @@ Kernel-aware jobs are fail-closed before their domain handler runs:
 - legacy jobs without an envelope remain compatible during migration.
 
 A denial is permanent for that queued job; callers must create/update the governed flow and enqueue a new executable job rather than relying on retries to bypass authority.
+
+## Durable flow state
+
+The database now persists `foundry_flows` independently of jobs and records an append-only `foundry_flow_transitions` history. This makes authority state auditable before, during and after runtime execution.
+
+A HIL flow follows the controlled path:
+
+`awaiting_approval -> approve_foundry_flow() -> ready -> executing -> verifying/completed`.
+
+Approval clears `approval_required`, records `approved_by/approved_at`, appends a transition, and emits `flow.approved`. Invalid lifecycle transitions and approval of blocked/non-pending flows fail closed. The durable record can link the existing `decision_id`, `intervention_id`, and `job_id` rather than duplicating those domain objects.
