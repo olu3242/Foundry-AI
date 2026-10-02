@@ -17,7 +17,20 @@ export async function GET(request: Request) {
     const { data: businesses } = await admin.from("businesses").select("id").is("archived_at", null);
     const day = new Date().toISOString().slice(0, 10);
     for (const b of businesses ?? []) {
-      await enqueue("pulse.compute", { businessId: b.id, dedupeKey: `pulse:${b.id}`, payload: { day } });
+      await enqueue("pulse.compute", {
+        businessId: b.id,
+        dedupeKey: `pulse:${b.id}`,
+        payload: { day },
+        flow: {
+          flow_type: "business.daily_intelligence",
+          triggered_by: "cron.maintenance",
+          authority_mode: "auto",
+          approval_required: false,
+          evidence_required: true,
+          capability: { kind: "internal.compute", action: "pulse.compute" },
+          metadata: { day },
+        },
+      });
     }
     await enqueue("fx.refresh", { dedupeKey: `fx:${day}` });
     await enqueue("evidence.harvest", { dedupeKey: `evidence:${day}`, runAt: new Date(Date.now() + 70 * 60_000) });
@@ -28,7 +41,19 @@ export async function GET(request: Request) {
     await enqueue("forecast.compute", { dedupeKey: `forecast:${day}`, runAt: new Date(Date.now() + 35 * 60_000) });
     await enqueue("experiments.evaluate", { dedupeKey: `experiments:${day}`, runAt: new Date(Date.now() + 40 * 60_000) });
     await enqueue("incidents.detect", { dedupeKey: `incidents:${day}`, runAt: new Date(Date.now() + 45 * 60_000) });
-    await enqueue("packs.workflows", { dedupeKey: `packs:${day}`, runAt: new Date(Date.now() + 12 * 60_000) });
+    await enqueue("packs.workflows", {
+      dedupeKey: `packs:${day}`,
+      runAt: new Date(Date.now() + 12 * 60_000),
+      flow: {
+        flow_type: "business.pack_workflows",
+        triggered_by: "cron.maintenance",
+        authority_mode: "auto",
+        approval_required: false,
+        evidence_required: true,
+        capability: { kind: "workflow.engine", action: "packs.workflows" },
+        metadata: { day },
+      },
+    });
     await enqueue("datasets.build", { dedupeKey: `datasets:${day}`, runAt: new Date(Date.now() + 50 * 60_000) });
     await enqueue("quality.scan", { dedupeKey: `quality:${day}`, runAt: new Date(Date.now() + 5 * 60_000) });
     await enqueue("retention.scan", { dedupeKey: `retention:${day}`, runAt: new Date(Date.now() + 25 * 60_000) });
