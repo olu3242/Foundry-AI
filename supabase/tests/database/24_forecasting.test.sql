@@ -51,8 +51,11 @@ reset role;
 update public.forecasts set inputs = jsonb_set(inputs, '{weekly,0}', '99999') where id = :'fid';
 set local role authenticated;
 select is((public.reproduce_forecast(:'fid') ->> 'matches')::boolean, false, 'changed inputs no longer reproduce');
-select is((select count(*)::int from public.forecasts where business_id = :'steady' and method_version = 'fc-v1'), (select count(*)::int from public.forecasts where business_id = :'steady'),
-  'every forecast records its method version');
+select is((select count(*)::int from public.forecasts where business_id = :'steady'
+    and ((kind = 'intervention_scenario' and method_version = 'fc-v2-consent')
+      or (kind <> 'intervention_scenario' and method_version = 'fc-v1'))),
+  (select count(*)::int from public.forecasts where business_id = :'steady'),
+  'every forecast records its expected method version');
 
 select * from finish();
 rollback;

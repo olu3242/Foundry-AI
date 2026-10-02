@@ -1,6 +1,8 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/supabase/database.types";
+import { attachFlow, createFlowEnvelope } from "@/lib/orchestration/envelope";
+import type { FoundryFlowInput } from "@/lib/orchestration/types";
 
 export type EnqueueOptions = {
   businessId?: string | null;
@@ -9,13 +11,15 @@ export type EnqueueOptions = {
   dedupeKey?: string;
   runAt?: Date;
   maxAttempts?: number;
+  /** Canonical Foundry OS execution context. Legacy jobs may omit it. */
+  flow?: Partial<FoundryFlowInput> & Pick<FoundryFlowInput, "flow_type">;
 };
 
 export async function enqueue(type: string, opts: EnqueueOptions = {}) {
   const { data, error } = await createAdminClient().rpc("enqueue_job", {
     p_type: type,
     p_business_id: opts.businessId ?? undefined,
-    p_payload: opts.payload ?? {},
+    p_payload: opts.flow ? attachFlow(opts.payload, createFlowEnvelope(opts.flow)) : (opts.payload ?? {}),
     p_dedupe_key: opts.dedupeKey,
     p_run_at: opts.runAt?.toISOString(),
     p_max_attempts: opts.maxAttempts,

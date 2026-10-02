@@ -3,6 +3,10 @@ import { randomUUID } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { log, reportError } from "@/lib/telemetry";
 import type { Json } from "@/lib/supabase/database.types";
+import { readFlow } from "@/lib/orchestration/envelope";
+import { evaluateFlowExecution } from "@/lib/orchestration/guard";
+import { resolveCapability } from "@/lib/capabilities/registry";
+import { hasExecutionEvidence } from "@/lib/capabilities/evidence";
 import { handlers } from "./registry";
 import { PermanentJobError, type Job } from "./types";
 
@@ -11,25 +15,48 @@ const JOB_TIMEOUT_MS = 40_000;
 async function execute(job: Job, worker: string) {
   const admin = createAdminClient();
   const handler = handlers[job.type];
+  const flow = readFlow(job.payload);
   const started = performance.now();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), JOB_TIMEOUT_MS);
   try {
     if (!handler) throw new PermanentJobError(`No handler for job type "${job.type}"`);
+    const gate = evaluateFlowExecution(flow);
+    if (!gate.allowed) {
+      throw new PermanentJobError(`Foundry flow execution denied: ${gate.reason}`);
+    }
+    const capability = resolveCapability(flow?.capability);
+    if (!capability.allowed) {
+      const error = new Error(`Foundry capability unavailable: ${capability.reason}`);
+      if (!capability.retryable) throw new PermanentJobError(error.message);
+      throw error;
+    }
     const result = await Promise.race([
       handler({ job, admin, signal: controller.signal }),
       new Promise<never>((_, reject) =>
         controller.signal.addEventListener("abort", () => reject(new Error(`Timed out after ${JOB_TIMEOUT_MS}ms`))),
       ),
     ]);
+    if (!hasExecutionEvidence(flow, result)) {
+      throw new PermanentJobError("Foundry capability execution returned insufficient evidence");
+    }
     await admin.rpc("complete_job", { p_job_id: job.id, p_result: (result ?? null) as Json });
-    log("info", "job.succeeded", { worker, job_id: job.id, type: job.type, attempt: job.attempts, ms: Math.round(performance.now() - started) });
+    log("info", "job.succeeded", {
+      worker, job_id: job.id, type: job.type, attempt: job.attempts, ms: Math.round(performance.now() - started),
+      flow_id: flow?.flow_id, flow_type: flow?.flow_type, correlation_id: flow?.correlation_id,
+      authority_mode: flow?.authority_mode, capability: flow?.capability?.kind,
+      capability_provider: capability.allowed ? capability.provider : undefined,
+    });
     return "succeeded" as const;
   } catch (error) {
     const permanent = error instanceof PermanentJobError;
     const message = error instanceof Error ? error.message : typeof error === "object" && error && "message" in error ? String((error as { message: unknown }).message) : String(error);
     const { data: status } = await admin.rpc("fail_job", { p_job_id: job.id, p_error: message, p_retryable: !permanent });
-    reportError(error, { msg: "job.failed", worker, job_id: job.id, type: job.type, attempt: job.attempts, next: status, business_id: job.business_id });
+    reportError(error, {
+      msg: "job.failed", worker, job_id: job.id, type: job.type, attempt: job.attempts, next: status, business_id: job.business_id,
+      flow_id: flow?.flow_id, flow_type: flow?.flow_type, correlation_id: flow?.correlation_id,
+      authority_mode: flow?.authority_mode, capability: flow?.capability?.kind,
+    });
     return status === "dead" ? ("dead" as const) : ("retrying" as const);
   } finally {
     clearTimeout(timer);
